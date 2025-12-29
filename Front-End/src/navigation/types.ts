@@ -26,11 +26,20 @@ export type ShopStackParamList = {
   Checkout: undefined;
 };
 
+// Definisi untuk Booking Stack
+export type BookingStackParamList = {
+  LocationList: undefined;
+  LocationDetail: { id: number };
+  BookingForm: { locationId: number; locationName: string; price: number }; // <-- Parameter penting
+};
+
 // 3. Root Navigator (Menggabungkan Auth & Main)
 export type RootStackParamList = {
   Auth: NavigatorScreenParams<AuthStackParamList>;
   Main: NavigatorScreenParams<MainTabParamList>;
   NotFound: undefined;
+  EventList: undefined;
+  EditProfile: undefined;
 };
 
 // Helper type untuk dipakai di komponen

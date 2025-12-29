@@ -1,22 +1,16 @@
 import "./global.css"; // Import wajib NativeWind
-import React, { useEffect } from "react";
-import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import React from "react";
+import { View, ActivityIndicator } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
 import {
   useFonts,
   Outfit_400Regular,
   Outfit_500Medium,
   Outfit_700Bold,
 } from "@expo-google-fonts/outfit";
-import { ActivityIndicator, View } from "react-native";
 
-// Import Screens
-import LoginScreen from "@/features/auth/LoginScreen";
-import RegisterScreen from "@/features/auth/RegisterScreen";
-import TabNavigator from "@/navigation/TabNavigator";
-import { navigationRef } from "@/navigation/navigationRef";
-
-const Stack = createNativeStackNavigator();
+import RootNavigator from "@/navigation/RootNavigator";
 
 export default function App() {
   // 1. Load Fonts
@@ -26,6 +20,7 @@ export default function App() {
     Outfit_700Bold,
   });
 
+  // 2. Tampilkan Loading Spinner saat Font belum siap
   if (!fontsLoaded) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -34,21 +29,14 @@ export default function App() {
     );
   }
 
+  // 3. Render Aplikasi Utama
   return (
-    <NavigationContainer ref={navigationRef}>
-      {/* Ganti initialRouteName jadi 'Login' jika ingin start dari login */}
-      <Stack.Navigator
-        initialRouteName="Login"
-        screenOptions={{ headerShown: false }}
-      >
-        {/* Halaman Auth */}
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Register" component={RegisterScreen} />
+    <SafeAreaProvider>
+      {/* Mengatur Status Bar (ikon baterai/sinyal) agar otomatis menyesuaikan (gelap/terang) */}
+      <StatusBar style="auto" />
 
-        {/* Main App Group (Tab Navigator) */}
-        {/* Ini menghubungkan Flow: Login -> MainTabs (TabNavigator) */}
-        <Stack.Screen name="MainTabs" component={TabNavigator} />
-      </Stack.Navigator>
-    </NavigationContainer>
+      {/* Panggil RootNavigator sebagai pintu gerbang utama */}
+      <RootNavigator />
+    </SafeAreaProvider>
   );
 }

@@ -6,7 +6,6 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "@/navigation/types";
 
 // Import Assets
-// Jika belum ada, ganti dengan dummy URI sementara
 const wave1 = require("@/assets/images/wave1.png");
 const mancing = require("@/assets/images/mancing.png");
 
@@ -44,7 +43,9 @@ const LandingSection = () => {
         {/* Buttons */}
         <View className="flex-row space-x-3">
           <TouchableOpacity
-            onPress={() => navigation.navigate("Main", { screen: "Booking" })}
+            onPress={() =>
+              navigation.navigate("Main", { screen: "BookingStack" })
+            }
             className="bg-white/20 border border-white/30 px-6 py-3 rounded-xl backdrop-blur-md"
           >
             <Text className="text-white font-bold font-[Outfit_500Medium]">
@@ -53,7 +54,7 @@ const LandingSection = () => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => navigation.navigate("Main", { screen: "Shop" })}
+            onPress={() => navigation.navigate("Main", { screen: "ShopStack" })}
             className="bg-white/20 border border-white/30 px-6 py-3 rounded-xl backdrop-blur-md"
           >
             <Text className="text-white font-bold font-[Outfit_500Medium]">

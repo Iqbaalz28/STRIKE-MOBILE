@@ -1,3 +1,5 @@
+// File: src/features/shop/ShopScreen.tsx
+
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -8,8 +10,10 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Search, Filter, ShoppingBag } from "lucide-react-native";
+import { useNavigation } from "@react-navigation/native";
 import api from "@/services/api";
 import ProductCard from "./components/ProductCard";
+import FilterModal from "./components/FilterModal";
 
 const categories = [
   { id: "all", name: "Semua" },
@@ -20,12 +24,18 @@ const categories = [
 ];
 
 const ShopScreen = () => {
+  const navigation = useNavigation<any>();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // State Filter Dasar
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
 
-  // Fetch Data
+  // State Filter Lanjutan (Modal)
+  const [isFilterVisible, setFilterVisible] = useState(false);
+  const [priceFilter, setPriceFilter] = useState({ min: 0, max: 999999999 });
+
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -33,8 +43,6 @@ const ShopScreen = () => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      // API mendukung filter via query params, tapi untuk simpel kita fetch semua dulu
-      // lalu filter di client-side (seperti logic ShopView.vue)
       const res = await api.getProducts({});
       setProducts(res.data);
     } catch (error) {
@@ -44,7 +52,6 @@ const ShopScreen = () => {
     }
   };
 
-  // Logic Filtering (Client Side)
   const filteredProducts = products.filter((p: any) => {
     const matchSearch = p.name
       .toLowerCase()
@@ -52,8 +59,17 @@ const ShopScreen = () => {
     const matchCategory =
       selectedCategory === "all" ||
       p.category?.toLowerCase() === selectedCategory;
-    return matchSearch && matchCategory;
+    const matchPrice = p.price >= priceFilter.min && p.price <= priceFilter.max;
+
+    return matchSearch && matchCategory && matchPrice;
   });
+
+  const handleApplyFilter = (filters: any) => {
+    setPriceFilter({ min: filters.minPrice, max: filters.maxPrice });
+    if (filters.category) {
+      setSelectedCategory(filters.category.toLowerCase());
+    }
+  };
 
   return (
     <View className="flex-1 bg-white pt-12">
@@ -63,7 +79,10 @@ const ShopScreen = () => {
           <Text className="text-2xl font-bold text-gray-900 font-[Outfit_700Bold]">
             Toko Alat
           </Text>
-          <TouchableOpacity className="relative p-2">
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Cart")}
+            className="relative p-2"
+          >
             <ShoppingBag size={24} color="#1F2937" />
             <View className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border border-white" />
           </TouchableOpacity>
@@ -79,7 +98,10 @@ const ShopScreen = () => {
               onChangeText={setSearchQuery}
             />
           </View>
-          <TouchableOpacity className="p-3 bg-blue-600 rounded-xl">
+          <TouchableOpacity
+            onPress={() => setFilterVisible(true)}
+            className="p-3 bg-blue-600 rounded-xl"
+          >
             <Filter size={20} color="white" />
           </TouchableOpacity>
         </View>
@@ -126,7 +148,15 @@ const ShopScreen = () => {
           numColumns={2}
           contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: 100 }}
           columnWrapperStyle={{ justifyContent: "space-between" }}
-          renderItem={({ item }) => <ProductCard product={item} />}
+          renderItem={({ item }) => (
+            <ProductCard
+              product={item}
+              // INI PENTING: ShopScreen yang memberi perintah onPress ke ProductCard
+              onPress={() =>
+                navigation.navigate("ProductDetail", { id: item.id })
+              }
+            />
+          )}
           ListEmptyComponent={
             <View className="items-center py-20">
               <Text className="text-gray-400">Produk tidak ditemukan</Text>
@@ -134,6 +164,13 @@ const ShopScreen = () => {
           }
         />
       )}
+
+      {/* Modal */}
+      <FilterModal
+        visible={isFilterVisible}
+        onClose={() => setFilterVisible(false)}
+        onApply={handleApplyFilter}
+      />
     </View>
   );
 };

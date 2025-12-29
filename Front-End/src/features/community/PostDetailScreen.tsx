@@ -13,6 +13,7 @@ import {
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { ArrowLeft, Send } from "lucide-react-native";
 import api from "@/services/api";
+import CommentCard from "./components/CommentCard"; // Pastikan import ini ada
 
 const PostDetailScreen = () => {
   const route = useRoute<any>();
@@ -122,22 +123,12 @@ const PostDetailScreen = () => {
             Komentar ({comments.length})
           </Text>
 
+          {/* --- BAGIAN YANG DIPERBARUI --- */}
           {comments.map((c: any, index) => (
-            <View
-              key={index}
-              className="bg-white p-4 rounded-xl mb-3 shadow-sm border border-gray-100"
-            >
-              <View className="flex-row items-center mb-2">
-                <Text className="font-bold text-sm text-gray-800">
-                  {c.author?.name || c.username}
-                </Text>
-                <Text className="text-xs text-gray-400 ml-2">
-                  {new Date(c.created_at).toLocaleDateString()}
-                </Text>
-              </View>
-              <Text className="text-gray-700">{c.content}</Text>
-            </View>
+            <CommentCard key={index} comment={c} />
           ))}
+          {/* ---------------------------- */}
+
           <View className="h-20" />
         </View>
       </ScrollView>
