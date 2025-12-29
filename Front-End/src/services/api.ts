@@ -71,7 +71,7 @@ export default {
   },
 
   // --- UPLOAD ---
-  // Perubahan penting: React Native butuh objek {uri, name, type}
+  // React Native butuh objek {uri, name, type}
   uploadImage(file: RNFile) {
     const formData = new FormData();
     // @ts-ignore: FormData di React Native menerima object file khusus ini

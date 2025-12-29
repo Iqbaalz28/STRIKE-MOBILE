@@ -12,6 +12,8 @@ import { ActivityIndicator, View } from "react-native";
 
 // Import Screens
 import LoginScreen from "@/features/auth/LoginScreen";
+import RegisterScreen from "@/features/auth/RegisterScreen";
+import TabNavigator from "@/navigation/TabNavigator";
 import { navigationRef } from "@/navigation/navigationRef";
 
 const Stack = createNativeStackNavigator();
@@ -34,13 +36,18 @@ export default function App() {
 
   return (
     <NavigationContainer ref={navigationRef}>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {/* Daftarkan halaman Login disini */}
+      {/* Ganti initialRouteName jadi 'Login' jika ingin start dari login */}
+      <Stack.Navigator
+        initialRouteName="Login"
+        screenOptions={{ headerShown: false }}
+      >
+        {/* Halaman Auth */}
         <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Register" component={RegisterScreen} />
 
-        {/* Placeholder untuk Register dan Home (Nanti kita buat) */}
-        <Stack.Screen name="Register" component={LoginScreen} />
-        <Stack.Screen name="MainTabs" component={LoginScreen} />
+        {/* Main App Group (Tab Navigator) */}
+        {/* Ini menghubungkan Flow: Login -> MainTabs (TabNavigator) */}
+        <Stack.Screen name="MainTabs" component={TabNavigator} />
       </Stack.Navigator>
     </NavigationContainer>
   );
