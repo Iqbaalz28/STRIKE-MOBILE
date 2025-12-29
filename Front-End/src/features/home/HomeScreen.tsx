@@ -1,15 +1,12 @@
 import React, { useState, useCallback } from "react";
-import { ScrollView, StatusBar, View, RefreshControl } from "react-native";
+import { ScrollView, StatusBar, View, RefreshControl, Text } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-// Components Lama
-import LandingSection from "./components/LandingSection";
+// Components Baru
+import MembershipCard from "./components/MembershipCard";
+import MenuGrid from "./components/MenuGrid";
 import LocationPreview from "./components/LocationPreview";
 import DiscountSection from "./components/DiscountSection";
-import EventSection from "./components/EventSection";
-
-// Components Baru (Pengganti Placeholder)
-import PricingSection from "./components/PricingSection";
-import ReviewSection from "./components/ReviewSection";
 
 const HomeScreen = () => {
 	const [refreshing, setRefreshing] = useState(false);
@@ -24,16 +21,27 @@ const HomeScreen = () => {
 	}, []);
 
 	return (
-		<View className="flex-1 bg-gray-50">
+		<SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
 			<StatusBar
-				translucent
-				backgroundColor="transparent"
-				barStyle="light-content"
+				translucent={false}
+				backgroundColor="#FFFFFF"
+				barStyle="dark-content"
 			/>
+
+			{/* Header */}
+			<View className="bg-white px-5 py-3 border-b border-gray-100">
+				<Text className="text-gray-500 text-sm font-[Outfit_400Regular]">
+					Halo,
+				</Text>
+				<Text className="text-gray-900 text-2xl font-bold font-[Outfit_700Bold]">
+					Strike it!
+				</Text>
+			</View>
 
 			<ScrollView
 				showsVerticalScrollIndicator={false}
 				className="bg-gray-50"
+				contentContainerStyle={{ paddingBottom: 100 }}
 				refreshControl={
 					<RefreshControl
 						refreshing={refreshing}
@@ -42,38 +50,23 @@ const HomeScreen = () => {
 					/>
 				}
 			>
-				{/* 1. Landing (Hero) */}
-				<LandingSection />
+				{/* 1. Membership Card */}
+				<MembershipCard />
 
-				{/* 2. Location (Core Feature) */}
-				<View className="mt-6">
+				{/* 2. Menu Grid */}
+				<MenuGrid />
+
+				{/* 3. Semua Lokasi */}
+				<View className="mt-2">
 					<LocationPreview />
 				</View>
 
-				{/* 3. Discount (Promo) */}
+				{/* 4. Kupon Aktif */}
 				<View className="mt-2">
 					<DiscountSection />
 				</View>
-
-				{/* 4. Membership Plans */}
-				<View className="mt-4">
-					<PricingSection />
-				</View>
-
-				{/* 5. Event (Community) */}
-				<View className="mt-2">
-					<EventSection />
-				</View>
-
-				{/* 6. Testimoni (BARU) */}
-				<View className="mt-2">
-					<ReviewSection />
-				</View>
-
-				{/* Padding Bawah agar tidak tertutup TabBar */}
-				<View className="h-24" />
 			</ScrollView>
-		</View>
+		</SafeAreaView>
 	);
 };
 

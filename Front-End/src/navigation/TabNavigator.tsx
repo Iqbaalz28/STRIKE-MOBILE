@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Home, MapPin, ShoppingBag, Users, User } from "lucide-react-native";
 import { Platform } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // --- IMPORT SCREENS UTAMA ---
 import HomeScreen from "@/features/home/HomeScreen";
@@ -72,14 +73,16 @@ function ShopStackNavigator() {
 
 // --- MAIN TAB NAVIGATOR ---
 const TabNavigator = () => {
+	const insets = useSafeAreaInsets();
+
 	return (
 		<Tab.Navigator
 			screenOptions={{
 				headerShown: false,
 				tabBarStyle: {
-					height: Platform.OS === "ios" ? 88 : 65,
+					height: Platform.OS === "ios" ? 88 : 65 + insets.bottom,
 					paddingTop: 10,
-					paddingBottom: Platform.OS === "ios" ? 28 : 10,
+					paddingBottom: Platform.OS === "ios" ? 28 : 10 + insets.bottom,
 					backgroundColor: "#ffffff",
 					borderTopWidth: 1,
 					borderTopColor: "#f3f4f6",
