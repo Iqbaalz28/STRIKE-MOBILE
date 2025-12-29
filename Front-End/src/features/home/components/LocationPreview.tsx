@@ -150,7 +150,9 @@ const LocationPreview = () => {
             <Text className="text-gray-500 mb-4">{selectedLocation?.city}</Text>
 
             <TouchableOpacity
-              onPress={() => navigation.navigate("Main", { screen: "Booking" })}
+              onPress={() =>
+                navigation.navigate("MainTab", { screen: "Booking" })
+              }
               className="w-full py-4 bg-blue-600 rounded-xl items-center active:bg-blue-700"
             >
               <Text className="text-white font-bold uppercase tracking-wider font-[Outfit_700Bold]">
