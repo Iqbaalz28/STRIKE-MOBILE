@@ -1,48 +1,52 @@
 import { NavigatorScreenParams } from "@react-navigation/native";
 
-// 1. Daftar halaman untuk Auth (Login/Register)
+// 1. Auth Stack
 export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
 };
 
-// 2. Daftar halaman Utama (setelah Login)
-export type MainTabParamList = {
-  Home: undefined;
-  BookingStack: undefined;
-  ShopStack: undefined;
-  Community: undefined;
-  Profile: undefined;
-  History: undefined;
-  CreatePost: undefined;
-  PostDetail: { id: number };
-};
-
-// Stack khusus untuk Shop
-export type ShopStackParamList = {
-  ShopHome: undefined;
-  ProductDetail: { id: number }; // Butuh parameter ID
-  Cart: undefined;
-  Checkout: undefined;
-};
-
-// Definisi untuk Booking Stack
+// 2. Booking Stack (Flow Lokasi)
 export type BookingStackParamList = {
   LocationList: undefined;
   LocationDetail: { id: number };
-  BookingForm: { locationId: number; locationName: string; price: number }; // <-- Parameter penting
+  BookingForm: { locationId: number; locationName: string; price: number };
 };
 
-// 3. Root Navigator (Menggabungkan Auth & Main)
+// 3. Shop Stack (Flow Belanja)
+export type ShopStackParamList = {
+  Shop: undefined;
+  ProductDetail: { id: number };
+  Cart: undefined;
+  Checkout: { items: any[]; total: number }; // Untuk CheckoutScreen
+};
+
+// 4. Main Tab (Menu Bawah)
+export type MainTabParamList = {
+  Home: undefined;
+  BookingStack: NavigatorScreenParams<BookingStackParamList>; // Nested Navigator
+  ShopStack: NavigatorScreenParams<ShopStackParamList>; // Nested Navigator
+  Community: undefined;
+  Profile: undefined;
+};
+
+// 5. Root Stack (Global Navigation)
 export type RootStackParamList = {
   Auth: NavigatorScreenParams<AuthStackParamList>;
-  Main: NavigatorScreenParams<MainTabParamList>;
-  NotFound: undefined;
+  MainTab: NavigatorScreenParams<MainTabParamList>;
+
+  // Global Screens (Bisa diakses dari mana saja)
   EventList: undefined;
   EditProfile: undefined;
+  About: undefined;
+
+  // Community Screens (Sementara taruh di Root agar bisa menimpa Tab)
+  CreatePost: undefined;
+  PostDetail: { id: number };
+  History: undefined;
 };
 
-// Helper type untuk dipakai di komponen
+// Helper types (Opsional, untuk mempermudah di component)
 export type AuthScreenProps<T extends keyof AuthStackParamList> = {
   navigation: any;
   route: { params: AuthStackParamList[T] };

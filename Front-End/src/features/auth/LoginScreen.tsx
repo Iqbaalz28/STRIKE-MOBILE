@@ -6,12 +6,11 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, CommonActions } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   Mail,
@@ -20,8 +19,9 @@ import {
   EyeOff,
   ArrowLeft,
   AlertCircle,
+  User, // Icon baru untuk tamu
 } from "lucide-react-native";
-import * as Linking from "expo-linking"; // Untuk buka browser (Google Login)
+import * as Linking from "expo-linking";
 import api from "@/services/api";
 
 const LoginScreen = () => {
@@ -40,42 +40,54 @@ const LoginScreen = () => {
     setIsLoading(true);
 
     try {
-      // Panggil API
-      const response = await api.login(email, password);
-      const { token, user } = response.data;
+      // 1. Panggil API
+      // const response = await api.login(email, password); // Uncomment jika API sudah ada
+      // const { token, user } = response.data;
 
-      // Simpan ke Storage HP
+      // 2. Dummy Data (Sementara Backend belum ada)
+      const token = "dummy-token-123";
+      const user = { name: "User Demo", email: email };
+
+      // 3. Simpan ke Storage HP
       await AsyncStorage.setItem("token", token);
       await AsyncStorage.setItem("user", JSON.stringify(user));
 
-      // Redirect ke Home
-      // Reset history agar tidak bisa 'Back' ke login
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "MainTabs" }], // Asumsi nama route utama nanti 'MainTabs'
-      });
+      // 4. Redirect ke Home (Reset agar tidak bisa back ke login)
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: "MainTab" }],
+        })
+      );
     } catch (error: any) {
       console.error("Login Error:", error);
-      if (error.response && error.response.data) {
-        setErrorMessage(error.response.data.message);
-      } else {
-        setErrorMessage("Gagal terhubung ke server.");
-      }
+      setErrorMessage("Gagal login. Cek email/password.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Logic: Google Login (Membuka Browser HP)
+  // Logic: Login Google
   const loginWithGoogle = () => {
-    // Di Mobile, kita buka browser default user
     Linking.openURL("http://10.0.2.2:3000/auth/google");
-    // Catatan: Untuk handle callback token dari Google di Mobile,
-    // nanti kita butuh setup 'Deep Linking', tapi ini cukup untuk tahap awal.
+  };
+
+  // --- BARU: Logic Masuk Sebagai Tamu ---
+  const handleGuestLogin = async () => {
+    // Kita hapus token lama (jika ada) untuk memastikan statusnya benar-benar tamu
+    await AsyncStorage.removeItem("token");
+    await AsyncStorage.removeItem("user");
+
+    // Langsung lempar ke MainTab
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: "MainTab" }],
+      })
+    );
   };
 
   return (
-    // KeyboardAvoidingView: Agar form naik saat keyboard muncul
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       className="flex-1 bg-[#f5f5f5]"
@@ -84,25 +96,13 @@ const LoginScreen = () => {
         contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
       >
         <View className="px-4 w-full items-center">
-          {/* Card Container */}
           <View className="w-full max-w-sm bg-white rounded-3xl shadow-xl p-8 relative">
-            {/* Tombol Kembali (Beranda) */}
-            <TouchableOpacity
-              onPress={() => navigation.navigate("HomePublic")} // Asumsi ada halaman public
-              className="absolute top-6 left-6 flex-row items-center space-x-1"
-            >
-              <ArrowLeft size={20} color="#9CA3AF" />
-              <Text className="text-gray-400 text-sm font-medium font-medium">
-                Beranda
-              </Text>
-            </TouchableOpacity>
-
             {/* Header Text */}
-            <View className="mb-8 mt-8">
-              <Text className="text-3xl font-bold text-gray-800 font-bold mb-2">
+            <View className="mb-8 mt-4">
+              <Text className="text-3xl font-bold text-gray-800 mb-2 font-[Outfit_700Bold]">
                 Selamat Datang
               </Text>
-              <Text className="text-gray-500 font-sans">
+              <Text className="text-gray-500 font-[Outfit_400Regular]">
                 Masuk ke akun Strike It Anda
               </Text>
             </View>
@@ -117,38 +117,10 @@ const LoginScreen = () => {
               </View>
             ) : null}
 
-            {/* Button Google */}
-            <TouchableOpacity
-              onPress={loginWithGoogle}
-              className="mb-6 flex-row w-full items-center justify-center space-x-3 rounded-xl border-2 border-gray-100 bg-white py-3 active:bg-gray-50"
-            >
-              {/* Kita pakai Image untuk logo Google karena Lucide tidak punya logo brand */}
-              <Image
-                source={{
-                  uri: "https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg",
-                }}
-                style={{ width: 20, height: 20 }}
-                resizeMode="contain"
-              />
-              <Text className="font-medium text-gray-700 font-sans">
-                Masuk dengan Google
-              </Text>
-            </TouchableOpacity>
-
-            {/* Divider */}
-            <View className="relative mb-6 flex-row items-center justify-center">
-              <View className="h-px flex-1 bg-gray-200" />
-              <Text className="mx-2 text-xs text-gray-400 uppercase tracking-wider font-medium">
-                atau dengan email
-              </Text>
-              <View className="h-px flex-1 bg-gray-200" />
-            </View>
-
-            {/* Form */}
+            {/* Form Inputs (Email & Password) - SAMA SEPERTI SEBELUMNYA */}
             <View className="space-y-5">
-              {/* Input Email */}
               <View>
-                <Text className="mb-1 text-sm font-medium text-gray-700 font-medium">
+                <Text className="mb-1 text-sm font-medium text-gray-700">
                   Email
                 </Text>
                 <View className="relative">
@@ -158,7 +130,7 @@ const LoginScreen = () => {
                     placeholder="nama@email.com"
                     keyboardType="email-address"
                     autoCapitalize="none"
-                    className="w-full rounded-xl border border-gray-300 p-3 pl-10 text-gray-900 font-sans"
+                    className="w-full rounded-xl border border-gray-300 p-3 pl-10 text-gray-900"
                   />
                   <View className="absolute left-3 top-3.5">
                     <Mail size={20} color="#9CA3AF" />
@@ -166,9 +138,8 @@ const LoginScreen = () => {
                 </View>
               </View>
 
-              {/* Input Password */}
               <View>
-                <Text className="mb-1 text-sm font-medium text-gray-700 font-medium">
+                <Text className="mb-1 text-sm font-medium text-gray-700">
                   Password
                 </Text>
                 <View className="relative">
@@ -177,7 +148,7 @@ const LoginScreen = () => {
                     onChangeText={setPassword}
                     placeholder="••••••••"
                     secureTextEntry={!showPassword}
-                    className="w-full rounded-xl border border-gray-300 p-3 pl-10 pr-10 text-gray-900 font-sans"
+                    className="w-full rounded-xl border border-gray-300 p-3 pl-10 pr-10 text-gray-900"
                   />
                   <View className="absolute left-3 top-3.5">
                     <Lock size={20} color="#9CA3AF" />
@@ -195,7 +166,7 @@ const LoginScreen = () => {
                 </View>
               </View>
 
-              {/* Submit Button */}
+              {/* Login Button */}
               <TouchableOpacity
                 onPress={handleLogin}
                 disabled={isLoading}
@@ -204,21 +175,55 @@ const LoginScreen = () => {
                 }`}
               >
                 {isLoading && <ActivityIndicator size="small" color="white" />}
-                <Text className="text-base font-bold text-white font-bold">
+                <Text className="text-base font-bold text-white font-[Outfit_700Bold]">
                   {isLoading ? "Memproses..." : "Masuk"}
                 </Text>
               </TouchableOpacity>
             </View>
 
-            {/* Link Register */}
-            <View className="mt-8 flex-row justify-center">
-              <Text className="text-sm text-gray-600 font-sans">
-                Belum punya akun?{" "}
-              </Text>
+            {/* Google Login */}
+            <View className="mt-6">
+              <TouchableOpacity
+                onPress={loginWithGoogle}
+                className="flex-row w-full items-center justify-center space-x-3 rounded-xl border-2 border-gray-100 bg-white py-3 active:bg-gray-50"
+              >
+                <Image
+                  source={{
+                    uri: "https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg",
+                  }}
+                  style={{ width: 20, height: 20 }}
+                  resizeMode="contain"
+                />
+                <Text className="font-medium text-gray-700">
+                  Masuk dengan Google
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Register Link */}
+            <View className="mt-6 flex-row justify-center">
+              <Text className="text-sm text-gray-600">Belum punya akun? </Text>
               <TouchableOpacity onPress={() => navigation.navigate("Register")}>
-                <Text className="text-sm font-bold text-blue-600 font-bold">
+                <Text className="text-sm font-bold text-blue-600">
                   Daftar Sekarang
                 </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* --- BAGIAN BARU: GUEST MODE --- */}
+            <View className="mt-6 pt-6 border-t border-gray-100 items-center">
+              <TouchableOpacity
+                onPress={handleGuestLogin}
+                className="flex-row items-center py-2 px-4 rounded-full bg-gray-50"
+              >
+                <Text className="text-gray-500 font-medium mr-2">
+                  Lewati login dulu
+                </Text>
+                <ArrowLeft
+                  size={16}
+                  color="#6B7280"
+                  style={{ transform: [{ rotate: "180deg" }] }}
+                />
               </TouchableOpacity>
             </View>
           </View>

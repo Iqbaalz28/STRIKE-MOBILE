@@ -6,7 +6,7 @@ import { Platform } from "react-native";
 
 // --- IMPORT SCREENS UTAMA ---
 import HomeScreen from "@/features/home/HomeScreen";
-import ShopScreen from "@/features/shop/ShopScreen";
+// import ShopScreen dari sini dihapus karena akan dipanggil di dalam Stack
 import CommunityScreen from "@/features/community/CommunityScreen";
 import ProfileScreen from "@/features/profile/ProfileScreen";
 
@@ -15,11 +15,22 @@ import LocationListScreen from "@/features/booking/LocationListScreen";
 import LocationDetailScreen from "@/features/booking/LocationDetailScreen";
 import BookingScreen from "@/features/booking/BookingScreen";
 
+// --- IMPORT SCREENS SHOP FLOW (BARU) ---
+import ShopScreen from "@/features/shop/ShopScreen";
+import ProductDetailScreen from "@/features/shop/ProductDetailScreen"; // Pastikan file ini ada
+import CartScreen from "@/features/shop/CartScreen";
+import CheckoutScreen from "@/features/shop/CheckoutScreen";
+
 // --- IMPORT TIPE DATA ---
-import { MainTabParamList, BookingStackParamList } from "./types";
+import {
+  MainTabParamList,
+  BookingStackParamList,
+  ShopStackParamList,
+} from "./types";
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const BookingStack = createNativeStackNavigator<BookingStackParamList>();
+const ShopStack = createNativeStackNavigator<ShopStackParamList>(); // <--- Stack Baru
 
 // --- STACK NAVIGATOR KHUSUS BOOKING ---
 function BookingStackNavigator() {
@@ -35,6 +46,21 @@ function BookingStackNavigator() {
       />
       <BookingStack.Screen name="BookingForm" component={BookingScreen} />
     </BookingStack.Navigator>
+  );
+}
+
+// --- STACK NAVIGATOR KHUSUS SHOP (BARU) ---
+function ShopStackNavigator() {
+  return (
+    <ShopStack.Navigator
+      initialRouteName="Shop"
+      screenOptions={{ headerShown: false }}
+    >
+      <ShopStack.Screen name="Shop" component={ShopScreen} />
+      <ShopStack.Screen name="ProductDetail" component={ProductDetailScreen} />
+      <ShopStack.Screen name="Cart" component={CartScreen} />
+      <ShopStack.Screen name="Checkout" component={CheckoutScreen} />
+    </ShopStack.Navigator>
   );
 }
 
@@ -82,10 +108,10 @@ const TabNavigator = () => {
         }}
       />
 
-      {/* 3. SHOP TAB */}
+      {/* 3. SHOP TAB (Stack) */}
       <Tab.Screen
         name="ShopStack"
-        component={ShopScreen} // File ShopScreen.tsx Anda yang benar
+        component={ShopStackNavigator} // <--- GANTI JADI STACK INI
         options={{
           tabBarLabel: "Toko",
           tabBarIcon: ({ color, size }) => (
