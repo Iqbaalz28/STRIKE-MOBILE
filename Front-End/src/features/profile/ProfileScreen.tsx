@@ -32,7 +32,7 @@ const ProfileScreen = () => {
 	const [user, setUser] = useState<any>(null);
 	const [loading, setLoading] = useState(true);
 
-	// Ganti useEffect dengan useFocusEffect agar data refresh tiap kali tab dibuka
+	// Refresh data setiap kali tab dibuka
 	useFocusEffect(
 		useCallback(() => {
 			checkUserSession();
@@ -47,14 +47,11 @@ const ProfileScreen = () => {
 			const token = await AsyncStorage.getItem("token");
 
 			if (userData && token) {
-				// Jika ada data di storage, pakai itu dulu biar cepat
 				setUser(JSON.parse(userData));
-
-				// (Opsional) Refresh data dari API di background
+				// Refresh data dari API di background
 				fetchProfileFromAPI();
 			} else {
-				// Jika tidak ada token, berarti Guest
-				setUser(null);
+				setUser(null); // Guest
 			}
 		} catch (error) {
 			console.log("Error checking session", error);
@@ -67,10 +64,8 @@ const ProfileScreen = () => {
 		try {
 			const res = await api.getMyProfile();
 			setUser(res.data);
-			// Update data terbaru ke storage
 			await AsyncStorage.setItem("user", JSON.stringify(res.data));
 		} catch (error) {
-			// Token mungkin expired, biarkan user tetap login dengan data lama atau logout paksa
 			console.log("Gagal refresh profile", error);
 		}
 	};
@@ -85,14 +80,15 @@ const ProfileScreen = () => {
 					text: "Keluar",
 					style: "destructive",
 					onPress: async () => {
+						// 1. Hapus Data
 						await AsyncStorage.multiRemove(["token", "user"]);
 						setUser(null);
 
-						// Reset navigasi ke Auth Stack
+						// 2. Reset Navigasi ke 'Login' (BUKAN 'Auth')
 						navigation.dispatch(
 							CommonActions.reset({
 								index: 0,
-								routes: [{ name: "Auth" }],
+								routes: [{ name: "Login" }], // <--- Perbaikan Disini
 							}),
 						);
 					},
@@ -108,8 +104,7 @@ const ProfileScreen = () => {
 				user?.name || "User"
 			}&background=0D8ABC&color=fff`;
 		if (path.startsWith("http")) return path;
-		// Ganti IP sesuai environment (10.0.2.2 untuk emulator Android)
-		return `http://10.0.2.2:3000/uploads/${path}`;
+		return getImageUrl(path); // Menggunakan helper global Anda
 	};
 
 	if (loading)
@@ -136,11 +131,11 @@ const ProfileScreen = () => {
 
 				<TouchableOpacity
 					onPress={() => {
-						// Reset ke Auth Stack agar bisa login/register
+						// Reset ke Login screen agar user tidak bisa back ke halaman ini tanpa login
 						navigation.dispatch(
 							CommonActions.reset({
 								index: 0,
-								routes: [{ name: "Auth" }],
+								routes: [{ name: "Login" }], // <--- Perbaikan Disini (Sebelumnya "Auth")
 							}),
 						);
 					}}
@@ -173,16 +168,10 @@ const ProfileScreen = () => {
 				{/* Header Profile */}
 				<View className="bg-white p-6 items-center border-b border-gray-100 pt-16 rounded-b-[40px] shadow-sm mb-6">
 					<Image
-						source={{
-							uri: user?.avatar_img
-								? getImageUrl(user.avatar_img)
-								: `https://ui-avatars.com/api/?name=${
-										user?.name || "User"
-									}&background=random`,
-						}}
+						source={{ uri: getAvatar(user?.avatar_img) }}
 						className="w-24 h-24 rounded-full"
 					/>
-					<Text className="text-2xl font-bold text-gray-900 font-[Outfit_700Bold] mb-1">
+					<Text className="text-2xl font-bold text-gray-900 font-[Outfit_700Bold] mb-1 mt-3">
 						{user?.name}
 					</Text>
 					<Text className="text-gray-500 font-[Outfit_400Regular]">
@@ -205,10 +194,7 @@ const ProfileScreen = () => {
 					<MenuItem
 						icon={<User size={20} color="#4B5563" />}
 						label="Edit Profil"
-						onPress={() =>
-							// Pastikan route 'EditProfile' ada di RootNavigator
-							navigation.navigate("EditProfile")
-						}
+						onPress={() => navigation.navigate("EditProfile")}
 					/>
 
 					<MenuItem

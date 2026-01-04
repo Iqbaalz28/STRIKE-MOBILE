@@ -1,26 +1,36 @@
 import React, { useEffect, useState } from "react";
-import { View, ActivityIndicator, Text } from "react-native"; // <--- PASTIKAN Text ADA DI SINI
+import { View, ActivityIndicator, Text } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { navigationRef } from "./navigationRef";
+import { navigationRef } from "@/navigation/navigationRef"; // Pastikan path ini benar
 
-// Import Stacks & Screens
+// --- IMPORTS SCREEN ---
+
+// 1. Auth & Tab
 import TabNavigator from "./TabNavigator";
 import LoginScreen from "@/features/auth/LoginScreen";
 import RegisterScreen from "@/features/auth/RegisterScreen";
 
-// Import Screen Tambahan
+// 2. Home & General
 import EventListScreen from "@/features/home/EventListScreen";
+
+// 3. Profile
 import EditProfileScreen from "@/features/profile/EditProfileScreen";
 import AboutScreen from "@/features/profile/AboutScreen";
 import HistoryScreen from "@/features/profile/HistoryScreen";
+
+// 4. Community
 import CreatePostScreen from "@/features/community/CreatePostScreen";
 import PostDetailScreen from "@/features/community/PostDetailScreen";
 
+// 5. Shop (Tambahan penting agar Toko jalan)
+import ProductDetailScreen from "@/features/shop/ProductDetailScreen";
+// import CartScreen from "@/features/cart/CartScreen"; // Uncomment jika sudah ada filenya
+
 const Stack = createNativeStackNavigator();
 
-// --- 1. SPLASH SCREEN COMPONENT ---
+// --- SPLASH SCREEN COMPONENT ---
 const SplashScreen = ({
 	onFinish,
 }: {
@@ -28,19 +38,21 @@ const SplashScreen = ({
 }) => {
 	useEffect(() => {
 		const checkToken = async () => {
-			// Cek apakah ada token tersimpan
-			const token = await AsyncStorage.getItem("token");
-			// Simulasi delay biar logo tampil sebentar (optional)
-			setTimeout(() => {
-				onFinish(!!token); // true jika token ada, false jika tidak
-			}, 1500);
+			try {
+				const token = await AsyncStorage.getItem("token");
+				// Delay estetika
+				setTimeout(() => {
+					onFinish(!!token);
+				}, 1500);
+			} catch (e) {
+				onFinish(false);
+			}
 		};
 		checkToken();
 	}, []);
 
 	return (
 		<View className="flex-1 justify-center items-center bg-blue-600">
-			{/* Text ini yang bikin error kalau tidak diimport */}
 			<Text className="text-4xl font-bold text-white mb-4 font-[Outfit_700Bold]">
 				Strike It
 			</Text>
@@ -49,22 +61,14 @@ const SplashScreen = ({
 	);
 };
 
-// Sub-stack untuk Login/Register
-const AuthStack = () => (
-	<Stack.Navigator screenOptions={{ headerShown: false }}>
-		<Stack.Screen name="Login" component={LoginScreen} />
-		<Stack.Screen name="Register" component={RegisterScreen} />
-	</Stack.Navigator>
-);
-
-// --- 2. ROOT NAVIGATOR ---
+// --- ROOT NAVIGATOR ---
 const RootNavigator = () => {
 	const [isLoading, setIsLoading] = useState(true);
-	const [initialRoute, setInitialRoute] = useState("Auth");
+	const [initialRoute, setInitialRoute] = useState("Login");
 
-	// Handle hasil dari Splash Screen
 	const handleSplashFinish = (isLoggedIn: boolean) => {
-		setInitialRoute(isLoggedIn ? "MainTab" : "Auth");
+		// Jika login, langsung ke MainTab. Jika tidak, ke Login.
+		setInitialRoute(isLoggedIn ? "MainTab" : "Login");
 		setIsLoading(false);
 	};
 
@@ -73,25 +77,33 @@ const RootNavigator = () => {
 	}
 
 	return (
+		// PENTING: ref={navigationRef} dipasang di sini
 		<NavigationContainer ref={navigationRef}>
 			<Stack.Navigator
 				initialRouteName={initialRoute}
 				screenOptions={{ headerShown: false }}
 			>
-				{/* Grup Auth */}
+				{/* --- GROUP AUTHENTICATION --- */}
+				{/* Disimpan langsung di root agar mudah diakses oleh resetToLogin() */}
 				<Stack.Group>
-					<Stack.Screen name="Auth" component={AuthStack} />
+					<Stack.Screen name="Login" component={LoginScreen} />
+					<Stack.Screen name="Register" component={RegisterScreen} />
 				</Stack.Group>
 
-				{/* Grup Aplikasi Utama */}
+				{/* --- GROUP MAIN APP --- */}
 				<Stack.Group>
 					<Stack.Screen name="MainTab" component={TabNavigator} />
+				</Stack.Group>
 
-					{/* Screen Tambahan Global (Bisa diakses dari mana saja) */}
+				{/* --- GROUP SCREENS LAINNYA --- */}
+				<Stack.Group>
+					{/* Home & Events */}
 					<Stack.Screen
 						name="EventList"
 						component={EventListScreen}
 					/>
+
+					{/* Profile */}
 					<Stack.Screen
 						name="EditProfile"
 						component={EditProfileScreen}
@@ -99,7 +111,7 @@ const RootNavigator = () => {
 					<Stack.Screen name="About" component={AboutScreen} />
 					<Stack.Screen name="History" component={HistoryScreen} />
 
-					{/* Community Screens */}
+					{/* Community */}
 					<Stack.Screen
 						name="CreatePost"
 						component={CreatePostScreen}
@@ -108,6 +120,13 @@ const RootNavigator = () => {
 						name="PostDetail"
 						component={PostDetailScreen}
 					/>
+
+					{/* Shop */}
+					<Stack.Screen
+						name="ProductDetail"
+						component={ProductDetailScreen}
+					/>
+					{/* <Stack.Screen name="Cart" component={CartScreen} /> */}
 				</Stack.Group>
 			</Stack.Navigator>
 		</NavigationContainer>

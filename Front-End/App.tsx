@@ -1,3 +1,4 @@
+// App.tsx
 import "./global.css"; // Import wajib NativeWind
 import React from "react";
 import { View, ActivityIndicator } from "react-native";
@@ -10,6 +11,7 @@ import {
 	Outfit_700Bold,
 } from "@expo-google-fonts/outfit";
 
+// Import RootNavigator (yang di dalamnya sudah ada NavigationContainer + Ref)
 import RootNavigator from "@/navigation/RootNavigator";
 
 export default function App() {
@@ -23,13 +25,8 @@ export default function App() {
 	// 2. Tampilkan Loading Spinner saat Font belum siap
 	if (!fontsLoaded) {
 		return (
-			<View
-				style={{
-					flex: 1,
-					justifyContent: "center",
-					alignItems: "center",
-				}}
-			>
+			// Menggunakan Tailwind (className) agar konsisten
+			<View className="flex-1 justify-center items-center bg-white">
 				<ActivityIndicator size="large" color="#2563EB" />
 			</View>
 		);
@@ -38,10 +35,12 @@ export default function App() {
 	// 3. Render Aplikasi Utama
 	return (
 		<SafeAreaProvider>
-			{/* Mengatur Status Bar (ikon baterai/sinyal) agar otomatis menyesuaikan (gelap/terang) */}
+			{/* Mengatur Status Bar otomatis (Dark/Light mode) */}
 			<StatusBar style="auto" />
 
-			{/* Panggil RootNavigator sebagai pintu gerbang utama */}
+			{/* RootNavigator dipanggil di sini. 
+         Di dalam RootNavigator.tsx itulah <NavigationContainer ref={navigationRef}> berada.
+      */}
 			<RootNavigator />
 		</SafeAreaProvider>
 	);

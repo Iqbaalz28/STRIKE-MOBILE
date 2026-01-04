@@ -19,7 +19,6 @@ import {
 	EyeOff,
 	ArrowLeft,
 	AlertCircle,
-	User, // Icon baru untuk tamu
 } from "lucide-react-native";
 import * as Linking from "expo-linking";
 import api from "@/services/api";
@@ -34,25 +33,50 @@ const LoginScreen = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [errorMessage, setErrorMessage] = useState("");
 
-	// Logic: Login Manual
+	// Logic: Login Manual (Real API)
 	const handleLogin = async () => {
-		setErrorMessage("");
+		// 1. Validasi Input Client-side
+		if (!email || !password) {
+			setErrorMessage("Email dan Password wajib diisi.");
+			return;
+		}
+
+		setErrorMessage(""); // Reset error sebelumnya
 		setIsLoading(true);
 
 		try {
-			// 1. Panggil API
-			// const response = await api.login(email, password); // Uncomment jika API sudah ada
-			// const { token, user } = response.data;
+			// 2. Panggil API Login
+			const response = await api.login(email, password);
 
-			// 2. Dummy Data (Sementara Backend belum ada)
-			const token = "dummy-token-123";
-			const user = { name: "User Demo", email: email };
+			// Debugging: Lihat isi respon di terminal
+			console.log("Login Success:", response.data);
 
-			// 3. Simpan ke Storage HP
+			// 3. Ambil Token & User (Sesuaikan dengan struktur JSON backend Anda)
+			// Menangani beberapa kemungkinan struktur respon umum
+			const token =
+				response.data.token ||
+				response.data.access_token ||
+				response.data.data?.token;
+
+			const user =
+				response.data.user ||
+				response.data.data?.user ||
+				response.data.data;
+
+			// 4. Validasi Kritis: Pastikan token ada
+			if (!token) {
+				throw new Error(
+					"Gagal mendapatkan token otentikasi dari server.",
+				);
+			}
+
+			// 5. Simpan ke Storage HP
 			await AsyncStorage.setItem("token", token);
-			await AsyncStorage.setItem("user", JSON.stringify(user));
+			if (user) {
+				await AsyncStorage.setItem("user", JSON.stringify(user));
+			}
 
-			// 4. Redirect ke Home (Reset agar tidak bisa back ke login)
+			// 6. Redirect ke MainTab (Reset Stack)
 			navigation.dispatch(
 				CommonActions.reset({
 					index: 0,
@@ -61,7 +85,14 @@ const LoginScreen = () => {
 			);
 		} catch (error: any) {
 			console.error("Login Error:", error);
-			setErrorMessage("Gagal login. Cek email/password.");
+
+			// Ambil pesan error dari backend jika ada
+			const msg =
+				error.response?.data?.message ||
+				error.message ||
+				"Gagal login. Periksa email/password atau koneksi internet.";
+
+			setErrorMessage(msg);
 		} finally {
 			setIsLoading(false);
 		}
@@ -69,22 +100,26 @@ const LoginScreen = () => {
 
 	// Logic: Login Google
 	const loginWithGoogle = () => {
+		// Pastikan URL ini sesuai dengan endpoint backend Anda
 		Linking.openURL("http://10.0.2.2:3000/auth/google");
 	};
 
-	// --- BARU: Logic Masuk Sebagai Tamu ---
+	// Logic: Masuk Sebagai Tamu
 	const handleGuestLogin = async () => {
-		// Kita hapus token lama (jika ada) untuk memastikan statusnya benar-benar tamu
-		await AsyncStorage.removeItem("token");
-		await AsyncStorage.removeItem("user");
+		try {
+			// Hapus sisa-sisa token lama agar dianggap benar-benar tamu
+			await AsyncStorage.multiRemove(["token", "user"]);
 
-		// Langsung lempar ke MainTab
-		navigation.dispatch(
-			CommonActions.reset({
-				index: 0,
-				routes: [{ name: "MainTab" }],
-			}),
-		);
+			// Langsung lempar ke MainTab
+			navigation.dispatch(
+				CommonActions.reset({
+					index: 0,
+					routes: [{ name: "MainTab" }],
+				}),
+			);
+		} catch (e) {
+			console.log("Error guest login:", e);
+		}
 	};
 
 	return (
@@ -110,7 +145,7 @@ const LoginScreen = () => {
 							</Text>
 						</View>
 
-						{/* Error Message */}
+						{/* Error Message Display */}
 						{errorMessage ? (
 							<View className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex-row items-center space-x-2">
 								<AlertCircle size={20} color="#DC2626" />
@@ -120,8 +155,9 @@ const LoginScreen = () => {
 							</View>
 						) : null}
 
-						{/* Form Inputs (Email & Password) - SAMA SEPERTI SEBELUMNYA */}
+						{/* Form Inputs */}
 						<View className="space-y-5">
+							{/* Email */}
 							<View>
 								<Text className="mb-1 text-sm font-medium text-gray-700">
 									Email
@@ -141,6 +177,7 @@ const LoginScreen = () => {
 								</View>
 							</View>
 
+							{/* Password */}
 							<View>
 								<Text className="mb-1 text-sm font-medium text-gray-700">
 									Password
@@ -224,7 +261,7 @@ const LoginScreen = () => {
 							</TouchableOpacity>
 						</View>
 
-						{/* --- BAGIAN BARU: GUEST MODE --- */}
+						{/* Guest Mode */}
 						<View className="mt-6 pt-6 border-t border-gray-100 items-center">
 							<TouchableOpacity
 								onPress={handleGuestLogin}
