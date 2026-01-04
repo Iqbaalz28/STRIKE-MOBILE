@@ -5,12 +5,12 @@ import { Platform } from "react-native";
 import { navigate } from "@/navigation/navigationRef"; // Import helper navigasi tadi
 
 // 1. SETUP BASE URL
-import Constants from 'expo-constants';
+import Constants from "expo-constants";
 
 const getDeviceIP = () => {
 	const debuggerHost = Constants.expoConfig?.hostUri;
 	if (debuggerHost) {
-		const host = debuggerHost.split(':')[0];
+		const host = debuggerHost.split(":")[0];
 		return `http://${host}:3000`;
 	}
 	// Fallback
@@ -34,7 +34,9 @@ const api = axios.create({
 // 2. INTERCEPTOR REQUEST (Ganti localStorage dengan AsyncStorage)
 api.interceptors.request.use(
 	async (config) => {
-		console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
+		console.log(
+			`🚀 API Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`,
+		);
 		// AsyncStorage bersifat Asynchronous
 		const token = await AsyncStorage.getItem("token");
 		if (token) {
@@ -51,17 +53,19 @@ api.interceptors.request.use(
 // 3. INTERCEPTOR RESPONSE (Handle 401 Logout)
 api.interceptors.response.use(
 	(response) => {
-		console.log(`✅ API Response: ${response.config.method?.toUpperCase()} ${response.config.url} - ${response.status}`);
+		console.log(
+			`✅ API Response: ${response.config.method?.toUpperCase()} ${response.config.url} - ${response.status}`,
+		);
 		return response;
 	},
 	async (error: AxiosError) => {
-		if (error.code === 'ECONNABORTED') {
+		if (error.code === "ECONNABORTED") {
 			console.error("❌ Request Timeout");
-		} else if (error.code === 'ERR_NETWORK') {
+		} else if (error.code === "ERR_NETWORK") {
 			console.error("❌ Network Error - Cannot reach server");
 			console.error("   Check if backend is running at:", BASE_URL);
 		}
-		
+
 		if (error.response && error.response.status === 401) {
 			console.warn("Sesi berakhir. Redirect ke login...");
 
@@ -223,7 +227,9 @@ export default {
 		return api.post(`/payments/pay/order/${orderId}`);
 	},
 	upgradeMembership(membershipId: number | string) {
-		return api.post("/payments/upgrade-membership", { id_membership: membershipId });
+		return api.post("/payments/upgrade-membership", {
+			id_membership: membershipId,
+		});
 	},
 	getPaymentMethods() {
 		return api.get("/references/payment-methods");

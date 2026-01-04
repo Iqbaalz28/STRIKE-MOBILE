@@ -21,8 +21,8 @@ const AboutScreen = () => {
 			<View className="flex-1 justify-center items-center p-8">
 				{/* Ganti dengan getImageSource('strikeit_logo.png') jika sudah ada */}
 				<Image
-					source={{ uri: "https://placehold.co/200x200?text=Logo" }}
-					className="w-32 h-32 mb-6"
+					source={require("@/assets/images/strikeit_logo.png")}
+					style={{ width: 120, height: 120, alignSelf: "center" }}
 					resizeMode="contain"
 				/>
 				<Text className="text-2xl font-bold text-blue-600 font-[Outfit_700Bold] mb-2">

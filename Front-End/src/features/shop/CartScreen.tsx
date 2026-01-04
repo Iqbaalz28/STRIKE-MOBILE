@@ -121,8 +121,13 @@ const CartScreen = () => {
 				renderItem={({ item }) => (
 					<View className="flex-row bg-white mb-4 p-3 rounded-xl border border-gray-100 shadow-sm">
 						<Image
-							source={{ uri: getImageUrl(item.image) }}
-							className="w-20 h-20 rounded-lg bg-gray-100"
+							source={require("@/assets/images/strikeit_logo.png")}
+							style={{
+								width: 120,
+								height: 120,
+								alignSelf: "center",
+							}}
+							resizeMode="contain"
 						/>
 						<View className="flex-1 ml-3 justify-between">
 							<View>

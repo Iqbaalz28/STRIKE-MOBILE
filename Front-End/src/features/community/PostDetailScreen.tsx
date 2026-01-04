@@ -13,7 +13,7 @@ import {
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { ArrowLeft, Send } from "lucide-react-native";
 import api from "@/services/api";
-import CommentCard from "./components/CommentCard"; // Pastikan import ini ada
+import CommentCard from "./components/CommentCard";
 
 const PostDetailScreen = () => {
 	const route = useRoute<any>();

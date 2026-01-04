@@ -25,6 +25,7 @@ import {
 } from "lucide-react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import api from "@/services/api";
+import { getImageUrl } from "@/utils/imageHelper";
 
 const ProfileScreen = () => {
 	const navigation = useNavigation<any>();
@@ -172,8 +173,14 @@ const ProfileScreen = () => {
 				{/* Header Profile */}
 				<View className="bg-white p-6 items-center border-b border-gray-100 pt-16 rounded-b-[40px] shadow-sm mb-6">
 					<Image
-						source={{ uri: getAvatar(user?.avatar) }}
-						className="w-24 h-24 rounded-full border-4 border-blue-50 mb-3"
+						source={{
+							uri: user?.avatar_img
+								? getImageUrl(user.avatar_img)
+								: `https://ui-avatars.com/api/?name=${
+										user?.name || "User"
+									}&background=random`,
+						}}
+						className="w-24 h-24 rounded-full"
 					/>
 					<Text className="text-2xl font-bold text-gray-900 font-[Outfit_700Bold] mb-1">
 						{user?.name}

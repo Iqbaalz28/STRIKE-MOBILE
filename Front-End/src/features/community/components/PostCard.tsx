@@ -3,48 +3,64 @@ import { View, Text, TouchableOpacity, Image } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { MessageSquare, Eye, ThumbsUp } from "lucide-react-native";
-import { MainTabParamList } from "@/navigation/types"; // Nanti kita update types
 import api from "@/services/api";
+import { getImageUrl } from "@/utils/imageHelper";
+import { formatTimeAgo } from "@/utils/dateHelper";
+// import { CommunityStackParamList } from "@/navigation/types";
 
-// Helper Time Ago
-const timeAgo = (dateString: string) => {
-	const date = new Date(dateString);
-	const now = new Date();
-	const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-	let interval = seconds / 3600;
-	if (interval > 24) return Math.floor(interval / 24) + " hari lalu";
-	if (interval > 1) return Math.floor(interval) + " jam lalu";
-	interval = seconds / 60;
-	if (interval > 1) return Math.floor(interval) + " menit lalu";
-	return "Baru saja";
-};
+// Definisi Tipe Data Post (Bisa dipindah ke types.ts)
+interface Author {
+	name: string;
+	avatar: string | null;
+}
 
-// Helper Avatar
-const getAvatar = (path: string, name: string) => {
-	if (!path)
-		return `https://ui-avatars.com/api/?name=${name}&background=random`;
-	if (path.startsWith("http")) return path;
-	return `http://10.0.2.2:3000/uploads/${path}`;
-};
+interface PostStats {
+	likes: number;
+	views: number;
+	comments: number;
+}
 
-const PostCard = ({ post }: { post: any }) => {
+interface PostData {
+	id: number;
+	title: string;
+	content?: string;
+	body?: string; // Handle inkonsistensi backend
+	category: string;
+	created_at: string;
+	author: Author;
+	stats: PostStats;
+	is_liked?: boolean; // Status awal dari backend
+}
+
+const PostCard = ({ post }: { post: PostData }) => {
+	// Ganti 'any' dengan CommunityStackParamList jika sudah siap
 	const navigation = useNavigation<NativeStackNavigationProp<any>>();
+
 	const [likes, setLikes] = useState(post.stats?.likes || 0);
-	const [isLiked, setIsLiked] = useState(false); // Idealnya cek dari DB user_likes
+	const [isLiked, setIsLiked] = useState(post.is_liked || false);
+
+	// Logic Avatar: Pakai gambar upload user ATAU generate inisial nama
+	const avatarUrl = post.author?.avatar
+		? getImageUrl(post.author.avatar)
+		: `https://ui-avatars.com/api/?name=${encodeURIComponent(
+				post.author?.name || "User",
+			)}&background=random`;
 
 	const handleLike = async () => {
+		// Optimistic Update (Update UI duluan biar terasa cepat)
+		const previousLikes = likes;
+		const previousStatus = isLiked;
+
+		setIsLiked(!isLiked);
+		setLikes(isLiked ? likes - 1 : likes + 1);
+
 		try {
 			await api.toggleLikePost(post.id);
-			// Optimistic Update
-			if (isLiked) {
-				setLikes(likes - 1);
-				setIsLiked(false);
-			} else {
-				setLikes(likes + 1);
-				setIsLiked(true);
-			}
 		} catch (error) {
+			// Revert jika gagal (Rollback)
 			console.log("Gagal like:", error);
+			setIsLiked(previousStatus);
+			setLikes(previousLikes);
 		}
 	};
 
@@ -52,27 +68,26 @@ const PostCard = ({ post }: { post: any }) => {
 		<TouchableOpacity
 			onPress={() => navigation.navigate("PostDetail", { id: post.id })}
 			className="bg-white p-4 rounded-2xl mb-4 border border-gray-100 shadow-sm"
+			activeOpacity={0.7}
 		>
 			{/* Header: Author & Time */}
 			<View className="flex-row items-center mb-3">
 				<Image
-					source={{
-						uri: getAvatar(post.author?.avatar, post.author?.name),
-					}}
+					source={{ uri: avatarUrl }}
 					className="w-10 h-10 rounded-full bg-gray-200"
 				/>
-				<View className="ml-3">
-					<Text className="font-bold text-gray-900">
-						{post.author?.name || "User"}
+				<View className="ml-3 flex-1">
+					<Text className="font-bold text-gray-900" numberOfLines={1}>
+						{post.author?.name || "Anonymous"}
 					</Text>
 					<Text className="text-xs text-gray-500">
-						{timeAgo(post.created_at)}
+						{formatTimeAgo(post.created_at)}
 					</Text>
 				</View>
 
 				{/* Category Badge */}
-				<View className="ml-auto bg-blue-50 px-3 py-1 rounded-full">
-					<Text className="text-blue-600 text-xs font-bold capitalize">
+				<View className="bg-blue-50 px-3 py-1 rounded-full ml-2">
+					<Text className="text-blue-600 text-[10px] font-bold uppercase tracking-wider">
 						{post.category}
 					</Text>
 				</View>
@@ -83,44 +98,49 @@ const PostCard = ({ post }: { post: any }) => {
 				{post.title}
 			</Text>
 			<Text
-				className="text-gray-600 leading-relaxed mb-4"
+				className="text-gray-600 leading-relaxed mb-4 text-sm"
 				numberOfLines={3}
 			>
-				{post.content || post.body}
+				{post.content || post.body || "Tidak ada konten pratinjau."}
 			</Text>
 
 			{/* Footer: Stats */}
 			<View className="flex-row justify-between items-center border-t border-gray-100 pt-3">
 				<View className="flex-row gap-4">
-					<View className="flex-row items-center gap-1">
-						<Eye size={16} color="#9CA3AF" />
-						<Text className="text-gray-500 text-xs">
+					{/* Views */}
+					<View className="flex-row items-center gap-1.5">
+						<Eye size={14} color="#9CA3AF" />
+						<Text className="text-gray-500 text-xs font-medium">
 							{post.stats?.views || 0}
 						</Text>
 					</View>
-					<View className="flex-row items-center gap-1">
-						<MessageSquare size={16} color="#9CA3AF" />
-						<Text className="text-gray-500 text-xs">
+
+					{/* Comments */}
+					<View className="flex-row items-center gap-1.5">
+						<MessageSquare size={14} color="#9CA3AF" />
+						<Text className="text-gray-500 text-xs font-medium">
 							{post.stats?.comments || 0}
 						</Text>
 					</View>
 				</View>
 
+				{/* Like Button */}
 				<TouchableOpacity
-					onPress={handleLike}
-					className="flex-row items-center gap-1 bg-gray-50 px-3 py-1 rounded-full"
+					onPress={(e) => {
+						e.stopPropagation(); // PENTING: Mencegah trigger navigasi ke detail saat klik like
+						handleLike();
+					}}
+					className="flex-row items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-full active:bg-gray-200"
 				>
 					<ThumbsUp
-						size={16}
+						size={14}
 						color={isLiked ? "#2563EB" : "#6B7280"}
 						fill={isLiked ? "#2563EB" : "transparent"}
 					/>
 					<Text
-						className={
-							isLiked
-								? "text-blue-600 font-bold text-xs"
-								: "text-gray-500 text-xs"
-						}
+						className={`text-xs font-bold ${
+							isLiked ? "text-blue-600" : "text-gray-500"
+						}`}
 					>
 						{likes}
 					</Text>

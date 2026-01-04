@@ -96,15 +96,9 @@ const RootNavigator = () => {
 						name="EditProfile"
 						component={EditProfileScreen}
 					/>
-					<Stack.Screen
-						name="About"
-						component={AboutScreen}
-					/>
-					<Stack.Screen
-						name="History"
-						component={HistoryScreen}
-					/>
-					
+					<Stack.Screen name="About" component={AboutScreen} />
+					<Stack.Screen name="History" component={HistoryScreen} />
+
 					{/* Community Screens */}
 					<Stack.Screen
 						name="CreatePost"

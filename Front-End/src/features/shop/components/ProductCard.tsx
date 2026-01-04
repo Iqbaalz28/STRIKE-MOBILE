@@ -1,32 +1,23 @@
 import React from "react";
 import { View, Text, Image, TouchableOpacity } from "react-native";
-import { ShoppingCart, Plus } from "lucide-react-native";
+import { ShoppingCart } from "lucide-react-native";
 import { getImageUrl } from "@/utils/imageHelper";
+import { formatRupiah } from "@/utils/format";
 
-// 1. Definisikan Interface Props agar TypeScript tidak error
+// Definisikan Interface Props
 interface ProductCardProps {
 	product: any;
 	onPress: () => void;
 }
 
 const ProductCard = ({ product, onPress }: ProductCardProps) => {
-	// Helper Format Rupiah
-	const formatRupiah = (number: number) => {
-		return new Intl.NumberFormat("id-ID", {
-			style: "currency",
-			currency: "IDR",
-			minimumFractionDigits: 0,
-			maximumFractionDigits: 0,
-		}).format(number);
-	};
+	// 1. Logic: Cek tipe transaksi (Sewa / Beli)
+	// Menggunakan data dari backend (price_rent / price_sale)
+	const isRent = (product.price_rent || 0) > 0;
+	const isSale = (product.price_sale || 0) > 0;
 
-
-	// Logic: Cek apakah produk sewa atau beli (dari kode lama Anda)
-	const isRent = product.price_rent > 0;
-	const isSale = product.price_sale > 0;
-
-	// Logic: Menentukan harga utama yang ditampilkan
-	// Prioritas: Sale > Rent > Standard Price (dari Mock Data)
+	// 2. Logic: Menentukan harga utama yang ditampilkan
+	// Prioritas tampilan: Harga Jual > Harga Sewa > Harga Default
 	const displayPrice = isSale
 		? product.price_sale
 		: isRent
@@ -35,30 +26,32 @@ const ProductCard = ({ product, onPress }: ProductCardProps) => {
 
 	return (
 		<TouchableOpacity
-			onPress={onPress} // <--- Gunakan props onPress dari parent
+			onPress={onPress}
 			className="flex-1 bg-white rounded-xl shadow-sm border border-gray-100 m-1 overflow-hidden mb-4"
 			activeOpacity={0.7}
 		>
-			{/* Gambar Produk */}
+			{/* --- GAMBAR PRODUK --- */}
 			<View className="relative">
 				<Image
+					// Gunakan getImageUrl untuk menangani URL localhost/android
+					// Fallback ke product.img jika product.image tidak ada (sesuai database)
 					source={{ uri: getImageUrl(product.image || product.img) }}
 					className="w-full h-40 bg-gray-100"
 					resizeMode="cover"
 				/>
 
-				{/* Badge Status (Dipertahankan dari kode lama) */}
+				{/* Badge Status (Pojok Kanan Atas) */}
 				<View className="absolute top-2 right-2 flex-row gap-1">
 					{isRent && (
-						<View className="bg-blue-600 px-2 py-1 rounded-md">
-							<Text className="text-[10px] text-white font-bold">
+						<View className="bg-blue-600 px-2 py-1 rounded-md shadow-sm">
+							<Text className="text-[10px] text-white font-bold font-[Outfit_700Bold]">
 								SEWA
 							</Text>
 						</View>
 					)}
 					{isSale && (
-						<View className="bg-green-600 px-2 py-1 rounded-md">
-							<Text className="text-[10px] text-white font-bold">
+						<View className="bg-green-600 px-2 py-1 rounded-md shadow-sm">
+							<Text className="text-[10px] text-white font-bold font-[Outfit_700Bold]">
 								BELI
 							</Text>
 						</View>
@@ -66,8 +59,9 @@ const ProductCard = ({ product, onPress }: ProductCardProps) => {
 				</View>
 			</View>
 
-			{/* Info Produk */}
+			{/* --- INFO PRODUK --- */}
 			<View className="p-3">
+				{/* Nama Produk */}
 				<Text
 					className="text-sm font-bold text-gray-800 mb-1 h-10 font-[Outfit_500Medium]"
 					numberOfLines={2}
@@ -78,16 +72,21 @@ const ProductCard = ({ product, onPress }: ProductCardProps) => {
 				{/* Tampilan Harga */}
 				<View className="mt-1">
 					<Text className="text-sm font-bold text-blue-600 font-[Outfit_700Bold]">
-						{isRent ? "Sewa: " : ""}
+						{/* Label Sewa jika barang sewaan */}
+						{isRent && !isSale ? "Sewa: " : ""}
+
+						{/* Gunakan formatRupiah dari utils */}
 						{formatRupiah(displayPrice)}
-						{isRent ? " /jam" : ""}
+
+						{/* Satuan waktu jika sewa */}
+						{isRent && !isSale ? " /jam" : ""}
 					</Text>
 				</View>
 
-				{/* Footer Card: Kategori & Tombol Cart */}
+				{/* Footer Card: Kategori & Icon Cart */}
 				<View className="mt-3 flex-row justify-between items-center">
-					<Text className="text-xs text-gray-500 capitalize">
-						{product.category || "Alat"}
+					<Text className="text-xs text-gray-500 capitalize font-[Outfit_400Regular]">
+						{product.category || "Alat Pancing"}
 					</Text>
 					<View className="bg-blue-50 p-1.5 rounded-lg">
 						<ShoppingCart size={16} color="#2563EB" />

@@ -5,13 +5,15 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "vitest"
+    "test": "vitest",
+    "format": "prettier --write"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@fastify/cookie": "^11.0.2",
     "@fastify/cors": "^11.1.0",
     "@fastify/jwt": "^10.0.0",
     "@fastify/multipart": "^9.3.0",
@@ -24,6 +26,7 @@
     "mysql2": "^3.15.3"
   },
   "devDependencies": {
+    "prettier": "^3.7.4",
     "supertest": "^7.1.4",
     "vitest": "^4.0.13"
   }

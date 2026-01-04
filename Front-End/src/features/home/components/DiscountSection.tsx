@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-	View,
-	Text,
-	TouchableOpacity,
-	ActivityIndicator,
-} from "react-native";
+import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import api from "@/services/api";
 
 const DiscountSection = () => {

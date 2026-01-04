@@ -115,7 +115,7 @@ const RegisterScreen = () => {
 					<View className="w-full max-w-md bg-white rounded-3xl shadow-xl p-6 md:p-10 relative">
 						{/* Header */}
 						<View className="items-center mb-8">
-						<Text className="text-3xl font-bold text-[#1e2f42] text-center mb-2">
+							<Text className="text-3xl font-bold text-[#1e2f42] text-center mb-2">
 								Buat Akun Baru
 							</Text>
 							<Text className="text-gray-600 text-center font-sans">
@@ -146,7 +146,7 @@ const RegisterScreen = () => {
 						<View className="space-y-5">
 							{/* Nama Lengkap */}
 							<View>
-							<Text className="mb-1 text-sm font-medium text-gray-700">
+								<Text className="mb-1 text-sm font-medium text-gray-700">
 									Nama Lengkap
 								</Text>
 								<View className="relative">
@@ -215,7 +215,7 @@ const RegisterScreen = () => {
 
 							{/* Confirm Password */}
 							<View>
-							<Text className="mb-1 text-sm font-medium text-gray-700">
+								<Text className="mb-1 text-sm font-medium text-gray-700">
 									Konfirmasi Password
 								</Text>
 								<View className="relative">
@@ -277,7 +277,7 @@ const RegisterScreen = () => {
 							<TouchableOpacity
 								onPress={() => navigation.navigate("Login")}
 							>
-							<Text className="text-sm font-bold text-blue-600">
+								<Text className="text-sm font-bold text-blue-600">
 									Masuk di sini
 								</Text>
 							</TouchableOpacity>

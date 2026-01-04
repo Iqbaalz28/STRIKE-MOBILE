@@ -58,9 +58,9 @@ const LocationDetailScreen = () => {
 				<View className="relative">
 					<Image
 						source={{
-							uri: getImageUrl(location.image || location.img),
+							uri: getImageUrl(location?.img || location?.image),
 						}}
-						style={{ width: width, height: 300 }}
+						className="w-full h-64 bg-gray-200"
 						resizeMode="cover"
 					/>
 					<TouchableOpacity

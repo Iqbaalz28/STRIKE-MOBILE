@@ -1,11 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import {
-	Calendar,
-	ShoppingBag,
-	Users,
-	Trophy,
-} from "lucide-react-native";
+import { Calendar, ShoppingBag, Users, Trophy } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 
 const MenuGrid = () => {
@@ -19,7 +14,8 @@ const MenuGrid = () => {
 			icon: Calendar,
 			color: "bg-blue-500",
 			bgColor: "bg-blue-50",
-			onPress: () => navigation.navigate("MainTab", { screen: "Booking" }),
+			onPress: () =>
+				navigation.navigate("MainTab", { screen: "Booking" }),
 		},
 		{
 			id: 2,

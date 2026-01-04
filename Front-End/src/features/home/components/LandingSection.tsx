@@ -60,7 +60,7 @@ const LandingSection = () => {
 					<TouchableOpacity
 						onPress={() =>
 							// @ts-ignore
-							navigation.navigate("MainTab", { 
+							navigation.navigate("MainTab", {
 								screen: "ShopStack",
 								params: undefined,
 							})

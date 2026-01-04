@@ -126,8 +126,10 @@ const ProductDetailScreen = () => {
 			<ScrollView showsVerticalScrollIndicator={false}>
 				{/* 1. Gambar Utama */}
 				<Image
-					source={{ uri: getImageUrl(product.img) }}
-					style={{ width: width, height: width }} // Aspect Ratio 1:1
+					source={{
+						uri: getImageUrl(product?.image || product?.img),
+					}}
+					className="w-full h-80 bg-gray-100"
 					resizeMode="cover"
 				/>
 
