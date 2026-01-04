@@ -14,18 +14,9 @@ import api from "@/services/api";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import ReviewList from "./components/ReviewList";
 import LocationMapCard from "./components/LocationMapCard";
+import { getImageUrl } from "@/utils/imageHelper";
 
 const { width } = Dimensions.get("window");
-
-// Helper URL
-const getImageUrl = (path: string) => {
-	if (!path)
-		return "https://placehold.co/600x400/e2e8f0/1e293b?text=No+Image";
-	if (path.startsWith("http")) return path;
-	return `http://10.0.2.2:3000/uploads/${
-		path.startsWith("/") ? path.substring(1) : path
-	}`;
-};
 
 const LocationDetailScreen = () => {
 	const route = useRoute<any>();

@@ -1,8 +1,7 @@
 import React from "react";
 import { View, Text, Image, TouchableOpacity } from "react-native";
 import { ShoppingCart, Plus } from "lucide-react-native";
-// Jika Anda sudah setup utils assets, import di sini:
-// import { getImageSource } from "@/utils/assets";
+import { getImageUrl } from "@/utils/imageHelper";
 
 // 1. Definisikan Interface Props agar TypeScript tidak error
 interface ProductCardProps {
@@ -21,19 +20,6 @@ const ProductCard = ({ product, onPress }: ProductCardProps) => {
 		}).format(number);
 	};
 
-	// Helper URL Gambar
-	const getImageUrl = (path: string) => {
-		if (!path)
-			return "https://placehold.co/400x400/e2e8f0/1e293b?text=No+Image";
-		// Jika path URL lengkap (http...), pakai langsung
-		if (path.startsWith("http")) return path;
-
-		// Jika path lokal backend, arahkan ke localhost emulator
-		// (Jika sudah pakai assets.ts, ganti baris ini dengan getImageSource(path))
-		return `http://10.0.2.2:3000/uploads/${
-			path.startsWith("/") ? path.substring(1) : path
-		}`;
-	};
 
 	// Logic: Cek apakah produk sewa atau beli (dari kode lama Anda)
 	const isRent = product.price_rent > 0;

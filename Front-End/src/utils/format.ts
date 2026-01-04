@@ -41,3 +41,13 @@ export const timeAgo = (dateString: string) => {
 
 	return "Baru saja";
 };
+
+// 4. Format Image URL (Helper untuk Android Emulator & iOS)
+export const getImageUrl = (path: string, defaultPlaceholder?: string) => {
+	if (!path) return defaultPlaceholder || "https://placehold.co/600x400/e2e8f0/1e293b?text=No+Image";
+	if (path.startsWith("http")) return path;
+	
+	// Android Emulator butuh 10.0.2.2, iOS simulator bisa pakai localhost
+	const baseURL = "http://10.0.2.2:3000/uploads/";
+	return `${baseURL}${path.startsWith("/") ? path.substring(1) : path}`;
+};

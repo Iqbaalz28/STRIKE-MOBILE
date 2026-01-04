@@ -11,6 +11,7 @@ import {
 import { Minus, Plus, Trash2, ArrowLeft } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import api from "@/services/api";
+import { getImageUrl } from "@/utils/imageHelper";
 
 // Helper
 const formatRupiah = (num: number) =>
@@ -87,13 +88,6 @@ const CartScreen = () => {
 		(sum, item) => sum + item.price * item.qty,
 		0,
 	);
-
-	// Helper Image URL (Sama seperti sebelumnya)
-	const getImageUrl = (path: string) => {
-		if (!path) return "https://placehold.co/100x100";
-		if (path.startsWith("http")) return path;
-		return `http://10.0.2.2:3000/uploads/${path}`;
-	};
 
 	if (loading)
 		return (

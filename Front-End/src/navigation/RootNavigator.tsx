@@ -13,6 +13,10 @@ import RegisterScreen from "@/features/auth/RegisterScreen";
 // Import Screen Tambahan
 import EventListScreen from "@/features/home/EventListScreen";
 import EditProfileScreen from "@/features/profile/EditProfileScreen";
+import AboutScreen from "@/features/profile/AboutScreen";
+import HistoryScreen from "@/features/profile/HistoryScreen";
+import CreatePostScreen from "@/features/community/CreatePostScreen";
+import PostDetailScreen from "@/features/community/PostDetailScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -91,6 +95,24 @@ const RootNavigator = () => {
 					<Stack.Screen
 						name="EditProfile"
 						component={EditProfileScreen}
+					/>
+					<Stack.Screen
+						name="About"
+						component={AboutScreen}
+					/>
+					<Stack.Screen
+						name="History"
+						component={HistoryScreen}
+					/>
+					
+					{/* Community Screens */}
+					<Stack.Screen
+						name="CreatePost"
+						component={CreatePostScreen}
+					/>
+					<Stack.Screen
+						name="PostDetail"
+						component={PostDetailScreen}
 					/>
 				</Stack.Group>
 			</Stack.Navigator>

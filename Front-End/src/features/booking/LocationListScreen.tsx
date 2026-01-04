@@ -12,16 +12,7 @@ import { useNavigation } from "@react-navigation/native";
 import { Search, MapPin, Star } from "lucide-react-native";
 import api from "@/services/api";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-
-// Helper URL Gambar
-const getImageUrl = (path: string) => {
-	if (!path)
-		return "https://placehold.co/400x300/e2e8f0/1e293b?text=No+Image";
-	if (path.startsWith("http")) return path;
-	return `http://10.0.2.2:3000/uploads/${
-		path.startsWith("/") ? path.substring(1) : path
-	}`;
-};
+import { getImageUrl } from "@/utils/imageHelper";
 
 const LocationListScreen = () => {
 	const navigation = useNavigation<NativeStackNavigationProp<any>>();
@@ -62,7 +53,7 @@ const LocationListScreen = () => {
 				className="w-full h-48 bg-gray-200"
 				resizeMode="cover"
 			/>
-			<div className="p-4">
+			<View className="p-4">
 				<View className="flex-row justify-between items-start mb-1">
 					<Text className="text-lg font-bold text-gray-900 flex-1 mr-2 font-[Outfit_700Bold]">
 						{item.name}
@@ -95,7 +86,7 @@ const LocationListScreen = () => {
 						</Text>
 					</Text>
 				</View>
-			</div>
+			</View>
 		</TouchableOpacity>
 	);
 

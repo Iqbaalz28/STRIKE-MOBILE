@@ -21,17 +21,9 @@ import {
 } from "lucide-react-native";
 import api from "@/services/api";
 import { ShopStackParamList } from "@/navigation/types";
+import { getImageUrl } from "@/utils/imageHelper";
 
 const { width } = Dimensions.get("window");
-
-// Helper URL Gambar
-const getImageUrl = (path: string) => {
-	if (!path) return "https://placehold.co/600x600?text=No+Image";
-	if (path.startsWith("http")) return path;
-	return `http://10.0.2.2:3000/uploads/${
-		path.startsWith("/") ? path.substring(1) : path
-	}`;
-};
 
 const ProductDetailScreen = () => {
 	const route = useRoute<any>();

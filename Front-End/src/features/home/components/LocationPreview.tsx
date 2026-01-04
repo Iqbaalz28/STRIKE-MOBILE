@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import api from "@/services/api";
+import { getImageUrl } from "@/utils/imageHelper";
 
 const LocationPreview = () => {
 	const navigation = useNavigation<any>();
@@ -22,27 +23,31 @@ const LocationPreview = () => {
 	useEffect(() => {
 		const fetchLocations = async () => {
 			try {
+				console.log("📍 [LocationPreview] Fetching locations...");
 				const res = await api.getLocations();
-				setLocations(res.data);
-			} catch (error) {
-				console.error("Gagal mengambil lokasi:", error);
+				console.log("📍 [LocationPreview] Response:", res);
+				console.log("📍 [LocationPreview] Response.data:", res.data);
+				console.log("📍 [LocationPreview] Data type:", typeof res.data);
+				console.log("📍 [LocationPreview] Is Array:", Array.isArray(res.data));
+				
+				if (Array.isArray(res.data)) {
+					console.log("📍 [LocationPreview] Data length:", res.data.length);
+					setLocations(res.data);
+				} else {
+					console.error("📍 [LocationPreview] Data bukan array!");
+					setLocations([]);
+				}
+			} catch (error: any) {
+				console.error("❌ [LocationPreview] Error:", error);
+				console.error("❌ [LocationPreview] Error message:", error?.message);
+				console.error("❌ [LocationPreview] Error response:", error?.response?.data);
+				Alert.alert("Error", `Gagal mengambil lokasi: ${error?.message || "Unknown error"}`);
 			} finally {
 				setLoading(false);
 			}
 		};
 		fetchLocations();
 	}, []);
-
-	// Helper: Fix Image URL
-	const getImageUrl = (img: string) => {
-		if (!img)
-			return "https://placehold.co/800x400/9CA3AF/FFFFFF?text=No+Image";
-		if (img.startsWith("http")) return img;
-		// Android Emulator butuh IP 10.0.2.2, API Service sudah handle BASE_URL
-		// Kita anggap img hanya path filename
-		const cleanPath = img.startsWith("/") ? img.substring(1) : img;
-		return `http://10.0.2.2:3000/uploads/${cleanPath}`;
-	};
 
 	if (loading) {
 		return (

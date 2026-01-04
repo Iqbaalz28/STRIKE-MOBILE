@@ -10,15 +10,7 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { Calendar, MapPin, ArrowLeft } from "lucide-react-native";
 import api from "@/services/api";
-
-// Helper URL
-const getImageUrl = (path: string) => {
-	if (!path) return "https://placehold.co/600x400/e2e8f0/1e293b?text=Event";
-	if (path.startsWith("http")) return path;
-	return `http://10.0.2.2:3000/uploads/${
-		path.startsWith("/") ? path.substring(1) : path
-	}`;
-};
+import { getImageUrl } from "@/utils/imageHelper";
 
 const EventListScreen = () => {
 	const navigation = useNavigation();
@@ -47,7 +39,7 @@ const EventListScreen = () => {
 				className="w-full h-48 bg-gray-200"
 				resizeMode="cover"
 			/>
-			<div className="p-4">
+			<View className="p-4">
 				<View className="absolute -top-8 right-4 bg-white px-3 py-1 rounded-lg shadow-sm items-center">
 					<Text className="text-xs font-bold text-red-500 uppercase">
 						{new Date(item.date).toLocaleString("default", {
@@ -85,7 +77,7 @@ const EventListScreen = () => {
 						Daftar Sekarang
 					</Text>
 				</TouchableOpacity>
-			</div>
+			</View>
 		</View>
 	);
 

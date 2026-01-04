@@ -5,22 +5,36 @@ import { Platform } from "react-native";
 import { navigate } from "@/navigation/navigationRef"; // Import helper navigasi tadi
 
 // 1. SETUP BASE URL
-// Android Emulator menggunakan 10.0.2.2 untuk mengakses localhost komputer
-const BASE_URL =
-	Platform.OS === "android"
+import Constants from 'expo-constants';
+
+const getDeviceIP = () => {
+	const debuggerHost = Constants.expoConfig?.hostUri;
+	if (debuggerHost) {
+		const host = debuggerHost.split(':')[0];
+		return `http://${host}:3000`;
+	}
+	// Fallback
+	return Platform.OS === "android"
 		? "http://10.0.2.2:3000"
 		: "http://localhost:3000";
+};
+
+const BASE_URL = getDeviceIP();
+
+console.log("🌐 API Base URL:", BASE_URL);
 
 const api = axios.create({
 	baseURL: BASE_URL,
 	headers: {
 		"Content-Type": "application/json",
 	},
+	timeout: 10000, // 10 second timeout
 });
 
 // 2. INTERCEPTOR REQUEST (Ganti localStorage dengan AsyncStorage)
 api.interceptors.request.use(
 	async (config) => {
+		console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
 		// AsyncStorage bersifat Asynchronous
 		const token = await AsyncStorage.getItem("token");
 		if (token) {
@@ -28,13 +42,26 @@ api.interceptors.request.use(
 		}
 		return config;
 	},
-	(error) => Promise.reject(error),
+	(error) => {
+		console.error("❌ Request Interceptor Error:", error);
+		return Promise.reject(error);
+	},
 );
 
 // 3. INTERCEPTOR RESPONSE (Handle 401 Logout)
 api.interceptors.response.use(
-	(response) => response,
+	(response) => {
+		console.log(`✅ API Response: ${response.config.method?.toUpperCase()} ${response.config.url} - ${response.status}`);
+		return response;
+	},
 	async (error: AxiosError) => {
+		if (error.code === 'ECONNABORTED') {
+			console.error("❌ Request Timeout");
+		} else if (error.code === 'ERR_NETWORK') {
+			console.error("❌ Network Error - Cannot reach server");
+			console.error("   Check if backend is running at:", BASE_URL);
+		}
+		
 		if (error.response && error.response.status === 401) {
 			console.warn("Sesi berakhir. Redirect ke login...");
 
@@ -107,10 +134,10 @@ export default {
 		return api.get("/events");
 	},
 	getDiscounts() {
-		return api.get("/discounts");
+		return api.get("/references/discounts");
 	},
 	getMemberships() {
-		return api.get("/memberships");
+		return api.get("/references/memberships");
 	},
 
 	// --- LOCATIONS (BOOKING) ---
@@ -124,10 +151,14 @@ export default {
 		return api.get(`/locations/${id}/reviews`);
 	},
 	getLocationSpots(id: number | string, date: string) {
-		return api.get(`/locations/${id}/spots`, { params: { date } });
+		return api.get(`/locations/${id}/availability`, { params: { date } });
+	},
+	// Alias untuk backward compatibility
+	checkSpotAvailability(id: number | string, date: string) {
+		return api.get(`/locations/${id}/availability`, { params: { date } });
 	},
 	checkVoucher(code: string) {
-		return api.post("/discounts/check", { code });
+		return api.post("/references/discounts/check", { code });
 	},
 	createBooking(data: any) {
 		return api.post("/bookings", data);
@@ -186,16 +217,16 @@ export default {
 
 	// --- PAYMENTS ---
 	payBooking(bookingId: number | string) {
-		return api.post(`/pay/booking/${bookingId}`);
+		return api.post(`/payments/pay/booking/${bookingId}`);
 	},
 	payOrder(orderId: number | string) {
-		return api.post(`/pay/order/${orderId}`);
+		return api.post(`/payments/pay/order/${orderId}`);
 	},
 	upgradeMembership(membershipId: number | string) {
-		return api.post("/upgrade-membership", { id_membership: membershipId });
+		return api.post("/payments/upgrade-membership", { id_membership: membershipId });
 	},
 	getPaymentMethods() {
-		return api.get("/payment-methods");
+		return api.get("/references/payment-methods");
 	},
 	updatePaymentMethod(id_payment_method: number | string) {
 		return api.put("/users/me", { id_payment_method });

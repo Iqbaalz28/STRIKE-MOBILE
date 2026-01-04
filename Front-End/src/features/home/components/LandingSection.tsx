@@ -44,8 +44,10 @@ const LandingSection = () => {
 				<View className="flex-row space-x-3">
 					<TouchableOpacity
 						onPress={() =>
-							navigation.navigate("Main", {
+							// @ts-ignore
+							navigation.navigate("MainTab", {
 								screen: "BookingStack",
+								params: undefined,
 							})
 						}
 						className="bg-white/20 border border-white/30 px-6 py-3 rounded-xl backdrop-blur-md"
@@ -57,7 +59,11 @@ const LandingSection = () => {
 
 					<TouchableOpacity
 						onPress={() =>
-							navigation.navigate("Main", { screen: "ShopStack" })
+							// @ts-ignore
+							navigation.navigate("MainTab", { 
+								screen: "ShopStack",
+								params: undefined,
+							})
 						}
 						className="bg-white/20 border border-white/30 px-6 py-3 rounded-xl backdrop-blur-md"
 					>
