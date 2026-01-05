@@ -55,6 +55,13 @@ await fastify.register(fastifyStatic, {
   prefix: "/uploads/",
 });
 
+// Mendaftarkan folder 'locationimg' agar bisa diakses publik
+fastify.register(fastifyStatic, {
+  root: path.join(__dirname, "uploads", "locationimg"), // Sesuaikan jika folder ada di tempat lain
+  prefix: "/locationimg/",
+  decorateReply: false, // Wajib false agar tidak bentrok dengan static folder sebelumnya
+});
+
 // Setup CORS (Wajib ada PUT dan izinkan React Native)
 await fastify.register(cors, {
   origin: [
