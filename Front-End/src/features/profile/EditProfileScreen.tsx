@@ -7,20 +7,33 @@ import {
 	ScrollView,
 	Alert,
 	ActivityIndicator,
+	Image,
+	Platform,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { ArrowLeft, Save } from "lucide-react-native";
+import { ArrowLeft, Save, Camera } from "lucide-react-native";
+import * as ImagePicker from "expo-image-picker"; // Import Image Picker
+
 import api from "@/services/api";
+import { getImageUrl } from "@/utils/imageHelper";
 
 const EditProfileScreen = () => {
 	const navigation = useNavigation();
+
+	// State Form
 	const [form, setForm] = useState({
 		name: "",
 		email: "",
 		phone: "",
 		address: "",
 		bio: "",
+		avatar_img: "", // Tambahkan field ini
 	});
+
+	// State untuk Gambar Baru (Local URI)
+	const [selectedImage, setSelectedImage] =
+		useState<ImagePicker.ImagePickerAsset | null>(null);
+
 	const [loading, setLoading] = useState(true);
 	const [saving, setSaving] = useState(false);
 
@@ -38,6 +51,7 @@ const EditProfileScreen = () => {
 				phone: user.phone || "",
 				address: user.address || "",
 				bio: user.bio || "",
+				avatar_img: user.avatar_img || "",
 			});
 		} catch (error) {
 			console.log("Error load profile", error);
@@ -46,14 +60,78 @@ const EditProfileScreen = () => {
 		}
 	};
 
+	// --- 1. FUNGSI PILIH GAMBAR ---
+	const pickImage = async () => {
+		// Minta Izin Akses Galeri
+		const permissionResult =
+			await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+		if (permissionResult.granted === false) {
+			Alert.alert(
+				"Izin Ditolak",
+				"Anda perlu mengizinkan akses galeri untuk mengganti foto.",
+			);
+			return;
+		}
+
+		const result = await ImagePicker.launchImageLibraryAsync({
+			mediaTypes: ImagePicker.MediaTypeOptions.Images,
+			allowsEditing: true,
+			aspect: [1, 1], // Kotak (Square)
+			quality: 0.5, // Kompresi agar tidak terlalu besar
+		});
+
+		if (!result.canceled) {
+			setSelectedImage(result.assets[0]);
+		}
+	};
+
+	// --- 2. FUNGSI SIMPAN (UPLOAD + UPDATE) ---
 	const handleSave = async () => {
 		setSaving(true);
 		try {
-			await api.updateProfile(form);
+			let finalAvatar = form.avatar_img;
+
+			// A. Jika ada gambar baru yang dipilih, UPLOAD dulu
+			if (selectedImage) {
+				// Siapkan objek file untuk React Native FormData
+				const fileToUpload = {
+					uri: selectedImage.uri,
+					name: `avatar_${Date.now()}.jpg`, // Generate nama unik
+					type: "image/jpeg",
+				};
+
+				// Panggil API Upload
+				const uploadRes = await api.uploadImage(fileToUpload);
+
+				// Debugging: Cek respon backend di terminal
+				console.log("Upload Success:", uploadRes.data);
+
+				// Ambil path file dari respon backend
+				// Sesuaikan dengan struktur JSON backend Anda (biasanya `file`, `filename`, atau `path`)
+				if (uploadRes.data && uploadRes.data.file) {
+					finalAvatar = uploadRes.data.file;
+				} else if (uploadRes.data && uploadRes.data.filename) {
+					finalAvatar = uploadRes.data.filename;
+				} else if (typeof uploadRes.data === "string") {
+					// Jaga-jaga kalau backend return string langsung
+					finalAvatar = uploadRes.data;
+				}
+			}
+
+			// B. Update Data Profil (termasuk avatar baru jika ada)
+			const payload = {
+				...form,
+				avatar_img: finalAvatar,
+			};
+
+			await api.updateProfile(payload);
+
 			Alert.alert("Sukses", "Profil berhasil diperbarui", [
 				{ text: "OK", onPress: () => navigation.goBack() },
 			]);
-		} catch (error) {
+		} catch (error: any) {
+			console.error("Save Error:", error);
 			Alert.alert("Gagal", "Terjadi kesalahan saat menyimpan profil.");
 		} finally {
 			setSaving(false);
@@ -66,6 +144,12 @@ const EditProfileScreen = () => {
 				<ActivityIndicator color="#2563EB" />
 			</View>
 		);
+
+	// Helper untuk menampilkan gambar preview
+	// Jika ada selectedImage (lokal), pakai itu. Jika tidak, pakai URL dari backend.
+	const displayImage = selectedImage
+		? { uri: selectedImage.uri }
+		: { uri: getImageUrl(form.avatar_img) };
 
 	return (
 		<View className="flex-1 bg-white">
@@ -81,6 +165,29 @@ const EditProfileScreen = () => {
 			</View>
 
 			<ScrollView className="p-5">
+				{/* --- UI GANTI FOTO --- */}
+				<View className="items-center mb-8">
+					<View className="relative">
+						<Image
+							source={displayImage}
+							className="w-28 h-28 rounded-full bg-gray-200"
+						/>
+						<TouchableOpacity
+							onPress={pickImage}
+							className="absolute bottom-0 right-0 bg-blue-600 p-2 rounded-full border-2 border-white shadow-sm"
+						>
+							<Camera size={16} color="white" />
+						</TouchableOpacity>
+					</View>
+					<Text
+						className="text-blue-600 text-sm font-bold mt-3 font-[Outfit_700Bold]"
+						onPress={pickImage}
+					>
+						Ganti Foto Profil
+					</Text>
+				</View>
+
+				{/* --- FORM INPUT --- */}
 				<View className="space-y-4">
 					<View>
 						<Text className="text-gray-500 text-xs mb-1 ml-1">
@@ -164,6 +271,9 @@ const EditProfileScreen = () => {
 						</>
 					)}
 				</TouchableOpacity>
+
+				{/* Spacer Bawah */}
+				<View className="h-10" />
 			</ScrollView>
 		</View>
 	);
