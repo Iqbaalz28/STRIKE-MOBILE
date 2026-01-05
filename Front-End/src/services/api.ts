@@ -43,7 +43,7 @@ const api = axios.create({
 	headers: {
 		"Content-Type": "application/json",
 	},
-	timeout: 10000, // Timeout 10 detik
+	timeout: 30000, // Timeout 30 detik
 });
 
 // --- 3. INTERCEPTOR REQUEST (Kirim Token) ---

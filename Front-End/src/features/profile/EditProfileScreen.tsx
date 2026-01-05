@@ -94,35 +94,41 @@ const EditProfileScreen = () => {
 
 			// A. Jika ada gambar baru yang dipilih, UPLOAD dulu
 			if (selectedImage) {
-				// Siapkan objek file untuk React Native FormData
 				const fileToUpload = {
 					uri: selectedImage.uri,
-					name: `avatar_${Date.now()}.jpg`, // Generate nama unik
+					name: `avatar_${Date.now()}.jpg`,
 					type: "image/jpeg",
 				};
 
+				console.log("Mengupload gambar...", fileToUpload.name);
+
 				// Panggil API Upload
 				const uploadRes = await api.uploadImage(fileToUpload);
+				console.log("Upload Respon:", uploadRes.data);
 
-				// Debugging: Cek respon backend di terminal
-				console.log("Upload Success:", uploadRes.data);
-
-				// Ambil path file dari respon backend
-				// Sesuaikan dengan struktur JSON backend Anda (biasanya `file`, `filename`, atau `path`)
-				if (uploadRes.data && uploadRes.data.file) {
-					finalAvatar = uploadRes.data.file;
-				} else if (uploadRes.data && uploadRes.data.filename) {
-					finalAvatar = uploadRes.data.filename;
-				} else if (typeof uploadRes.data === "string") {
-					// Jaga-jaga kalau backend return string langsung
-					finalAvatar = uploadRes.data;
+				// --- PERBAIKAN LOGIC DISINI ---
+				// Menangani respon backend: {"url": "http://.../uploads/avatar.jpg"}
+				if (uploadRes.data?.url) {
+					// Kita ambil nama filenya saja agar path-nya bersih & relatif
+					// Contoh: "http://.../uploads/avatar.jpg" -> "avatar.jpg"
+					const fullUrl = uploadRes.data.url;
+					const filename = fullUrl.split("/").pop();
+					finalAvatar = `uploads/${filename}`;
 				}
+				// Menangani respon backend format lain (jaga-jaga)
+				else if (uploadRes.data?.file) {
+					finalAvatar = uploadRes.data.file;
+				} else if (uploadRes.data?.filename) {
+					finalAvatar = uploadRes.data.filename;
+				}
+
+				console.log("Path Avatar Baru:", finalAvatar);
 			}
 
-			// B. Update Data Profil (termasuk avatar baru jika ada)
+			// B. Update Data Profil
 			const payload = {
 				...form,
-				avatar_img: finalAvatar,
+				avatar_img: finalAvatar, // Kirim path baru ke database
 			};
 
 			await api.updateProfile(payload);
@@ -132,7 +138,7 @@ const EditProfileScreen = () => {
 			]);
 		} catch (error: any) {
 			console.error("Save Error:", error);
-			Alert.alert("Gagal", "Terjadi kesalahan saat menyimpan profil.");
+			Alert.alert("Gagal", "Terjadi kesalahan/timeout saat menyimpan.");
 		} finally {
 			setSaving(false);
 		}
