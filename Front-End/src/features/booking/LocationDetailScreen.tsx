@@ -7,9 +7,11 @@ import {
 	TouchableOpacity,
 	ActivityIndicator,
 	Dimensions,
+	Platform,
 } from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRoute, useNavigation } from "@react-navigation/native";
-import { ArrowLeft, MapPin, CheckCircle, Star } from "lucide-react-native";
+import { ArrowLeft, MapPin, Star, Clock, Calendar, Minus, Plus } from "lucide-react-native";
 import api from "@/services/api";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import ReviewList from "./components/ReviewList";
@@ -25,6 +27,9 @@ const LocationDetailScreen = () => {
 
 	const [location, setLocation] = useState<any>(null);
 	const [loading, setLoading] = useState(true);
+	const [duration, setDuration] = useState(2);
+	const [selectedDate, setSelectedDate] = useState(new Date());
+	const [showDatePicker, setShowDatePicker] = useState(false);
 
 	useEffect(() => {
 		fetchDetail();
@@ -38,6 +43,41 @@ const LocationDetailScreen = () => {
 			console.log("Error load detail lokasi:", error);
 		} finally {
 			setLoading(false);
+		}
+	};
+
+	const handleIncreaseDuration = () => {
+		setDuration(duration + 1);
+	};
+
+	const handleDecreaseDuration = () => {
+		if (duration > 1) {
+			setDuration(duration - 1);
+		}
+	};
+
+	const calculateTotal = () => {
+		const pricePerHour = location?.price_per_hour || 0;
+		return pricePerHour * duration;
+	};
+
+	const formatDate = (date: Date) => {
+		return date.toLocaleDateString("id-ID", {
+			day: "numeric",
+			month: "long",
+			year: "numeric",
+		});
+	};
+
+	const onDateChange = (event: any, date?: Date) => {
+		if (Platform.OS === "android") {
+			setShowDatePicker(false);
+		}
+		if (date) {
+			setSelectedDate(date);
+			if (Platform.OS === "ios") {
+				setShowDatePicker(false);
+			}
 		}
 	};
 
@@ -73,106 +113,172 @@ const LocationDetailScreen = () => {
 
 				{/* Content */}
 				<View className="px-5 py-6 -mt-6 bg-white rounded-t-3xl">
-					<View className="flex-row justify-between items-start mb-2">
-						<Text className="text-2xl font-bold text-gray-900 flex-1 font-[Outfit_700Bold]">
-							{location.name}
+					{/* Title and Rating */}
+					<Text className="text-2xl font-bold text-gray-900 mb-2 font-[Outfit_700Bold]">
+						{location.name}
+					</Text>
+
+					{/* Address */}
+					<View className="flex-row items-center mb-3">
+						<MapPin size={14} color="#6B7280" />
+						<Text className="text-gray-500 text-sm ml-1">
+							{location.address}, {location.city}
 						</Text>
-						<View className="flex-row items-center bg-yellow-50 px-2 py-1 rounded-lg">
+					</View>
+
+					{/* Rating and Hours */}
+					<View className="flex-row items-center mb-6">
+						<View className="flex-row items-center mr-6">
 							<Star size={16} fill="#FBBF24" color="#FBBF24" />
-							<Text className="ml-1 font-bold text-yellow-700">
-								4.8
+							<Text className="ml-1 font-bold text-gray-900">
+								{location.rating_average || "4.9"}
+							</Text>
+							<Text className="text-gray-500 text-sm ml-1">
+								· {location.total_reviews || "168"} ulasan
+							</Text>
+						</View>
+						<View className="flex-row items-center">
+							<Clock size={16} color="#6B7280" />
+							<Text className="text-gray-500 text-sm ml-1">
+								06:00 - 22:00
 							</Text>
 						</View>
 					</View>
 
+					{/* Price per hour */}
 					<View className="flex-row items-center mb-6">
-						<MapPin size={16} color="#6B7280" />
-						<Text className="text-gray-500 ml-2">
-							{location.address}, {location.city}
+						<Text className="text-gray-500 text-sm mr-2">Jam buka</Text>
+						<View className="h-4 w-[1px] bg-gray-300 mr-2" />
+						<Text className="text-blue-600 font-bold text-lg">
+							Rp {Number(location.price_per_hour || 0).toLocaleString("id-ID")}/jam
 						</Text>
 					</View>
 
 					<View className="h-[1px] bg-gray-100 mb-6" />
 
 					{/* Description */}
-					<Text className="font-bold text-lg text-gray-900 mb-2">
-						Deskripsi
+					<Text className="font-bold text-lg text-gray-900 mb-3">
+						Tentang tempat ini
 					</Text>
 					<Text className="text-gray-600 leading-relaxed mb-6">
 						{location.description ||
 							"Nikmati pengalaman memancing yang menenangkan di lokasi kami dengan fasilitas lengkap dan pemandangan asri."}
 					</Text>
 
-					{/* Fasilitas */}
-					<Text className="font-bold text-lg text-gray-900 mb-3">
-						Fasilitas
-					</Text>
-					<View className="flex-row flex-wrap gap-3 mb-6">
-						{[
-							"Toilet",
-							"Kantin",
-							"Parkir Luas",
-							"Mushola",
-							"Sewa Alat",
-						].map((f, i) => (
-							<View
-								key={i}
-								className="flex-row items-center bg-gray-50 px-3 py-2 rounded-lg border border-gray-100"
+					{/* Booking Card */}
+					<View className="bg-blue-600 rounded-3xl p-5 mb-6 shadow-lg">
+						<Text className="text-white font-bold text-xl mb-4">
+							Mulai Booking
+						</Text>
+
+						{/* Price */}
+						<Text className="text-white/80 text-sm mb-1">Harga Tiket</Text>
+						<Text className="text-white font-bold text-2xl mb-4">
+							Rp {Number(location.price_per_hour || 0).toLocaleString("id-ID")}/jam
+						</Text>
+
+						{/* Date Picker */}
+						<Text className="text-white/80 text-sm mb-2">Pilih Tanggal</Text>
+						<TouchableOpacity 
+							onPress={() => setShowDatePicker(true)}
+							className="bg-blue-500 rounded-xl px-4 py-3 mb-4 flex-row items-center"
+						>
+							<Calendar size={18} color="white" />
+							<Text className="text-white ml-2 font-medium">
+								{formatDate(selectedDate)}
+							</Text>
+						</TouchableOpacity>
+
+						{showDatePicker && (
+							<DateTimePicker
+								value={selectedDate}
+								mode="date"
+								display={Platform.OS === "ios" ? "spinner" : "default"}
+								onChange={onDateChange}
+								minimumDate={new Date()}
+								locale="id-ID"
+							/>
+						)}
+
+						{/* Duration Rental */}
+						<Text className="text-white/80 text-sm mb-2">Durasi Rental</Text>
+						<View className="flex-row items-center justify-between mb-4">
+							<TouchableOpacity
+								onPress={handleDecreaseDuration}
+								className="bg-red-500 w-10 h-10 rounded-full items-center justify-center"
 							>
-								<CheckCircle size={14} color="#2563EB" />
-								<Text className="ml-2 text-gray-600 text-sm">
-									{f}
+								<Minus size={20} color="white" />
+							</TouchableOpacity>
+							<Text className="text-white font-bold text-xl">
+								{duration} jam
+							</Text>
+							<TouchableOpacity
+								onPress={handleIncreaseDuration}
+								className="bg-green-500 w-10 h-10 rounded-full items-center justify-center"
+							>
+								<Plus size={20} color="white" />
+							</TouchableOpacity>
+						</View>
+
+						{/* Calculation */}
+						<View className="bg-blue-500/50 rounded-xl px-4 py-3 mb-2">
+							<View className="flex-row justify-between items-center">
+								<Text className="text-white/90 text-sm">
+									Rp {Number(location.price_per_hour || 0).toLocaleString("id-ID")} x {duration} jam
+								</Text>
+								<Text className="text-white font-bold text-base">
+									Rp {calculateTotal().toLocaleString("id-ID")}
 								</Text>
 							</View>
-						))}
+						</View>
+
+						{/* Total */}
+						<View className="flex-row justify-between items-center mb-4">
+							<Text className="text-white font-bold text-lg">Total</Text>
+							<Text className="text-white font-bold text-2xl">
+								Rp {calculateTotal().toLocaleString("id-ID")}
+							</Text>
+						</View>
+
+						{/* Button */}
+						<TouchableOpacity
+							onPress={() =>
+								navigation.navigate("BookingForm", {
+									locationId: location.id,
+									locationName: location.name,
+									locationAddress: `${location.address}, ${location.city}`,
+									price: location.price_per_hour,
+									duration: duration,
+									totalPrice: calculateTotal(),
+									locationImage: location.img || location.image,
+									selectedDate: selectedDate.toISOString(),
+								})
+							}
+							className="bg-white rounded-xl py-4 items-center"
+						>
+							<Text className="text-blue-600 font-bold text-base">
+								Lanjutkan Pembayaran
+							</Text>
+						</TouchableOpacity>
 					</View>
 
 					<View className="h-[1px] bg-gray-100 mb-6" />
 
-					{/* 1. Map Card */}
+					{/* Location Section */}
 					<LocationMapCard
 						address={location.address}
 						city={location.city}
 					/>
 
-					{/* 2. Review List */}
-					<ReviewList reviews={location.reviews} />
+					{/* Review Section */}
+					<View className="mt-6">
+						<ReviewList reviews={location.reviews} />
+					</View>
 
 					{/* Spacer agar tidak tertutup tombol bawah */}
-					<View className="h-24" />
+					<View className="h-12" />
 				</View>
 			</ScrollView>
-
-			{/* Bottom Bar */}
-			<View className="absolute bottom-0 w-full bg-white p-5 border-t border-gray-100 shadow-2xl pb-8">
-				<View className="flex-row items-center justify-between">
-					<View>
-						<Text className="text-gray-500 text-xs">
-							Harga Tiket
-						</Text>
-						<Text className="text-2xl font-bold text-blue-600 font-[Outfit_700Bold]">
-							Rp{" "}
-							{Number(location.price || 50000).toLocaleString(
-								"id-ID",
-							)}
-						</Text>
-					</View>
-					<TouchableOpacity
-						onPress={() =>
-							navigation.navigate("BookingForm", {
-								locationId: location.id,
-								locationName: location.name,
-								price: location.price,
-							})
-						}
-						className="bg-blue-600 px-8 py-3.5 rounded-xl shadow-lg shadow-blue-200"
-					>
-						<Text className="text-white font-bold text-lg">
-							Booking Sekarang
-						</Text>
-					</TouchableOpacity>
-				</View>
-			</View>
 		</View>
 	);
 };

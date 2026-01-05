@@ -6,107 +6,233 @@ import {
 	TouchableOpacity,
 	Alert,
 	ActivityIndicator,
-	FlatList,
+	TextInput,
+	Image,
+	Platform,
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import {
-	Calendar,
-	MapPin,
+	ArrowLeft,
 	Check,
-	ChevronRight,
-	ChevronLeft,
 	CreditCard,
+	Store,
+	Calendar,
 } from "lucide-react-native";
 import api from "@/services/api";
-import PaymentMethod from "./components/PaymentMethod";
-import { BookingStackParamList } from "@/navigation/types";
+import { getImageUrl } from "@/utils/imageHelper";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const BookingScreen = () => {
-	const navigation =
-		useNavigation<NativeStackNavigationProp<BookingStackParamList>>();
+	const navigation = useNavigation<NativeStackNavigationProp<any>>();
 	const route = useRoute<any>();
 
 	// Ambil parameter dari halaman sebelumnya (LocationDetail)
-	// Default nilai dummy jika diakses langsung (untuk dev)
 	const {
 		locationId = 1,
-		locationName = "Kolam Pancing",
-		price = 50000,
+		locationName = "Strike It! Cabang Bandung",
+		locationAddress = "Jl. Cipamokolan, Bandung",
+		price = 15000,
+		duration = 2,
+		totalPrice = 30000,
+		locationImage = "",
+		selectedDate: initialDate,
 	} = route.params || {};
 
 	// --- STATE ---
 	const [currentStep, setCurrentStep] = useState(1);
-	const [selectedDate, setSelectedDate] = useState(new Date());
-	const [selectedSpot, setSelectedSpot] = useState<number | null>(null);
-	const [selectedPayment, setSelectedPayment] = useState<any>(null);
-
+	
+	// Step 1: Informasi Booking
+	const [fullName, setFullName] = useState("");
+	const [email, setEmail] = useState("");
+	const [phone, setPhone] = useState("");
+	const [selectedDate, setSelectedDate] = useState(
+		initialDate ? new Date(initialDate) : new Date()
+	);
+	const [showDatePicker, setShowDatePicker] = useState(false);
+	
+	// Step 2: Pilih Spot
+	const [selectedSpot, setSelectedSpot] = useState<string | null>(null);
 	const [spots, setSpots] = useState<any[]>([]);
 	const [loadingSpots, setLoadingSpots] = useState(false);
+	
+	// Step 3: Pembayaran
+	const [selectedPayment, setSelectedPayment] = useState<"card" | "qris">("card");
+	const [cardNumber, setCardNumber] = useState("");
+	const [cardName, setCardName] = useState("");
+	const [expiryDate, setExpiryDate] = useState("");
+	const [cvv, setCvv] = useState("");
+	const [voucherCode, setVoucherCode] = useState("");
+	const [notes, setNotes] = useState("");
+
+	
 	const [submitting, setSubmitting] = useState(false);
 
-	// --- STEP 1: DATE SELECTION HELPERS ---
-	// Generate 7 hari ke depan
-	const getNext7Days = () => {
-		const dates = [];
-		for (let i = 0; i < 7; i++) {
-			const d = new Date();
-			d.setDate(d.getDate() + i);
-			dates.push(d);
+	// --- AUTO-FILL FROM PROFILE ---
+	useEffect(() => {
+		loadUserData();
+	}, []);
+
+	const loadUserData = async () => {
+		try {
+			const userData = await AsyncStorage.getItem("user");
+			if (userData) {
+				const user = JSON.parse(userData);
+				setFullName(user.name || "");
+				setEmail(user.email || "");
+				setPhone(user.phone || "");
+			}
+		} catch (error) {
+			console.log("Error loading user data:", error);
 		}
-		return dates;
 	};
-	const availableDates = getNext7Days();
+
+	// Date picker helper function
+	const formatDate = (date: Date) => {
+		return date.toLocaleDateString("id-ID", {
+			weekday: "long",
+			year: "numeric",
+			month: "long",
+			day: "numeric",
+		});
+	};
+
+	const onDateChange = (event: any, date?: Date) => {
+		if (Platform.OS === "android") {
+			setShowDatePicker(false);
+		}
+		if (date) {
+			setSelectedDate(date);
+			if (Platform.OS === "ios") {
+				setShowDatePicker(false);
+			}
+		}
+	};
 
 	// --- STEP 2: SPOT SELECTION LOGIC ---
 	useEffect(() => {
 		if (currentStep === 2) {
 			fetchSpots();
 		}
-	}, [currentStep, selectedDate]);
+	}, [currentStep]);
+
+    const generateBaseLayout = () => {
+        const layout = [];
+        // Top Row: A1-A5
+        for(let i=1; i<=5; i++) layout.push({ id: `A${i}`, number: `A${i}`, status: 'available' });
+        // Left Column: B1-B8
+        for(let i=1; i<=8; i++) layout.push({ id: `B${i}`, number: `B${i}`, status: 'available' });
+        // Right Column: C1-C8
+        for(let i=1; i<=8; i++) layout.push({ id: `C${i}`, number: `C${i}`, status: 'available' });
+        // Bottom Row: D1-D5
+        for(let i=1; i<=5; i++) layout.push({ id: `D${i}`, number: `D${i}`, status: 'available' });
+        return layout;
+    };
 
 	const fetchSpots = async () => {
 		setLoadingSpots(true);
 		try {
-			// Format tanggal YYYY-MM-DD untuk API
-			const dateStr = selectedDate.toISOString().split("T")[0];
-			const res = await api.getLocationSpots(locationId, dateStr);
-			setSpots(res.data);
-		} catch (error) {
-			console.log("Gagal load spot:", error);
-			// Dummy data jika API belum siap
-			setSpots(
-				Array.from({ length: 20 }, (_, i) => ({
-					id: i + 1,
-					number: i + 1,
-					status: Math.random() > 0.7 ? "booked" : "available",
-				})),
-			);
+            // 1. Generate default layout (26 spots)
+            let finalSpots = generateBaseLayout();
+
+            // 2. Try to fetch real data
+			try {
+                // Use the selected date for checking availability
+                const dateString = selectedDate.toISOString().split("T")[0];
+                const res = await api.getLocationSpots(locationId, dateString);
+                const apiSpots = res.data;
+
+                if (Array.isArray(apiSpots) && apiSpots.length > 0) {
+                    // Merge API data into layout based on spot number
+                    finalSpots = finalSpots.map(defaultSpot => {
+                        const found = apiSpots.find((s: any) => s.number === defaultSpot.number);
+                        if (found) {
+                            return { ...defaultSpot, ...found };
+                        }
+                        return defaultSpot;
+                    });
+                } else {
+                    // If API returns empty, maybe randomize for demo purposes (optional)
+                    // or just keep them available.
+                    console.log("API returned empty spots, using default layout");
+                }
+            } catch (apiError) {
+                console.log("API Error, using default layout:", apiError);
+                // Fallback: Randomize some booked spots for demo if API fails
+                finalSpots = finalSpots.map(s => ({
+                    ...s,
+                    status: Math.random() > 0.8 ? "booked" : "available"
+                }));
+            }
+			
+			setSpots(finalSpots);
 		} finally {
 			setLoadingSpots(false);
 		}
 	};
 
-	// --- STEP 3: SUBMIT LOGIC ---
-	const handleBooking = async () => {
-		if (!selectedSpot || !selectedPayment) {
-			Alert.alert(
-				"Lengkapi Data",
-				"Pastikan lapak dan metode pembayaran sudah dipilih.",
-			);
-			return;
-		}
+	// Calculate prices
+	const subtotal = totalPrice || price * duration;
+	const tax = Math.round(subtotal * 0.1);
+	const total = subtotal + tax;
 
+	// --- VALIDATE & SUBMIT ---
+	const validateStep1 = () => {
+		if (!fullName.trim() || !email.trim() || !phone.trim()) {
+			Alert.alert("Lengkapi Data", "Semua field harus diisi.");
+			return false;
+		}
+		return true;
+	};
+
+	const validateStep2 = () => {
+		if (!selectedSpot) {
+			Alert.alert("Pilih Spot", "Silakan pilih nomor spot terlebih dahulu.");
+			return false;
+		}
+		return true;
+	};
+
+	const handleNext = () => {
+		if (currentStep === 1 && !validateStep1()) return;
+		if (currentStep === 2 && !validateStep2()) return;
+		setCurrentStep(currentStep + 1);
+	};
+
+	const handleBooking = async () => {
 		setSubmitting(true);
 		try {
+            // Split full name into first and last name
+            const names = fullName.trim().split(" ");
+            const firstName = names[0];
+            const lastName = names.slice(1).join(" ") || names[0]; // Fallback if no last name
+
+            const dateString = selectedDate.toISOString().split("T")[0];
+            // Default start time 08:00 for now since we don't have time picker
+            const bookingStart = `${dateString} 08:00:00`; 
+
+            // Map payment method string to ID
+            // 1: Debit Card, 3: QRIS (based on payment_methods table)
+            const paymentMethodId = selectedPayment === "card" ? 1 : 3;
+
 			const payload = {
-				location_id: locationId,
-				date: selectedDate.toISOString().split("T")[0],
+				id_location: locationId, // Backend expects id_location
+				first_name: firstName,   // Backend expects first_name
+                last_name: lastName,     // Backend expects last_name
+				email: email,
+				phone: phone,
+				booking_date: dateString,
+                booking_start: bookingStart, // Backend needs this for calculation
 				spot_number: selectedSpot,
-				payment_method_id: selectedPayment.id,
-				total_price: price,
+				duration: duration,
+				// total_price: total, // Backend calculates this
+				payment_method: paymentMethodId,
+				voucher_code: voucherCode,
+				notes: notes,
 			};
 
+			// Uncomment when API ready
 			const res = await api.createBooking(payload);
 
 			Alert.alert(
@@ -115,20 +241,14 @@ const BookingScreen = () => {
 				[
 					{
 						text: "OK",
-						onPress: () => {
-							// Reset navigasi ke Home / History
-							navigation.popToTop();
-							// @ts-ignore
-							navigation.navigate("History");
-						},
+						onPress: () => navigation.goBack(),
 					},
 				],
 			);
 		} catch (error: any) {
 			Alert.alert(
 				"Gagal",
-				error.response?.data?.message ||
-					"Terjadi kesalahan saat booking.",
+				error.response?.data?.message || "Terjadi kesalahan saat booking.",
 			);
 		} finally {
 			setSubmitting(false);
@@ -137,279 +257,536 @@ const BookingScreen = () => {
 
 	// --- RENDER STEPS ---
 
-	// 1. Render Pilih Tanggal
+	// Step 1: Informasi Booking (Form Data Diri)
 	const renderStep1 = () => (
 		<View>
-			<Text className="text-xl font-bold text-gray-900 mb-4 font-[Outfit_700Bold]">
-				Pilih Tanggal Mancing
+			<Text className="text-center text-gray-500 mb-6">
+				Isi detail informasi di bawah ini
 			</Text>
-			<View className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-				<FlatList
-					horizontal
-					data={availableDates}
-					showsHorizontalScrollIndicator={false}
-					keyExtractor={(item) => item.toISOString()}
-					renderItem={({ item }) => {
-						const isSelected =
-							item.toDateString() === selectedDate.toDateString();
-						return (
-							<TouchableOpacity
-								onPress={() => setSelectedDate(item)}
-								className={`mr-3 p-3 rounded-xl border items-center w-20 ${
-									isSelected
-										? "bg-blue-600 border-blue-600"
-										: "bg-gray-50 border-gray-200"
-								}`}
-							>
-								<Text
-									className={`text-xs mb-1 ${
-										isSelected
-											? "text-blue-100"
-											: "text-gray-500"
-									}`}
-								>
-									{item.toLocaleDateString("id-ID", {
-										weekday: "short",
-									})}
-								</Text>
-								<Text
-									className={`text-xl font-bold ${
-										isSelected
-											? "text-white"
-											: "text-gray-800"
-									}`}
-								>
-									{item.getDate()}
-								</Text>
-							</TouchableOpacity>
-						);
-					}}
+
+			{/* Location Card */}
+			<View className="bg-white rounded-2xl overflow-hidden mb-6 shadow-sm">
+				<Image
+					source={{ uri: getImageUrl(locationImage) }}
+					className="w-full h-48 bg-gray-200"
+					resizeMode="cover"
 				/>
-				<View className="mt-6 p-4 bg-blue-50 rounded-xl flex-row items-center">
-					<Calendar size={20} color="#2563EB" />
-					<Text className="ml-3 text-blue-800 font-medium">
-						{selectedDate.toLocaleDateString("id-ID", {
-							weekday: "long",
-							year: "numeric",
-							month: "long",
-							day: "numeric",
-						})}
-					</Text>
-				</View>
-			</View>
-		</View>
-	);
-
-	// 2. Render Pilih Lapak
-	const renderStep2 = () => (
-		<View>
-			<Text className="text-xl font-bold text-gray-900 mb-4 font-[Outfit_700Bold]">
-				Pilih Nomor Lapak
-			</Text>
-
-			<View className="flex-row justify-center gap-4 mb-4">
-				<View className="flex-row items-center">
-					<View className="w-3 h-3 bg-white border border-gray-300 rounded mr-2" />
-					<Text className="text-xs text-gray-500">Tersedia</Text>
-				</View>
-				<View className="flex-row items-center">
-					<View className="w-3 h-3 bg-blue-600 rounded mr-2" />
-					<Text className="text-xs text-gray-500">Dipilih</Text>
-				</View>
-				<View className="flex-row items-center">
-					<View className="w-3 h-3 bg-gray-300 rounded mr-2" />
-					<Text className="text-xs text-gray-500">Terisi</Text>
-				</View>
-			</View>
-
-			{loadingSpots ? (
-				<View className="h-60 justify-center">
-					<ActivityIndicator size="large" color="#2563EB" />
-				</View>
-			) : (
-				<View className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex-row flex-wrap justify-center gap-3">
-					{spots.map((spot) => {
-						const isBooked = spot.status === "booked";
-						const isSelected = selectedSpot === spot.number;
-
-						return (
-							<TouchableOpacity
-								key={spot.id}
-								disabled={isBooked}
-								onPress={() => setSelectedSpot(spot.number)}
-								className={`w-12 h-12 rounded-lg items-center justify-center border ${
-									isBooked
-										? "bg-gray-200 border-gray-200"
-										: isSelected
-											? "bg-blue-600 border-blue-600"
-											: "bg-white border-gray-300"
-								}`}
-							>
-								<Text
-									className={`font-bold ${
-										isBooked
-											? "text-gray-400"
-											: isSelected
-												? "text-white"
-												: "text-gray-700"
-									}`}
-								>
-									{spot.number}
-								</Text>
-							</TouchableOpacity>
-						);
-					})}
-				</View>
-			)}
-		</View>
-	);
-
-	// 3. Render Konfirmasi
-	const renderStep3 = () => (
-		<View>
-			<Text className="text-xl font-bold text-gray-900 mb-4 font-[Outfit_700Bold]">
-				Konfirmasi & Bayar
-			</Text>
-
-			{/* Ringkasan */}
-			<View className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm mb-6">
-				<View className="flex-row justify-between mb-2">
-					<Text className="text-gray-500">Lokasi</Text>
-					<Text className="font-bold text-gray-900">
+				<View className="p-4">
+					<View className="flex-row justify-between items-center mb-2">
+						<Text className="text-blue-600 font-bold text-lg">
+							Rp {Number(price).toLocaleString("id-ID")}/jam
+						</Text>
+						<Text className="text-gray-500 text-sm">per {duration} jam</Text>
+					</View>
+					<Text className="text-xl font-bold text-gray-900 mb-2">
 						{locationName}
 					</Text>
+					<Text className="text-gray-500 text-sm mb-3">{locationAddress}</Text>
+					
+					<View className="bg-blue-50 rounded-lg p-3">
+						<View className="flex-row justify-between items-center mb-1">
+							<Text className="text-gray-600 text-sm">Durasi Booking</Text>
+							<Text className="text-gray-900 font-bold">{duration} jam</Text>
+						</View>
+						<View className="flex-row justify-between items-center">
+							<Text className="text-gray-600 text-sm">Total Harga</Text>
+							<Text className="text-blue-600 font-bold text-lg">
+								Rp {(totalPrice || price * duration).toLocaleString("id-ID")}
+							</Text>
+						</View>
+					</View>
 				</View>
+			</View>
+
+			{/* Date Picker */}
+			<View className="mb-4">
+				<Text className="text-gray-700 mb-2">
+					Tanggal Booking <Text className="text-red-500">*</Text>
+				</Text>
+				<TouchableOpacity
+					onPress={() => setShowDatePicker(true)}
+					className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 flex-row items-center"
+				>
+					<Calendar size={20} color="#2563EB" />
+					<Text className="text-gray-900 ml-3 flex-1">
+						{formatDate(selectedDate)}
+					</Text>
+				</TouchableOpacity>
+			</View>
+
+			{/* Date Picker */}
+			{showDatePicker && (
+				<DateTimePicker
+					value={selectedDate}
+					mode="date"
+					display={Platform.OS === "ios" ? "spinner" : "default"}
+					onChange={onDateChange}
+					minimumDate={new Date()}
+					locale="id-ID"
+				/>
+			)}
+
+			{/* Form - 3 Fields Only */}
+			<View className="space-y-4">
+				<View>
+					<Text className="text-gray-700 mb-2">
+						Nama Lengkap <Text className="text-red-500">*</Text>
+					</Text>
+					<TextInput
+						placeholder="Masukkan nama lengkap"
+						value={fullName}
+						onChangeText={setFullName}
+						className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900"
+					/>
+				</View>
+
+				<View className="mt-4">
+					<Text className="text-gray-700 mb-2">
+						Email <Text className="text-red-500">*</Text>
+					</Text>
+					<TextInput
+						placeholder="contoh@email.com"
+						value={email}
+						onChangeText={setEmail}
+						keyboardType="email-address"
+						autoCapitalize="none"
+						className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900"
+					/>
+				</View>
+
+				<View className="mt-4">
+					<Text className="text-gray-700 mb-2">
+						Nomor Telepon <Text className="text-red-500">*</Text>
+					</Text>
+					<TextInput
+						placeholder="08xxxxxxxxxx"
+						value={phone}
+						onChangeText={setPhone}
+						keyboardType="phone-pad"
+						className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900"
+					/>
+				</View>
+			</View>
+		</View>
+	);
+
+	// Step 2: Pilih Kursi (Spot Layout)
+	const renderStep2 = () => {
+		// Render single spot component
+		const renderSpot = (spot: any) => {
+			const isBooked = spot.status === "booked";
+			const isSelected = selectedSpot === spot.number;
+			
+            // Determine fill color
+            let fillColor = "transparent"; 
+            if (isBooked) fillColor = "#EF4444";
+            else if (isSelected) fillColor = "#2563EB";
+            
+			return (
+				<TouchableOpacity
+					key={spot.id || spot.number}
+					disabled={isBooked}
+					onPress={() => setSelectedSpot(spot.number)}
+					className="items-center justify-center m-1"
+				>
+					<Store
+						size={32}
+						color={isBooked ? "#EF4444" : isSelected ? "#2563EB" : "#000000"}
+						fill={fillColor}
+						strokeWidth={1.5}
+					/>
+				</TouchableOpacity>
+			);
+		};
+
+        const getSpots = (start: number, count: number) => {
+            // Ensure we don't crash if spots array is smaller than expected
+            // though fetchSpots now guarantees 26 spots.
+            return spots.slice(start, start + count);
+        };
+
+		return (
+			<View>
+				{loadingSpots ? (
+					<View className="h-96 justify-center items-center">
+						<ActivityIndicator size="large" color="#2563EB" />
+					</View>
+				) : (
+					<View>
+                        {spots.length === 0 ? (
+                            <View className="h-64 justify-center items-center">
+                                <Text className="text-gray-400">Tidak ada spot tersedia</Text>
+                            </View>
+                        ) : (
+                            <View className="items-center mb-6 mt-4">
+                                {/* Top Row */}
+                                <View className="flex-row justify-center mb-2 gap-2">
+                                    {getSpots(0, 5).map(renderSpot)}
+                                </View>
+
+                                <View className="flex-row justify-center items-stretch gap-2">
+                                    {/* Left Column */}
+                                    <View className="justify-center gap-2">
+                                        {getSpots(5, 8).map(renderSpot)}
+                                    </View>
+
+                                    {/* Center Area */}
+                                    <View className="border border-gray-300 rounded-lg justify-center items-center w-48 mx-2 bg-white">
+                                        <Text className="text-gray-900 text-center font-medium">
+                                            Area Pemancingan
+                                        </Text>
+                                    </View>
+
+                                    {/* Right Column */}
+                                    <View className="justify-center gap-2">
+                                        {getSpots(13, 8).map(renderSpot)}
+                                    </View>
+                                </View>
+
+                                {/* Bottom Row */}
+                                <View className="flex-row justify-center mt-2 gap-2">
+                                    {getSpots(21, 5).map(renderSpot)}
+                                </View>
+                            </View>
+                        )}
+
+						{/* Legend / Informasi Kursi */}
+						<View className="items-center mb-8">
+							<Text className="text-blue-900 font-bold text-lg mb-4">
+								Informasi Kursi
+							</Text>
+							<View className="flex-row gap-4">
+								<View className="items-center bg-white p-4 rounded-2xl shadow-sm w-24 border border-gray-100">
+									<Store size={32} color="#2563EB" fill="#2563EB" strokeWidth={1.5} />
+									<Text className="text-blue-900 text-xs mt-2 font-medium">Dipilih</Text>
+								</View>
+								<View className="items-center bg-white p-4 rounded-2xl shadow-sm w-24 border border-gray-100">
+									<Store size={32} color="#000000" strokeWidth={1.5} />
+									<Text className="text-blue-900 text-xs mt-2 font-medium">Tersedia</Text>
+								</View>
+								<View className="items-center bg-white p-4 rounded-2xl shadow-sm w-24 border border-gray-100">
+									<Store size={32} color="#EF4444" fill="#EF4444" strokeWidth={1.5} />
+									<Text className="text-blue-900 text-xs mt-2 font-medium">Terisi</Text>
+								</View>
+							</View>
+						</View>
+
+                        {/* Selected Spot Display */}
+                        {selectedSpot && (
+                            <View className="bg-blue-600 rounded-2xl p-4 mb-6 mx-4">
+                                <Text className="text-white text-sm mb-1 text-center">Spot Terpilih</Text>
+                                <Text className="text-white font-bold text-3xl text-center">
+                                    {selectedSpot}
+                                </Text>
+                            </View>
+                        )}
+					</View>
+				)}
+			</View>
+		);
+	};
+
+	// Step 3: Pembayaran
+	const renderStep3 = () => (
+		<View>
+			{/* Detail Booking Card */}
+			<View className="bg-blue-600 rounded-2xl p-5 mb-6">
+				<Text className="text-white font-bold text-lg mb-4">Detail Booking</Text>
+				
 				<View className="flex-row justify-between mb-2">
-					<Text className="text-gray-500">Tanggal</Text>
-					<Text className="font-bold text-gray-900">
-						{selectedDate.toLocaleDateString("id-ID")}
+					<Text className="text-white/80">Lokasi</Text>
+					<Text className="text-white font-medium">{locationName}</Text>
+				</View>
+				
+				<View className="flex-row justify-between mb-2">
+					<Text className="text-white/80">Durasi</Text>
+					<Text className="text-white font-medium">{duration} jam</Text>
+				</View>
+				
+				<View className="flex-row justify-between mb-3">
+					<Text className="text-white/80">Jumlah Spot</Text>
+					<Text className="text-white font-medium">1 spot</Text>
+				</View>
+
+				{selectedSpot && (
+					<View className="bg-blue-500 rounded-xl p-3 items-center justify-center">
+						<Text className="text-white font-bold text-2xl">{selectedSpot}</Text>
+					</View>
+				)}
+			</View>
+
+			{/* Rincian Harga */}
+			<View className="mb-6">
+				<Text className="font-bold text-lg text-gray-900 mb-3">Rincian Harga</Text>
+				
+				<View className="flex-row justify-between mb-2">
+					<Text className="text-gray-600">Subtotal</Text>
+					<Text className="text-gray-900 font-medium">
+						Rp {subtotal.toLocaleString("id-ID")}
 					</Text>
 				</View>
-				<View className="flex-row justify-between mb-2">
-					<Text className="text-gray-500">Nomor Lapak</Text>
-					<Text className="font-bold text-gray-900">
-						#{selectedSpot}
+				
+				<View className="flex-row justify-between mb-3">
+					<Text className="text-gray-600">Pajak (10%)</Text>
+					<Text className="text-gray-900 font-medium">
+						Rp {tax.toLocaleString("id-ID")}
 					</Text>
 				</View>
-				<View className="h-[1px] bg-gray-100 my-2" />
+				
+				<View className="h-[1px] bg-gray-200 mb-3" />
+				
 				<View className="flex-row justify-between">
-					<Text className="font-bold text-gray-900">Total Harga</Text>
-					<Text className="font-bold text-blue-600 text-lg">
-						Rp {Number(price).toLocaleString("id-ID")}
+					<Text className="font-bold text-lg text-gray-900">Total Pembayaran</Text>
+					<Text className="font-bold text-xl text-blue-600">
+						Rp {total.toLocaleString("id-ID")}
 					</Text>
 				</View>
 			</View>
 
-			{/* Payment Method Reuse */}
-			<PaymentMethod
-				onSelect={(method: any) => setSelectedPayment(method)}
-			/>
+			{/* Metode Pembayaran */}
+			<View className="mb-6">
+				<Text className="font-bold text-lg text-gray-900 mb-3">Metode Pembayaran</Text>
+				
+				{/* Card Payment */}
+				<TouchableOpacity
+					onPress={() => setSelectedPayment("card")}
+					className={`border-2 rounded-xl p-4 mb-3 flex-row items-center ${
+						selectedPayment === "card" ? "border-blue-600 bg-blue-50" : "border-gray-200"
+					}`}
+				>
+					<View
+						className={`w-5 h-5 rounded-full border-2 mr-3 items-center justify-center ${
+							selectedPayment === "card" ? "border-blue-600" : "border-gray-300"
+						}`}
+					>
+						{selectedPayment === "card" && (
+							<View className="w-3 h-3 rounded-full bg-blue-600" />
+						)}
+					</View>
+					<CreditCard size={24} color={selectedPayment === "card" ? "#2563EB" : "#6B7280"} />
+					<Text
+						className={`ml-3 font-medium ${
+							selectedPayment === "card" ? "text-blue-600" : "text-gray-700"
+						}`}
+					>
+						Kartu Kredit/Debit
+					</Text>
+					<View className="ml-auto flex-row gap-2">
+						<View className="bg-gray-200 px-2 py-1 rounded">
+							<Text className="text-xs font-bold">VISA</Text>
+						</View>
+						<View className="bg-gray-200 px-2 py-1 rounded">
+							<Text className="text-xs font-bold">MC</Text>
+						</View>
+					</View>
+				</TouchableOpacity>
+
+				{/* QRIS Payment */}
+				<TouchableOpacity
+					onPress={() => setSelectedPayment("qris")}
+					className={`border-2 rounded-xl p-4 flex-row items-center ${
+						selectedPayment === "qris" ? "border-blue-600 bg-blue-50" : "border-gray-200"
+					}`}
+				>
+					<View
+						className={`w-5 h-5 rounded-full border-2 mr-3 items-center justify-center ${
+							selectedPayment === "qris" ? "border-blue-600" : "border-gray-300"
+						}`}
+					>
+						{selectedPayment === "qris" && (
+							<View className="w-3 h-3 rounded-full bg-blue-600" />
+						)}
+					</View>
+					<Store size={24} color={selectedPayment === "qris" ? "#2563EB" : "#6B7280"} />
+					<Text
+						className={`ml-3 font-medium ${
+							selectedPayment === "qris" ? "text-blue-600" : "text-gray-700"
+						}`}
+					>
+						QRIS (Scan & Pay)
+					</Text>
+				</TouchableOpacity>
+			</View>
+
+			{/* Card Details - Only show if card selected */}
+			{selectedPayment === "card" && (
+				<View className="mb-6 space-y-4">
+					<View>
+						<Text className="text-gray-700 mb-2">Nomor Kartu</Text>
+						<TextInput
+							placeholder="1234 5678 9012 3456"
+							value={cardNumber}
+							onChangeText={setCardNumber}
+							keyboardType="number-pad"
+							maxLength={19}
+							className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900"
+						/>
+					</View>
+
+					<View className="mt-4">
+						<Text className="text-gray-700 mb-2">Nama Pemegang Kartu</Text>
+						<TextInput
+							placeholder="Nama sesuai kartu"
+							value={cardName}
+							onChangeText={setCardName}
+							className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900"
+						/>
+					</View>
+
+					<View className="flex-row gap-3 mt-4">
+						<View className="flex-1">
+							<Text className="text-gray-700 mb-2">Tanggal Kadaluarsa</Text>
+							<TextInput
+								placeholder="MM/YY"
+								value={expiryDate}
+								onChangeText={setExpiryDate}
+								maxLength={5}
+								className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900"
+							/>
+						</View>
+						<View className="flex-1">
+							<Text className="text-gray-700 mb-2">CVV</Text>
+							<TextInput
+								placeholder="123"
+								value={cvv}
+								onChangeText={setCvv}
+								keyboardType="number-pad"
+								maxLength={3}
+								secureTextEntry
+								className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900"
+							/>
+						</View>
+					</View>
+				</View>
+			)}
+
+			{/* Voucher */}
+			<View className="mb-6">
+				<Text className="font-bold text-lg text-gray-900 mb-3">
+					Punya Kode Voucher?
+				</Text>
+				<View className="flex-row gap-2">
+					<TextInput
+						placeholder="Contoh: DISKON10"
+						value={voucherCode}
+						onChangeText={setVoucherCode}
+						className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900"
+					/>
+					<TouchableOpacity className="bg-blue-600 px-6 rounded-xl justify-center">
+						<Text className="text-white font-bold">Pakai</Text>
+					</TouchableOpacity>
+				</View>
+			</View>
+
+			{/* Catatan */}
+			<View className="mb-6">
+				<Text className="font-bold text-lg text-gray-900 mb-3">
+					Catatan Booking
+				</Text>
+				<TextInput
+					placeholder="Tulis catatan khusus untuk booking Anda (optional)"
+					value={notes}
+					onChangeText={setNotes}
+					multiline
+					numberOfLines={3}
+					className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900"
+					style={{ textAlignVertical: "top" }}
+				/>
+				<Text className="text-gray-400 text-xs mt-2">
+					Contoh: Request spot dekat pohon rindang
+				</Text>
+			</View>
 		</View>
 	);
 
 	return (
 		<View className="flex-1 bg-gray-50">
-			{/* Progress Header */}
+			{/* Header */}
 			<View className="bg-white pt-12 pb-4 px-5 border-b border-gray-100">
-				<Text className="text-center font-bold text-gray-900 mb-4 font-[Outfit_700Bold]">
-					Booking Wizard
-				</Text>
-				<View className="flex-row justify-between items-center px-4">
+				<View className="flex-row items-center mb-4">
+					<TouchableOpacity onPress={() => navigation.goBack()} className="mr-3">
+						<ArrowLeft size={24} color="#000" />
+					</TouchableOpacity>
+					<Text className="text-xl font-bold text-gray-900">
+						{currentStep === 1 && "Informasi Booking"}
+						{currentStep === 2 && "Pilih Kursi"}
+						{currentStep === 3 && "Pembayaran"}
+					</Text>
+				</View>
+
+				{/* Progress Indicator */}
+				<View className="flex-row justify-center items-center">
 					{[1, 2, 3].map((step) => (
 						<View key={step} className="flex-row items-center">
 							<View
-								className={`w-8 h-8 rounded-full items-center justify-center ${
-									currentStep >= step
+								className={`w-10 h-10 rounded-full items-center justify-center ${
+									currentStep === step
 										? "bg-blue-600"
+										: currentStep > step
+										? "bg-green-500"
 										: "bg-gray-200"
 								}`}
 							>
-								<Text className="text-white font-bold">
-									{step}
-								</Text>
+								{currentStep > step ? (
+									<Check size={20} color="white" />
+								) : (
+									<Text className={`font-bold ${currentStep === step ? "text-white" : "text-gray-400"}`}>
+										{step}
+									</Text>
+								)}
 							</View>
 							{step < 3 && (
-								<View
-									className={`w-16 h-1 mx-2 ${
-										currentStep > step
-											? "bg-blue-600"
-											: "bg-gray-200"
-									}`}
-								/>
+								<View className={`w-20 h-1 ${currentStep > step ? "bg-green-500" : "bg-gray-200"}`} />
 							)}
 						</View>
 					))}
 				</View>
-				<View className="flex-row justify-between px-2 mt-2">
-					<Text className="text-xs text-gray-500">Tanggal</Text>
-					<Text className="text-xs text-gray-500 ml-4">Lapak</Text>
-					<Text className="text-xs text-gray-500">Bayar</Text>
-				</View>
 			</View>
 
 			{/* Main Content */}
-			<ScrollView className="flex-1 p-5">
+			<ScrollView className="flex-1 px-5 py-6" showsVerticalScrollIndicator={false}>
 				{currentStep === 1 && renderStep1()}
 				{currentStep === 2 && renderStep2()}
 				{currentStep === 3 && renderStep3()}
-				<View className="h-24" />
+				<View className="h-32" />
 			</ScrollView>
 
 			{/* Bottom Actions */}
-			<View className="absolute bottom-0 w-full bg-white p-5 border-t border-gray-100 shadow-2xl flex-row justify-between">
-				{currentStep > 1 ? (
-					<TouchableOpacity
-						onPress={() => setCurrentStep(currentStep - 1)}
-						className="px-6 py-3 rounded-xl border border-gray-300 bg-white"
-					>
-						<Text className="font-bold text-gray-700">Kembali</Text>
-					</TouchableOpacity>
-				) : (
-					<View /> // Spacer
-				)}
-
+			<View className="bg-white px-5 py-4 border-t border-gray-100 pb-8">
 				{currentStep < 3 ? (
-					<TouchableOpacity
-						onPress={() => {
-							if (currentStep === 2 && !selectedSpot) {
-								Alert.alert(
-									"Pilih Lapak",
-									"Silakan pilih nomor lapak terlebih dahulu.",
-								);
-								return;
-							}
-							setCurrentStep(currentStep + 1);
-						}}
-						className="px-6 py-3 rounded-xl bg-blue-600 shadow-lg shadow-blue-200 flex-row items-center"
-					>
-						<Text className="font-bold text-white mr-2">
-							Lanjut
-						</Text>
-						<ChevronRight size={20} color="white" />
-					</TouchableOpacity>
+					<View className="space-y-3">
+						<TouchableOpacity
+							onPress={handleNext}
+							className="bg-blue-600 py-4 rounded-xl items-center shadow-lg"
+						>
+							<Text className="text-white font-bold text-base">
+								Lanjutkan Pembayaran
+							</Text>
+						</TouchableOpacity>
+						
+						<TouchableOpacity
+							onPress={() => navigation.goBack()}
+							className="bg-red-500 py-4 rounded-xl items-center"
+						>
+							<Text className="text-white font-bold text-base">
+								Batalkan
+							</Text>
+						</TouchableOpacity>
+					</View>
 				) : (
 					<TouchableOpacity
 						onPress={handleBooking}
 						disabled={submitting}
-						className={`px-8 py-3 rounded-xl flex-row items-center shadow-lg ${
-							submitting
-								? "bg-gray-400"
-								: "bg-green-600 shadow-green-200"
+						className={`py-4 rounded-xl items-center shadow-lg ${
+							submitting ? "bg-gray-400" : "bg-blue-600"
 						}`}
 					>
 						{submitting ? (
 							<ActivityIndicator color="white" />
 						) : (
-							<>
-								<Check
-									size={20}
-									color="white"
-									className="mr-2"
-								/>
-								<Text className="font-bold text-white">
-									Selesaikan
-								</Text>
-							</>
+							<Text className="text-white font-bold text-base">
+								Bayar Sekarang • Rp {total.toLocaleString("id-ID")}
+							</Text>
 						)}
 					</TouchableOpacity>
 				)}

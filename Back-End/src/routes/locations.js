@@ -158,13 +158,38 @@ export default async function (fastify, options) {
 
       const occupiedSet = new Set(bookedSpots.map((b) => b.spot_number));
 
-      const results = allSpots.map((s) => ({
-        id: s.spot_name,
-        name: s.spot_name,
-        status: occupiedSet.has(s.spot_name) ? "occupied" : "available",
-      }));
+      // FIX: Gabungkan spot dari master table DAN spot yang sudah dibooking
+      // Ini penting jika nama spot di frontend (A1) beda dengan di DB (T1),
+      // atau jika master table belum lengkap.
+      const combinedSpotNames = new Set(allSpots.map(s => s.spot_name));
+      
+      // Masukkan juga spot yang ada di booking tapi tidak ada di master
+      bookedSpots.forEach(b => combinedSpotNames.add(b.spot_number));
 
-      return results;
+      let finalSpots = [];
+      
+      // Jika total spot (master + booked) masih kosong, kita generate default
+      if (combinedSpotNames.size === 0) {
+         // Generate A1-A5, B1-B8, C1-C8, D1-D5
+         const generated = [];
+         for(let i=1; i<=5; i++) generated.push(`A${i}`);
+         for(let i=1; i<=8; i++) generated.push(`B${i}`);
+         for(let i=1; i<=8; i++) generated.push(`C${i}`);
+         for(let i=1; i<=5; i++) generated.push(`D${i}`);
+         
+         finalSpots = generated.map(name => ({
+             number: name,
+             status: occupiedSet.has(name) ? "booked" : "available"
+         }));
+      } else {
+          // Return semua spot yang diketahui (baik dari master maupun history booking)
+          finalSpots = Array.from(combinedSpotNames).map((name) => ({
+            number: name,
+            status: occupiedSet.has(name) ? "booked" : "available",
+          }));
+      }
+
+      return finalSpots;
     } catch (error) {
       request.log.error(error);
       return reply.code(500).send({ message: "Gagal memuat data kursi" });

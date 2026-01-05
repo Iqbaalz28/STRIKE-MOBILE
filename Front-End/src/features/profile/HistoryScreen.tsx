@@ -19,6 +19,24 @@ const HistoryScreen = () => {
 	const [refreshing, setRefreshing] = useState(false);
 	const [filter, setFilter] = useState("all"); // all, booking, shop
 
+    const formatDateSafe = (dateString: string) => {
+        if (!dateString) return "-";
+        // Fix for Safari/Android: replace space with T for ISO format if needed
+        // MySQL datetime: "2025-11-20 13:44:27" -> "2025-11-20T13:44:27"
+        const isoString = dateString.replace(" ", "T");
+        try {
+            const date = new Date(isoString);
+            // Check if date is valid
+            if (isNaN(date.getTime())) return dateString;
+            
+            return date.toLocaleDateString("id-ID", {
+                day: 'numeric', month: 'long', year: 'numeric'
+            });
+        } catch (e) {
+            return dateString;
+        }
+    };
+
 	// --- FETCH DATA ---
 	const fetchData = async () => {
 		try {
@@ -36,7 +54,7 @@ const HistoryScreen = () => {
 			const bookings = bookingsRes.data.map((b: any) => ({
 				id: b.id,
 				title: b.location_name || "Lokasi Pemancingan",
-				date: new Date(b.booking_date).toLocaleDateString("id-ID"),
+				date: formatDateSafe(b.booking_start), // Use booking_start instead of booking_date
 				price: b.total_price,
 				status: b.status, // terbayar, pending, dll
 				type: "booking",
@@ -45,8 +63,8 @@ const HistoryScreen = () => {
 			// Format Data Shop Order
 			const orders = ordersRes.data.map((o: any) => ({
 				id: o.id,
-				title: `Order #${o.invoice}`, // Atau ambil nama produk pertama
-				date: new Date(o.created_at).toLocaleDateString("id-ID"),
+				title: `Order #${o.order_number || o.id}`, // Use order_number if available
+				date: formatDateSafe(o.created_at),
 				price: o.total_amount,
 				status: o.status,
 				type: "shop",

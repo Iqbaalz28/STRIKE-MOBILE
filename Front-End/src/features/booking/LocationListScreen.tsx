@@ -98,12 +98,12 @@ const LocationListScreen = () => {
 						</Text>
 						<Text className="text-blue-600 font-bold text-base">
 							Rp{" "}
-							{Number(item.price || 50000).toLocaleString(
+							{Number(item.price_per_hour || 0).toLocaleString(
 								"id-ID",
 							)}
 							<Text className="text-xs font-normal text-gray-500">
 								{" "}
-								/orang
+								/jam
 							</Text>
 						</Text>
 					</View>
