@@ -1,5 +1,3 @@
-// File: src/features/shop/ShopScreen.tsx
-
 import React, { useEffect, useState } from "react";
 import {
 	View,
@@ -18,14 +16,15 @@ import FilterModal from "./components/FilterModal";
 const categories = [
 	{ id: "all", name: "Semua" },
 	{ id: "joran", name: "Joran" },
+	{ id: "reel", name: "Reel" },
 	{ id: "umpan", name: "Umpan" },
 	{ id: "kail", name: "Kail" },
-	{ id: "reel", name: "Reel" },
 ];
 
 const ShopScreen = () => {
 	const navigation = useNavigation<any>();
-	const [products, setProducts] = useState([]);
+
+	const [products, setProducts] = useState<any[]>([]);
 	const [loading, setLoading] = useState(true);
 
 	// State Filter Dasar
@@ -44,23 +43,67 @@ const ShopScreen = () => {
 		setLoading(true);
 		try {
 			const res = await api.getProducts({});
-			setProducts(res.data);
+
+			// LOGIKA ADAPTIF (Menangani format response backend)
+			let productData: any[] = [];
+			if (Array.isArray(res.data)) {
+				productData = res.data;
+			} else if (res.data && Array.isArray(res.data.data)) {
+				productData = res.data.data;
+			} else if (res.data?.products && Array.isArray(res.data.products)) {
+				productData = res.data.products;
+			}
+
+			console.log(`✅ Produk dimuat: ${productData.length} item`);
+			setProducts(productData);
 		} catch (error) {
-			console.error("Gagal memuat produk:", error);
+			console.error("❌ Gagal memuat produk:", error);
 		} finally {
 			setLoading(false);
 		}
 	};
 
+	// --- LOGIC FILTER UTAMA ---
 	const filteredProducts = products.filter((p: any) => {
-		const matchSearch = p.name
-			.toLowerCase()
-			.includes(searchQuery.toLowerCase());
-		const matchCategory =
-			selectedCategory === "all" ||
-			p.category?.toLowerCase() === selectedCategory;
+		// 1. Mapping Kategori (String Frontend -> ID Backend)
+		// Berdasarkan Log: 1=Joran, 2=Reel, 3=Umpan, 4=Kail, 5=Senar
+		const categoryMap: Record<string, number> = {
+			joran: 1,
+			reel: 2,
+			umpan: 3,
+			kail: 4,
+			// "senar": 5 // Jika ingin menambahkan filter senar nanti
+		};
+
+		// 2. Normalisasi Data
+		const pName = (p.name || p.product_name || "").toLowerCase();
+
+		// Cek harga (convert ke number)
+		const rawPrice = p.price || p.price_sale || p.price_rent || 0;
+		const pPrice = Number(rawPrice);
+
+		// 3. Filter Pencarian Nama
+		const matchSearch = pName.includes(searchQuery.toLowerCase());
+
+		// 4. Filter Kategori (Gunakan Mapping ID)
+		let matchCategory = true;
+		if (selectedCategory !== "all") {
+			// Ambil target ID dari map (misal "joran" -> 1)
+			const targetId = categoryMap[selectedCategory];
+
+			// Bandingkan dengan id_category dari database
+			if (targetId) {
+				matchCategory = p.id_category === targetId;
+			} else {
+				// Fallback jika mapping tidak ada, coba cocokkan string manual (jaga-jaga)
+				const pCatName = (p.category || "").toLowerCase();
+				matchCategory = pCatName === selectedCategory;
+			}
+		}
+
+		// 5. Filter Harga
 		const matchPrice =
-			p.price >= priceFilter.min && p.price <= priceFilter.max;
+			pPrice >= priceFilter.min && pPrice <= priceFilter.max;
 
 		return matchSearch && matchCategory && matchPrice;
 	});
@@ -108,7 +151,7 @@ const ShopScreen = () => {
 				</View>
 			</View>
 
-			{/* Filter Kategori */}
+			{/* Filter Kategori (Horizontal Scroll) */}
 			<View className="mb-4">
 				<FlatList
 					horizontal
@@ -157,7 +200,6 @@ const ShopScreen = () => {
 					renderItem={({ item }) => (
 						<ProductCard
 							product={item}
-							// INI PENTING: ShopScreen yang memberi perintah onPress ke ProductCard
 							onPress={() =>
 								navigation.navigate("ProductDetail", {
 									id: item.id,
@@ -170,12 +212,15 @@ const ShopScreen = () => {
 							<Text className="text-gray-400">
 								Produk tidak ditemukan
 							</Text>
+							<Text className="text-gray-400 text-xs mt-2 text-center px-10">
+								Coba ubah kata kunci atau reset filter kategori.
+							</Text>
 						</View>
 					}
 				/>
 			)}
 
-			{/* Modal */}
+			{/* Modal Filter */}
 			<FilterModal
 				visible={isFilterVisible}
 				onClose={() => setFilterVisible(false)}

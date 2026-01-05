@@ -1,39 +1,44 @@
-// src/utils/imageHelper.ts
-import { Platform } from "react-native";
-
-// PENTING: Import BASE_URL dari api.ts
-// Ini menjaga konsistensi. Jika API pakai Ngrok, gambar juga ambil dari Ngrok.
 import { BASE_URL } from "@/services/api";
 
 /**
  * Mengubah path gambar (relative) menjadi Full URL.
- * Contoh Input: "avatar.jpg" atau "uploads/avatar.jpg"
- * Contoh Output: "https://xxxx.ngrok-free.dev/uploads/avatar.jpg"
+ * Menggunakan BASE_URL dari api.ts agar sinkron dengan Ngrok.
  */
 export const getImageUrl = (path: string | null | undefined): string => {
-	// 1. Jika null/undefined/kosong, kembalikan placeholder default
+	// 1. Jika null/undefined, kembalikan placeholder default
 	if (!path) {
 		return "https://placehold.co/400x300/e2e8f0/1e293b?text=No+Image";
 	}
 
-	// 2. Jika path sudah berupa URL lengkap (http/https)
-	// Contoh: Foto profil dari Google (https://lh3.googleusercontent.com/...)
+	// 2. Jika path sudah berupa URL lengkap (http/https), kembalikan langsung
 	if (path.startsWith("http")) {
 		return path;
 	}
 
-	// 3. Bersihkan slash di depan jika ada (misal "/uploads/..." jadi "uploads/...")
+	// 3. Bersihkan slash di depan jika ada
 	const cleanPath = path.startsWith("/") ? path.substring(1) : path;
 
-	// 4. Pastikan prefix 'uploads/' ada
-	// Backend menyimpan file fisik di folder 'uploads', tapi terkadang database
-	// hanya menyimpan nama file saja (misal: "foto123.jpg").
-	// Logic ini memastikan pathnya valid menjadi "uploads/foto123.jpg".
+	// --- LOGIC BARU: PENGECUALIAN FOLDER ---
+
+	// A. Jika path adalah 'locationimg', JANGAN tambah 'uploads/'
+	// (Sesuai konfirmasi Anda bahwa folder ini tidak di dalam uploads)
+	if (cleanPath.startsWith("locationimg")) {
+		return `${BASE_URL}/${cleanPath}`;
+	}
+
+	// B. Jika path adalah 'alatimg' (Produk), biarkan pakai 'uploads/'
+	// (Karena di log sebelumnya alatimg sukses dengan 200 OK di dalam uploads)
+
+	// C. Default: Tambahkan 'uploads/' untuk folder lain (misal avatar user)
+	// Logic: Jika path belum ada 'uploads', tambahkan.
 	const finalPath = cleanPath.startsWith("uploads")
 		? cleanPath
 		: `uploads/${cleanPath}`;
 
-	// 5. Gabungkan dengan BASE_URL global
-	// Hasil akhirnya akan mengikuti konfigurasi di api.ts (bisa localhost, bisa Ngrok)
 	return `${BASE_URL}/${finalPath}`;
+};
+
+// Helper untuk kompatibilitas
+export const getBaseUrl = (): string => {
+	return BASE_URL;
 };
