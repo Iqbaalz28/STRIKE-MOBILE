@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 04, 2026 at 10:30 AM
+-- Generation Time: Jan 05, 2026 at 11:08 AM
 -- Server version: 10.4.32-MariaDB
--- PHP Version: 8.4.7
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -120,7 +120,7 @@ CREATE TABLE `community_posts` (
 --
 
 INSERT INTO `community_posts` (`id`, `id_user`, `title`, `body`, `category`, `likes_count`, `reply_count`, `views_count`, `created_at`) VALUES
-(1, 1, 'Umpan putih andalan?', 'Mohon pencerahannya suhu...', 'umpan', 0, 0, 0, '2025-11-25 06:44:27'),
+(1, 1, 'Umpan putih andalan?', 'Mohon pencerahannya suhu...', 'umpan', 0, 0, 1, '2025-11-25 06:44:27'),
 (2, 2, 'Laporan mancing di Situ Rawa Indah', 'Hasil tangkapan lumayan...', 'laporan mancing', 0, 0, 0, '2025-11-25 06:44:27');
 
 -- --------------------------------------------------------
@@ -194,10 +194,10 @@ CREATE TABLE `locations` (
 
 INSERT INTO `locations` (`id`, `name`, `city`, `description`, `address`, `price_per_hour`, `img`, `lat`, `lng`, `rating_average`, `total_reviews`) VALUES
 (1, 'Situ Rawa Indah', 'Jakarta', 'Suasananya asri dan dikelilingi pepohonan. Karena merupakan fasilitas publik, kelengkapan fasilitasnya tidak seperti kolam pemancingan komersial, namun tetap menjadi favorit untuk bersantai.', 'Jl. Kh Hasyim Ashari No.125', 15000.00, 'locationimg/jakarta.jpg', -6.20000000, 106.81666600, 4.50, 5),
-(2, 'Lembah Pancing Citarum', 'Bandung', 'Atmosfernya penuh semangat kompetisi, dengan para pemancing serius yang fokus memantau ujung jorannya. Karena tujuannya adalah perlombaan untuk mendapatkan ikan terberat, fasilitasnya lebih fungsional.', 'Jl. Diponegoro No.22, Citarum', 20000.00, 'locationimg/bandung.png', -6.91750000, 107.61910000, 4.20, 8),
+(2, 'Lembah Pancing Citarum', 'Bogor', 'Atmosfernya penuh semangat kompetisi, dengan para pemancing serius yang fokus memantau ujung jorannya. Karena tujuannya adalah perlombaan untuk mendapatkan ikan terberat, fasilitasnya lebih fungsional.', 'Jl. Diponegoro No.22, Citarum', 20000.00, 'locationimg/bogor.png', -6.91750000, 107.61910000, 4.20, 8),
 (3, 'Pancingan Tirta Sari', 'Bekasi', 'Suasananya dirancang untuk rekreasi keluarga, sering kali dilengkapi saung lesehan di atas air dan alunan musik yang santai. Tempat ini adalah pilihan sempurna untuk keluarga.', 'Jl. Pramuka No.59', 25000.00, 'locationimg/bekasi.png', -6.23830000, 106.97560000, 4.70, 12),
-(4, 'Kolam Pancing Nirwana', 'Banten', 'Suasananya hening dan menyatu dengan alam, seringkali hanya ditemani suara aliran air dan serangga hutan. Aksesnya bisa jadi sulit tapi petualangannya luar biasa.', 'Jl. Pelelangan Ikan Karangantu', 30000.00, 'locationimg/banten.png', -6.12000000, 106.15000000, 4.90, 15),
-(5, 'Danau Singkarak', 'Tangerang', 'Suasananya hening dan menyatu dengan alam, seringkali hanya ditemani suara aliran air. Tempat yang cocok untuk mencari ketenangan.', 'Jl. Pegangsaan Timur No 55', 18000.00, 'locationimg/tangerang.png', -6.17830000, 106.63190000, 4.60, 10);
+(4, 'Kolam Pancing Nirwana', 'Depok', 'Suasananya hening dan menyatu dengan alam, seringkali hanya ditemani suara aliran air dan serangga hutan. Aksesnya bisa jadi sulit tapi petualangannya luar biasa.', 'Jl. Pelelangan Ikan Karangantu', 30000.00, 'locationimg/depok.jpg', -6.12000000, 106.15000000, 4.90, 15),
+(5, 'Danau Singkarak', 'Tanggerang', 'Suasananya hening dan menyatu dengan alam, seringkali hanya ditemani suara aliran air. Tempat yang cocok untuk mencari ketenangan.', 'Jl. Pegangsaan Timur No 55', 18000.00, 'locationimg/tanggerang.png', -6.17830000, 106.63190000, 4.60, 10);
 
 -- --------------------------------------------------------
 
@@ -219,20 +219,27 @@ CREATE TABLE `location_images` (
 
 INSERT INTO `location_images` (`id`, `id_location`, `img_path`, `img_type`, `created_at`) VALUES
 (1, 1, 'locationimg/jakarta.jpg', 'main', '2025-11-25 06:44:27'),
-(2, 1, 'locationimg/banten.png', 'gallery', '2025-11-25 06:44:27'),
-(3, 1, 'locationimg/bekasi.png', 'gallery', '2025-11-25 06:44:27'),
-(4, 2, 'locationimg/bandung.png', 'main', '2025-11-25 06:44:27'),
-(5, 2, 'locationimg/jakarta.jpg', 'gallery', '2025-11-25 06:44:27'),
-(6, 2, 'locationimg/bekasi.png', 'gallery', '2025-11-25 06:44:27'),
+(2, 2, 'locationimg/bogor.png', 'main', '2025-11-25 06:44:27'),
+(3, 3, 'locationimg/bekasi.png', 'gallery', '2025-11-25 06:44:27'),
 (7, 3, 'locationimg/bekasi.png', 'main', '2025-11-25 06:44:27'),
-(8, 3, 'locationimg/bandung.png', 'gallery', '2025-11-25 06:44:27'),
-(9, 3, 'locationimg/banten.png', 'gallery', '2025-11-25 06:44:27'),
-(10, 4, 'locationimg/banten.png', 'main', '2025-11-25 06:44:27'),
-(11, 4, 'locationimg/tangerang.png', 'gallery', '2025-11-25 06:44:27'),
+(8, 3, 'locationimg/bogor.png', 'gallery', '2025-11-25 06:44:27'),
+(9, 3, 'locationimg/tanggerang.png', 'gallery', '2025-11-25 06:44:27'),
+(10, 4, 'locationimg/tanggerang.png', 'main', '2025-11-25 06:44:27'),
+(11, 4, 'locationimg/tanggerang.png', 'gallery', '2025-11-25 06:44:27'),
 (12, 4, 'locationimg/jakarta.jpg', 'gallery', '2025-11-25 06:44:27'),
-(13, 5, 'locationimg/tangerang.png', 'main', '2025-11-25 06:44:27'),
-(14, 5, 'locationimg/banten.png', 'gallery', '2025-11-25 06:44:27'),
-(15, 5, 'locationimg/bandung.png', 'gallery', '2025-11-25 06:44:27');
+(13, 5, 'locationimg/tanggerang.png', 'main', '2025-11-25 06:44:27'),
+(14, 5, 'locationimg/tanggerang.png', 'gallery', '2025-11-25 06:44:27'),
+(15, 4, 'locationimg/depok.jpg', 'gallery', '2025-11-25 06:44:27'),
+(16, 1, 'locationimg/jakarta.jpg', 'main', '2026-01-05 09:57:49'),
+(17, 1, 'locationimg/jakarta.jpg', 'gallery', '2026-01-05 09:57:49'),
+(18, 2, 'locationimg/bekasi.png', 'main', '2026-01-05 09:57:49'),
+(19, 2, 'locationimg/bekasi.png', 'gallery', '2026-01-05 09:57:49'),
+(20, 3, 'locationimg/bogor.png', 'main', '2026-01-05 09:57:49'),
+(21, 3, 'locationimg/bogor.png', 'gallery', '2026-01-05 09:57:49'),
+(22, 4, 'locationimg/depok.jpg', 'main', '2026-01-05 09:57:49'),
+(23, 4, 'locationimg/depok.jpg', 'gallery', '2026-01-05 09:57:49'),
+(24, 5, 'locationimg/tanggerang.png', 'main', '2026-01-05 09:57:49'),
+(25, 5, 'locationimg/tanggerang.png', 'gallery', '2026-01-05 09:57:49');
 
 -- --------------------------------------------------------
 
@@ -259,7 +266,7 @@ INSERT INTO `location_reviews` (`id`, `id_user`, `id_location`, `id_booking`, `c
 (1, 4, 1, 1, 'Layanan luar biasa!', 5, NULL, '2025-11-25 06:44:27'),
 (2, 5, 1, 2, 'Tempatnya nyaman.', 4, NULL, '2025-11-25 06:44:27'),
 (3, 6, 1, 3, 'Tempatnya luas dan sangat bersih. Ikan mas-nya juga lumayan gampang makan. Fasilitas toilet oke, mushola bersih. Recommended buat ajak keluarga!', 5, NULL, '2025-11-25 06:44:27'),
-(4, 7, 2, 4, 'Suasananya sejuk banget khas Bandung. Ikannya besar-besar (babon), tarikannya mantap! Cuma parkiran mobil agak sempit kalau weekend.', 4, NULL, '2025-11-25 06:44:27'),
+(4, 7, 2, 4, 'Suasananya sejuk banget. Ikannya besar-besar (babon), tarikannya mantap! Cuma parkiran mobil agak sempit kalau weekend.', 4, NULL, '2025-11-25 06:44:27'),
 (5, 8, 3, 5, 'Pelayanan ramah, saungnya nyaman buat ngopi sambil nunggu strike. Cocok buat yang mau mancing santai.', 5, NULL, '2025-11-25 06:44:27'),
 (6, 9, 4, 6, 'Tempatnya benar-benar alami dan tenang. Jauh dari kebisingan kota. Akses jalan masuk agak berbatu tapi terbayar dengan suasananya.', 5, NULL, '2025-11-25 06:44:27'),
 (7, 10, 5, 7, 'Harga tiket masuk terjangkau. Kolamnya luas, lapaknya juga berjarak jadi nggak sempit-sempitan. Sayang kantinnya tutup pas saya datang.', 4, NULL, '2025-11-25 06:44:27');
@@ -450,6 +457,13 @@ CREATE TABLE `orders` (
   `payment_method` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `orders`
+--
+
+INSERT INTO `orders` (`id`, `id_user`, `order_number`, `total_amount`, `shipping_cost`, `shipping_address`, `status`, `payment_status`, `created_at`, `tax_amount`, `discount_amount`, `notes`, `payment_method`) VALUES
+(1, 12, 'ORD-1767601531395', 1954000.00, 0.00, 'Jl. Setiabudi No. 193, Gegerkalong, Sukasari, Kota Bandung, Jawa Barat 40153', 'pending', 'unpaid', '2026-01-05 08:25:31', 0.00, 0.00, NULL, NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -465,6 +479,15 @@ CREATE TABLE `order_items` (
   `subtotal` decimal(10,2) DEFAULT NULL,
   `transaction_type` enum('sewa','beli') DEFAULT 'beli'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `order_items`
+--
+
+INSERT INTO `order_items` (`id`, `id_order`, `id_product`, `quantity`, `unit_price`, `subtotal`, `transaction_type`) VALUES
+(1, 1, 1, 1, 489000.00, 489000.00, 'beli'),
+(2, 1, 21, 1, 1450000.00, 1450000.00, 'beli'),
+(3, 1, 36, 1, 15000.00, 15000.00, 'beli');
 
 -- --------------------------------------------------------
 
@@ -644,6 +667,16 @@ CREATE TABLE `shopping_cart` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `shopping_cart`
+--
+
+INSERT INTO `shopping_cart` (`id`, `id_user`, `id_product`, `quantity`, `transaction_type`, `created_at`) VALUES
+(4, 12, 5, 1, 'beli', '2026-01-05 08:25:50'),
+(5, 12, 27, 1, 'beli', '2026-01-05 08:26:03'),
+(6, 12, 41, 1, 'beli', '2026-01-05 08:26:08'),
+(7, 12, 34, 1, 'beli', '2026-01-05 08:26:15');
+
 -- --------------------------------------------------------
 
 --
@@ -679,7 +712,9 @@ INSERT INTO `users` (`id`, `name`, `email`, `google_id`, `password`, `bio`, `ava
 (8, 'Rudi Hermawan', 'rudi.review@test.com', NULL, '12345', 'Mancing mania mantap', 'https://randomuser.me/api/portraits/men/85.jpg', NULL, 1, 2, '2025-11-25 06:44:27'),
 (9, 'Dewi Sartika', 'dewi.review@test.com', NULL, '12345', 'Healing fishing', 'https://randomuser.me/api/portraits/women/68.jpg', NULL, 1, 1, '2025-11-25 06:44:27'),
 (10, 'Andi Pratama', 'andi.review@test.com', NULL, '12345', 'Casting lover', 'https://randomuser.me/api/portraits/men/11.jpg', NULL, 1, 1, '2025-11-25 06:44:27'),
-(11, 'DZAKA MUSYAFFA', 'dzokodolog@upi.edu', '117108749320151513373', NULL, NULL, NULL, NULL, NULL, 2, '2025-11-25 06:44:45');
+(11, 'DZAKA MUSYAFFA', 'dzokodolog@upi.edu', '117108749320151513373', NULL, NULL, NULL, NULL, NULL, 2, '2025-11-25 06:44:45'),
+(12, 'Iqbal Rizky Maulana', 'bale@gmail.com', NULL, '$2b$10$U21fBhZ9JqbCX1A7Q7xz7O0XFbJthmR2qyDd4K9n5jNVSpZbrVBSm', 'Jago Mancing', 'uploads/avatar-1767594259487.jpg', NULL, NULL, 2, '2026-01-04 21:31:51'),
+(13, 'IQBAL RIZKY MAULANA', 'iqbalrizkymaulana@upi.edu', '113348129377849906836', NULL, NULL, NULL, NULL, NULL, 2, '2026-01-05 05:05:33');
 
 --
 -- Indexes for dumped tables
@@ -896,7 +931,7 @@ ALTER TABLE `locations`
 -- AUTO_INCREMENT for table `location_images`
 --
 ALTER TABLE `location_images`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `location_reviews`
@@ -920,13 +955,13 @@ ALTER TABLE `memberships`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `payment_methods`
@@ -968,13 +1003,13 @@ ALTER TABLE `product_reviews`
 -- AUTO_INCREMENT for table `shopping_cart`
 --
 ALTER TABLE `shopping_cart`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- Constraints for dumped tables

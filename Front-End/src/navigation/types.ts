@@ -27,6 +27,7 @@ export type MainTabParamList = {
 	BookingStack: NavigatorScreenParams<BookingStackParamList>; // Nested Navigator
 	ShopStack: NavigatorScreenParams<ShopStackParamList>; // Nested Navigator
 	Community: undefined;
+	Event: undefined;
 	Profile: undefined;
 };
 

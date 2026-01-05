@@ -8,19 +8,18 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-// Components Baru
+// Components
 import MembershipCard from "./components/MembershipCard";
 import MenuGrid from "./components/MenuGrid";
 import LocationPreview from "./components/LocationPreview";
 import DiscountSection from "./components/DiscountSection";
+import EventSection from "./components/EventSection";
 
 const HomeScreen = () => {
 	const [refreshing, setRefreshing] = useState(false);
 
-	// Logic simulasi refresh (tarik layar ke bawah)
 	const onRefresh = useCallback(() => {
 		setRefreshing(true);
-		// Di sini nanti bisa dipanggil fungsi reload data API
 		setTimeout(() => {
 			setRefreshing(false);
 		}, 2000);
@@ -59,17 +58,22 @@ const HomeScreen = () => {
 				{/* 1. Membership Card */}
 				<MembershipCard />
 
-				{/* 2. Menu Grid */}
+				{/* 2. Menu Grid (Navigasi Utama) */}
 				<MenuGrid />
 
-				{/* 3. Semua Lokasi */}
+				{/* 3. Kupon Diskon */}
+				<View className="mt-2">
+					<DiscountSection />
+				</View>
+
+				{/* 4. Rekomendasi Spot */}
 				<View className="mt-2">
 					<LocationPreview />
 				</View>
 
-				{/* 4. Kupon Aktif */}
+				{/* 5. Event Komunitas (DITAMBAHKAN) */}
 				<View className="mt-2">
-					<DiscountSection />
+					<EventSection />
 				</View>
 			</ScrollView>
 		</SafeAreaView>

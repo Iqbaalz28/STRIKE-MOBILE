@@ -1,24 +1,33 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { Home, MapPin, ShoppingBag, Users, User } from "lucide-react-native";
+import {
+	Home,
+	MapPin,
+	ShoppingBag,
+	Users,
+	User,
+	Trophy,
+} from "lucide-react-native";
 import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // --- IMPORT SCREENS UTAMA ---
 import HomeScreen from "@/features/home/HomeScreen";
-// import ShopScreen dari sini dihapus karena akan dipanggil di dalam Stack
 import CommunityScreen from "@/features/community/CommunityScreen";
 import ProfileScreen from "@/features/profile/ProfileScreen";
+// 2. TAMBAHKAN IMPORT SCREEN EVENT DI SINI
+// Pastikan path ini sesuai dengan lokasi file yang Anda buat sebelumnya
+import EventListScreen from "@/features/community/EventListScreen";
 
 // --- IMPORT SCREENS BOOKING FLOW ---
 import LocationListScreen from "@/features/booking/LocationListScreen";
 import LocationDetailScreen from "@/features/booking/LocationDetailScreen";
 import BookingScreen from "@/features/booking/BookingScreen";
 
-// --- IMPORT SCREENS SHOP FLOW (BARU) ---
+// --- IMPORT SCREENS SHOP FLOW ---
 import ShopScreen from "@/features/shop/ShopScreen";
-import ProductDetailScreen from "@/features/shop/ProductDetailScreen"; // Pastikan file ini ada
+import ProductDetailScreen from "@/features/shop/ProductDetailScreen";
 import CartScreen from "@/features/shop/CartScreen";
 import CheckoutScreen from "@/features/shop/CheckoutScreen";
 
@@ -31,7 +40,7 @@ import {
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const BookingStack = createNativeStackNavigator<BookingStackParamList>();
-const ShopStack = createNativeStackNavigator<ShopStackParamList>(); // <--- Stack Baru
+const ShopStack = createNativeStackNavigator<ShopStackParamList>();
 
 // --- STACK NAVIGATOR KHUSUS BOOKING ---
 function BookingStackNavigator() {
@@ -53,7 +62,7 @@ function BookingStackNavigator() {
 	);
 }
 
-// --- STACK NAVIGATOR KHUSUS SHOP (BARU) ---
+// --- STACK NAVIGATOR KHUSUS SHOP ---
 function ShopStackNavigator() {
 	return (
 		<ShopStack.Navigator
@@ -93,7 +102,7 @@ const TabNavigator = () => {
 				tabBarInactiveTintColor: "#9CA3AF",
 				tabBarLabelStyle: {
 					fontFamily: "Outfit_500Medium",
-					fontSize: 11,
+					fontSize: 10, // Ukuran font diperkecil sedikit agar muat 6 item
 					marginTop: 2,
 				},
 			}}
@@ -110,7 +119,7 @@ const TabNavigator = () => {
 				}}
 			/>
 
-			{/* 2. BOOKING TAB (Stack) */}
+			{/* 2. LOKASI TAB */}
 			<Tab.Screen
 				name="BookingStack"
 				component={BookingStackNavigator}
@@ -122,10 +131,10 @@ const TabNavigator = () => {
 				}}
 			/>
 
-			{/* 3. SHOP TAB (Stack) */}
+			{/* 3. TOKO TAB */}
 			<Tab.Screen
 				name="ShopStack"
-				component={ShopStackNavigator} // <--- GANTI JADI STACK INI
+				component={ShopStackNavigator}
 				options={{
 					tabBarLabel: "Toko",
 					tabBarIcon: ({ color, size }) => (
@@ -134,7 +143,7 @@ const TabNavigator = () => {
 				}}
 			/>
 
-			{/* 4. COMMUNITY TAB */}
+			{/* 4. KOMUNITAS TAB */}
 			<Tab.Screen
 				name="Community"
 				component={CommunityScreen}
@@ -146,7 +155,19 @@ const TabNavigator = () => {
 				}}
 			/>
 
-			{/* 5. PROFILE TAB */}
+			{/* 5. EVENT TAB (Tab Baru Ke-5) */}
+			<Tab.Screen
+				name="Event" // <--- Pastikan nama ini 'Event' (Sesuai types.ts)
+				component={EventListScreen}
+				options={{
+					tabBarLabel: "Event",
+					tabBarIcon: ({ color, size }) => (
+						<Trophy size={size} color={color} />
+					),
+				}}
+			/>
+
+			{/* 6. AKUN TAB */}
 			<Tab.Screen
 				name="Profile"
 				component={ProfileScreen}

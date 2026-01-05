@@ -6,43 +6,52 @@ import { useNavigation } from "@react-navigation/native";
 const MenuGrid = () => {
 	const navigation = useNavigation<any>();
 
+	// Fungsi navigasi ke Tab
+	// Pastikan nama screen di sini ('Location', 'Shop', 'Community')
+	// sesuai dengan 'name' yang Anda tulis di file Navigation/TabNavigator Anda.
+	const navigateToTab = (tabName: string) => {
+		navigation.navigate("MainTab", { screen: tabName });
+	};
+
 	const menuItems = [
 		{
 			id: 1,
 			title: "Booking",
 			subtitle: "Pesan tempat",
 			icon: Calendar,
-			color: "bg-blue-500",
+			color: "bg-blue-600",
 			bgColor: "bg-blue-50",
-			onPress: () =>
-				navigation.navigate("MainTab", { screen: "Booking" }),
+			// Mengarahkan ke Tab Lokasi (Booking)
+			onPress: () => navigateToTab("BookingStack"),
 		},
 		{
 			id: 2,
 			title: "Shop",
-			subtitle: "Belanja peralatan",
+			subtitle: "Belanja alat",
 			icon: ShoppingBag,
-			color: "bg-green-500",
-			bgColor: "bg-blue-50",
-			onPress: () => navigation.navigate("MainTab", { screen: "Shop" }),
+			color: "bg-green-600",
+			bgColor: "bg-green-50",
+			// Mengarahkan ke Tab Toko
+			onPress: () => navigateToTab("ShopStack"),
 		},
 		{
 			id: 3,
 			title: "Komunitas",
-			subtitle: "Temui komunitas",
+			subtitle: "Forum diskusi",
 			icon: Users,
-			color: "bg-orange-500",
-			bgColor: "bg-blue-50",
-			onPress: () =>
-				navigation.navigate("MainTab", { screen: "Community" }),
+			color: "bg-orange-600",
+			bgColor: "bg-orange-50",
+			// Mengarahkan ke Tab Komunitas
+			onPress: () => navigateToTab("Community"),
 		},
 		{
 			id: 4,
-			title: "Event Perlombaan",
-			subtitle: "Ikuti perlombaan",
+			title: "Event",
+			subtitle: "Ikuti lomba",
 			icon: Trophy,
-			color: "bg-purple-500",
-			bgColor: "bg-blue-50",
+			color: "bg-purple-600",
+			bgColor: "bg-purple-50",
+			// Mengarahkan ke Halaman Event (Bukan Tab, tapi Stack Screen)
 			onPress: () => navigation.navigate("EventList"),
 		},
 	];
@@ -54,21 +63,35 @@ const MenuGrid = () => {
 					<TouchableOpacity
 						key={item.id}
 						onPress={item.onPress}
-						className="w-[48%] mb-4"
+						className="w-[48%] mb-4" // Lebar 48% agar ada jarak di tengah
 						activeOpacity={0.7}
 					>
-						<View className={`${item.bgColor} rounded-2xl p-4`}>
+						{/* PERUBAHAN UTAMA DISINI: 
+                h-32: Memberikan tinggi tetap agar semua kotak sama rata.
+                justify-between: Agar ikon dan teks terpisah rapi.
+            */}
+						<View
+							className={`${item.bgColor} rounded-2xl p-4 h-32 justify-between border border-white shadow-sm`}
+						>
+							{/* Bagian Atas: Icon */}
 							<View
-								className={`${item.color} w-12 h-12 rounded-xl items-center justify-center mb-3`}
+								className={`${item.color} w-10 h-10 rounded-xl items-center justify-center shadow-sm`}
 							>
-								<item.icon size={24} color="white" />
+								<item.icon size={20} color="white" />
 							</View>
-							<Text className="text-gray-900 font-bold text-base mb-1 font-[Outfit_700Bold]">
-								{item.title}
-							</Text>
-							<Text className="text-gray-500 text-xs font-[Outfit_400Regular]">
-								{item.subtitle}
-							</Text>
+
+							{/* Bagian Bawah: Teks */}
+							<View>
+								<Text className="text-gray-900 font-bold text-base font-[Outfit_700Bold]">
+									{item.title}
+								</Text>
+								<Text
+									className="text-gray-500 text-xs font-[Outfit_400Regular]"
+									numberOfLines={1}
+								>
+									{item.subtitle}
+								</Text>
+							</View>
 						</View>
 					</TouchableOpacity>
 				))}
