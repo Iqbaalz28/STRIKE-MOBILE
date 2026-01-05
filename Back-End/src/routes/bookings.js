@@ -33,7 +33,7 @@ export default async function (fastify, options) {
                 WHERE b.id_user = ?
                 ORDER BY b.booking_start DESC
             `,
-          [userId]
+          [userId],
         );
 
         return rows;
@@ -43,7 +43,7 @@ export default async function (fastify, options) {
           .code(500)
           .send({ message: "Gagal mengambil riwayat pesanan" });
       }
-    }
+    },
   );
 
   // 2. CREATE Booking Baru (Dengan Fitur Voucher & Transaksi)
@@ -76,7 +76,7 @@ export default async function (fastify, options) {
         // A. Ambil Harga Lokasi
         const [locs] = await connection.query(
           "SELECT price_per_hour FROM locations WHERE id = ?",
-          [id_location]
+          [id_location],
         );
         if (locs.length === 0) {
           throw new Error("Lokasi tidak valid");
@@ -93,7 +93,7 @@ export default async function (fastify, options) {
           // Cek ketersediaan voucher dan kunci barisnya (FOR UPDATE)
           const [discounts] = await connection.query(
             "SELECT id, discount_value, used_count, max_usage FROM discounts WHERE code = ? FOR UPDATE",
-            [voucher_code]
+            [voucher_code],
           );
 
           if (discounts.length > 0) {
@@ -112,7 +112,7 @@ export default async function (fastify, options) {
               // Update kuota terpakai (+1) secara permanen
               await connection.query(
                 "UPDATE discounts SET used_count = used_count + 1 WHERE id = ?",
-                [disc.id]
+                [disc.id],
               );
             } else {
               // Opsional: Throw error jika kuota habis saat proses berjalan
@@ -155,7 +155,7 @@ export default async function (fastify, options) {
             tax,
             invoiceNumber,
             payment_method,
-          ]
+          ],
         );
 
         // Commit Transaksi (Simpan Perubahan)
@@ -179,6 +179,6 @@ export default async function (fastify, options) {
           .code(500)
           .send({ message: err.message || "Gagal membuat booking" });
       }
-    }
+    },
   );
 }

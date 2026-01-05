@@ -16,7 +16,7 @@ async function testAPI() {
       console.log(
         `   ✅ Success! Received ${
           Array.isArray(data) ? data.length : "non-array"
-        } items`
+        } items`,
       );
       if (Array.isArray(data) && data.length > 0) {
         console.log(`   Sample data:`, JSON.stringify(data[0], null, 2));
@@ -40,7 +40,7 @@ async function testAPI() {
       console.log(
         `   ✅ Success! Received ${
           Array.isArray(data) ? data.length : "non-array"
-        } items`
+        } items`,
       );
       if (Array.isArray(data) && data.length > 0) {
         console.log(`   Sample data:`, JSON.stringify(data[0], null, 2));

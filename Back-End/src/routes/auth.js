@@ -19,7 +19,7 @@ export default async function (fastify, options) {
       // Cek Email Duplikat
       const [existingUsers] = await fastify.db.execute(
         "SELECT * FROM users WHERE email = ?",
-        [email]
+        [email],
       );
 
       if (existingUsers.length > 0) {
@@ -33,7 +33,7 @@ export default async function (fastify, options) {
       // Simpan ke DB (Default id_membership = 2 / Free)
       await fastify.db.execute(
         "INSERT INTO users (name, email, password, id_membership) VALUES (?, ?, ?, ?)",
-        [name, email, hashedPassword, 2]
+        [name, email, hashedPassword, 2],
       );
 
       return reply
@@ -57,7 +57,7 @@ export default async function (fastify, options) {
       // Ambil user dari DB
       const [users] = await fastify.db.execute(
         "SELECT * FROM users WHERE email = ?",
-        [email]
+        [email],
       );
       const user = users[0];
 
@@ -86,7 +86,7 @@ export default async function (fastify, options) {
       // Buat Token
       const token = fastify.jwt.sign(
         { id: user.id, email: user.email, name: user.name },
-        { expiresIn: "7d" }
+        { expiresIn: "7d" },
       );
 
       return reply.send({
@@ -133,38 +133,38 @@ export default async function (fastify, options) {
     try {
       const { token } =
         await this.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(
-          request
+          request,
         );
 
       const userRes = await fetch(
         "https://www.googleapis.com/oauth2/v2/userinfo",
         {
           headers: { Authorization: `Bearer ${token.access_token}` },
-        }
+        },
       );
       const userData = await userRes.json();
 
       const [users] = await fastify.db.execute(
         "SELECT * FROM users WHERE email = ?",
-        [userData.email]
+        [userData.email],
       );
       let user = users[0];
 
       if (!user) {
         const [result] = await fastify.db.execute(
           "INSERT INTO users (name, email, google_id, id_membership) VALUES (?, ?, ?, ?)",
-          [userData.name, userData.email, userData.id, 2]
+          [userData.name, userData.email, userData.id, 2],
         );
         const [newUser] = await fastify.db.execute(
           "SELECT * FROM users WHERE id = ?",
-          [result.insertId]
+          [result.insertId],
         );
         user = newUser[0];
       } else {
         if (!user.google_id) {
           await fastify.db.execute(
             "UPDATE users SET google_id = ? WHERE id = ?",
-            [userData.id, user.id]
+            [userData.id, user.id],
           );
         }
       }
@@ -175,7 +175,7 @@ export default async function (fastify, options) {
           email: user.email,
           name: user.name,
         },
-        { expiresIn: "7d" }
+        { expiresIn: "7d" },
       );
 
       const returnTo = request.cookies.auth_return_to;
@@ -187,7 +187,7 @@ export default async function (fastify, options) {
           name: user.name,
           email: user.email,
           avatar: user.avatar_img,
-        })
+        }),
       );
 
       if (returnTo) {

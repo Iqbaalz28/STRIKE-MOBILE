@@ -1,51 +1,53 @@
 // Test ini memastikan endpoint GET /locations bekerja sesuai fungsinya
 
-import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
-import request from 'supertest';
-import { fastify } from '../server.js';
+import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
+import request from "supertest";
+import { fastify } from "../server.js";
 
 // Mock database agar test tidak memakai MySQL asli
 const mockDbQuery = vi.fn();
 fastify.db = { query: mockDbQuery, execute: vi.fn(), getConnection: vi.fn() };
 
-describe('Locations Route — GET /locations', () => {
+describe("Locations Route — GET /locations", () => {
+  // Menunggu Fastify siap sebelum test dijalankan
+  beforeAll(async () => {
+    await fastify.ready();
+  });
 
-    // Menunggu Fastify siap sebelum test dijalankan
-    beforeAll(async () => { await fastify.ready(); });
+  // Tutup server setelah semua test selesai
+  afterAll(async () => {
+    await fastify.close();
+  });
 
-    // Tutup server setelah semua test selesai
-    afterAll(async () => { await fastify.close(); });
+  it("Seharusnya mengembalikan daftar lokasi (status 200)", async () => {
+    // Data palsu untuk menggantikan hasil query database
+    mockDbQuery.mockImplementationOnce(() =>
+      Promise.resolve([
+        [
+          {
+            id: 1,
+            name: "Kolam Pancing Test",
+            city: "Jakarta",
+            price_per_hour: 50000,
+            img: "test.jpg",
+          },
+        ],
+      ]),
+    );
 
-    it('Seharusnya mengembalikan daftar lokasi (status 200)', async () => {
+    // Request HTTP ke route yang diuji
+    const response = await request(fastify.server).get("/locations");
 
-        // Data palsu untuk menggantikan hasil query database
-        mockDbQuery.mockImplementationOnce(() =>
-            Promise.resolve([
-                [
-                    {
-                        id: 1,
-                        name: 'Kolam Pancing Test',
-                        city: 'Jakarta',
-                        price_per_hour: 50000,
-                        img: 'test.jpg'
-                    }
-                ]
-            ])
-        );
+    // Validasi response sukses
+    expect(response.statusCode).toBe(200);
 
-        // Request HTTP ke route yang diuji
-        const response = await request(fastify.server).get('/locations');
+    // Response harus berupa array
+    expect(Array.isArray(response.body)).toBe(true);
 
-        // Validasi response sukses
-        expect(response.statusCode).toBe(200);
+    // Minimal ada 1 lokasi dikembalikan
+    expect(response.body.length).toBeGreaterThan(0);
 
-        // Response harus berupa array
-        expect(Array.isArray(response.body)).toBe(true);
-
-        // Minimal ada 1 lokasi dikembalikan
-        expect(response.body.length).toBeGreaterThan(0);
-
-        // Validasi bahwa field nama sesuai
-        expect(response.body[0].name).toBe('Kolam Pancing Test');
-    });
+    // Validasi bahwa field nama sesuai
+    expect(response.body[0].name).toBe("Kolam Pancing Test");
+  });
 });

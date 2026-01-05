@@ -36,7 +36,9 @@ fastify.register(oauthPlugin, {
     auth: oauthPlugin.GOOGLE_CONFIGURATION,
   },
   startRedirectPath: "/auth/google",
-  callbackUri: "http://localhost:3000/auth/google/callback", // Harus sama dengan di Google Console
+  //callbackUri: "http://localhost:3000/auth",
+  callbackUri:
+    "https://michael-tressier-glory.ngrok-free.dev/auth/google/callback", // HARUS DIGANTI SETIAP MEMBUKA NGROK
 });
 // cek dir uploads
 const uploadDir = path.join(__dirname, "uploads");

@@ -4,7 +4,7 @@ export default async function (fastify, options) {
   // --- 1. GET ALL USERS ---
   fastify.get("/users", async (req, reply) => {
     const [rows] = await fastify.db.execute(
-      "SELECT id, name, email, bio, avatar_img FROM users"
+      "SELECT id, name, email, bio, avatar_img FROM users",
     );
     return rows;
   });
@@ -41,7 +41,7 @@ export default async function (fastify, options) {
                 LEFT JOIN memberships m ON u.id_membership = m.id
                 WHERE u.id = ?
             `,
-          [userId]
+          [userId],
         );
 
         if (rows.length === 0) {
@@ -53,7 +53,7 @@ export default async function (fastify, options) {
         request.log.error(error);
         return reply.code(500).send({ message: "Gagal mengambil profil" });
       }
-    }
+    },
   );
 
   // --- 3. UPDATE PROFILE (PUT) ---
@@ -83,7 +83,7 @@ export default async function (fastify, options) {
                     id_payment_method = COALESCE(?, id_payment_method)
                 WHERE id = ?
             `,
-          [name, bio, validDate, avatar_img, id_payment_method, userId]
+          [name, bio, validDate, avatar_img, id_payment_method, userId],
         );
 
         return { message: "Profil berhasil diperbarui" };
@@ -93,7 +93,7 @@ export default async function (fastify, options) {
           .code(500)
           .send({ error: err.message || "Gagal update profil" });
       }
-    }
+    },
   );
 
   // --- 4. GET USER BY ID ---
@@ -101,7 +101,7 @@ export default async function (fastify, options) {
   fastify.get("/users/:id", async (req, reply) => {
     const [rows] = await fastify.db.execute(
       "SELECT id, name, email, bio, avatar_img FROM users WHERE id = ?",
-      [req.params.id]
+      [req.params.id],
     );
     if (rows.length === 0) {
       return reply.code(404).send({ error: "User not found" });

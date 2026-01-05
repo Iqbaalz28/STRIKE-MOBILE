@@ -4,10 +4,16 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
 import Constants from "expo-constants";
 
-// IMPORT: Gunakan resetToLogin untuk logout yang aman
+// IMPORT: Gunakan resetToLogin untuk logout yang aman saat sesi berakhir
 import { resetToLogin } from "@/navigation/navigationRef";
 
 // --- 1. SETUP BASE URL ---
+
+/**
+ * OPSI A: AUTO-DETECT IP (Gunakan ini jika pakai Emulator Android / iOS Simulator)
+ * Cara pakai: Uncomment kode di bawah ini, dan comment OPSI B.
+ */
+/*
 const getDeviceIP = () => {
   const debuggerHost = Constants.expoConfig?.hostUri;
   if (debuggerHost) {
@@ -19,24 +25,31 @@ const getDeviceIP = () => {
     ? "http://10.0.2.2:3000"
     : "http://localhost:3000";
 };
+export const BASE_URL = getDeviceIP();
+*/
 
-const BASE_URL = getDeviceIP();
+/**
+ * OPSI B: HARDCODE URL (Gunakan ini untuk HP Fisik dengan Ngrok / Server Production)
+ * Cara pakai: Isi URL Ngrok/Server Anda di sini.
+ * PENTING: Harus ada 'export' agar bisa dibaca oleh LoginScreen.tsx
+ */
+export const BASE_URL = "https://michael-tressier-glory.ngrok-free.dev";
 
 console.log("🌐 API Base URL:", BASE_URL);
 
+// --- 2. SETUP AXIOS INSTANCE ---
 const api = axios.create({
   baseURL: BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
-  timeout: 10000, // 10 second timeout
+  timeout: 10000, // Timeout 10 detik
 });
 
-// --- 2. INTERCEPTOR REQUEST ---
-// Menyisipkan Token ke setiap request
+// --- 3. INTERCEPTOR REQUEST (Kirim Token) ---
 api.interceptors.request.use(
   async (config) => {
-    // Uncomment baris bawah jika ingin debugging request
+    // Uncomment untuk debug request yang dikirim
     // console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`);
 
     const token = await AsyncStorage.getItem("token");
@@ -51,12 +64,11 @@ api.interceptors.request.use(
   }
 );
 
-// --- 3. INTERCEPTOR RESPONSE ---
-// Menangani Error Global (seperti 401 Unauthorized)
+// --- 4. INTERCEPTOR RESPONSE (Handle Error) ---
 api.interceptors.response.use(
   (response) => {
-    // Uncomment baris bawah jika ingin debugging response
-    // console.log(`✅ API Response: ${response.status}`);
+    // Uncomment untuk debug response yang diterima
+    // console.log(`✅ API Response: ${response.status} ${response.config.url}`);
     return response;
   },
   async (error: AxiosError) => {
@@ -74,9 +86,9 @@ api.interceptors.response.use(
 
       // 1. Hapus token dari storage HP
       await AsyncStorage.removeItem("token");
+      await AsyncStorage.removeItem("user"); // Hapus data user juga biar bersih
 
       // 2. Reset Navigasi ke Login
-      // Menggunakan resetToLogin lebih aman daripada navigate biasa
       resetToLogin();
     }
     return Promise.reject(error);
@@ -96,6 +108,7 @@ export default {
     return api.post("/login", { email, password });
   },
   register(data: any) {
+    // Pastikan ini "/register" sesuai dengan auth.js di backend
     return api.post("/register", data);
   },
 
@@ -108,7 +121,7 @@ export default {
   },
 
   // --- UPLOAD ---
-  // React Native butuh objek {uri, name, type}
+  // React Native butuh objek khusus {uri, name, type} untuk upload
   uploadImage(file: RNFile) {
     const formData = new FormData();
     // @ts-ignore: FormData di React Native menerima object file khusus ini
