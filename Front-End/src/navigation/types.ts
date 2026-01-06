@@ -38,6 +38,7 @@ export type RootStackParamList = {
 
 	// Global Screens (Bisa diakses dari mana saja)
 	EventList: undefined;
+	CouponList: undefined;
 	EditProfile: undefined;
 	About: undefined;
 	Membership: undefined;

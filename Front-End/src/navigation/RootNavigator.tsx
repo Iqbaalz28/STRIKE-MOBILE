@@ -14,6 +14,7 @@ import RegisterScreen from "@/features/auth/RegisterScreen";
 
 // 2. Home & General
 import EventListScreen from "@/features/home/EventListScreen";
+import CouponListScreen from "@/features/home/CouponListScreen";
 
 // 3. Profile
 import EditProfileScreen from "@/features/profile/EditProfileScreen";
@@ -102,6 +103,10 @@ const RootNavigator = () => {
 					<Stack.Screen
 						name="EventList"
 						component={EventListScreen}
+					/>
+					<Stack.Screen
+						name="CouponList"
+						component={CouponListScreen}
 					/>
 
 					{/* Profile */}

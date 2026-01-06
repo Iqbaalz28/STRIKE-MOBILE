@@ -1,9 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, Text, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import * as Clipboard from "expo-clipboard";
+import { Copy } from "lucide-react-native";
+import { RootStackParamList } from "@/navigation/types";
 import api from "@/services/api";
 
 const DiscountSection = () => {
+	const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 	const [discounts, setDiscounts] = useState<any[]>([]);
+
+	const handleCopyCode = async (code: string) => {
+		await Clipboard.setStringAsync(code);
+		Alert.alert("Berhasil", "Kode kupon berhasil disalin!");
+	};
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
@@ -32,7 +43,7 @@ const DiscountSection = () => {
 				<Text className="text-xl font-bold text-gray-900 font-[Outfit_700Bold]">
 					Kupon Aktif
 				</Text>
-				<TouchableOpacity>
+				<TouchableOpacity onPress={() => navigation.navigate("CouponList")}>
 					<Text className="text-blue-600 text-sm font-bold">
 						Lihat Semua &gt;
 					</Text>
@@ -45,6 +56,7 @@ const DiscountSection = () => {
 						key={item.id || index}
 						className="bg-blue-600 rounded-2xl p-4 mb-3 overflow-hidden shadow-sm"
 						activeOpacity={0.8}
+						onPress={() => handleCopyCode(item.code)}
 					>
                         {/* Decorative Circle */}
                         <View className="absolute -right-6 -bottom-6 w-24 h-24 bg-blue-500 rounded-full opacity-40" />
@@ -69,7 +81,7 @@ const DiscountSection = () => {
 							</View>
 							
 							<View className="bg-white/20 h-10 w-10 rounded-full items-center justify-center">
-								<Text className="text-white font-bold text-lg">→</Text>
+								<Copy size={20} color="white" />
 							</View>
 						</View>
 					</TouchableOpacity>

@@ -7,10 +7,9 @@ const MenuGrid = () => {
 	const navigation = useNavigation<any>();
 
 	// Fungsi navigasi ke Tab
-	// Pastikan nama screen di sini ('Location', 'Shop', 'Community')
-	// sesuai dengan 'name' yang Anda tulis di file Navigation/TabNavigator Anda.
+	// Kita gunakan navigation.navigate(tabName) langsung karena kita sudah berada di dalam TabNavigator (MainTab).
 	const navigateToTab = (tabName: string) => {
-		navigation.navigate("MainTab", { screen: tabName });
+		navigation.navigate(tabName);
 	};
 
 	const menuItems = [

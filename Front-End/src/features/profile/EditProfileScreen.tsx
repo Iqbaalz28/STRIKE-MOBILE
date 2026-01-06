@@ -11,20 +11,25 @@ import {
 	Platform,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { ArrowLeft, Save, Camera } from "lucide-react-native";
+import { ArrowLeft, Save, Camera, Calendar } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker"; // Import Image Picker
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 import api from "@/services/api";
 import { getImageUrl } from "@/utils/imageHelper";
+import { formatDate } from "@/utils/format";
 
 const EditProfileScreen = () => {
 	const navigation = useNavigation();
+	const insets = useSafeAreaInsets();
 
 	// State Form
 	const [form, setForm] = useState({
 		name: "",
 		email: "",
 		phone: "",
+		date_birth: "",
 		address: "",
 		bio: "",
 		avatar_img: "", // Tambahkan field ini
@@ -36,6 +41,8 @@ const EditProfileScreen = () => {
 
 	const [loading, setLoading] = useState(true);
 	const [saving, setSaving] = useState(false);
+	const [showDatePicker, setShowDatePicker] = useState(false);
+	const [datePickerValue, setDatePickerValue] = useState(new Date());
 
 	useEffect(() => {
 		loadProfile();
@@ -49,14 +56,29 @@ const EditProfileScreen = () => {
 				name: user.name || "",
 				email: user.email || "",
 				phone: user.phone || "",
+				date_birth: user.date_birth || "",
 				address: user.address || "",
 				bio: user.bio || "",
 				avatar_img: user.avatar_img || "",
 			});
+			if (user.date_birth) {
+				setDatePickerValue(new Date(user.date_birth));
+			}
 		} catch (error) {
 			console.log("Error load profile", error);
 		} finally {
 			setLoading(false);
+		}
+	};
+
+	// --- FUNGSI DATE PICKER ---
+	const onDateChange = (event: any, selectedDate?: Date) => {
+		setShowDatePicker(false);
+		if (selectedDate) {
+			setDatePickerValue(selectedDate);
+			// Format YYYY-MM-DD
+			const dateStr = selectedDate.toISOString().split("T")[0];
+			setForm({ ...form, date_birth: dateStr });
 		}
 	};
 
@@ -170,7 +192,10 @@ const EditProfileScreen = () => {
 				<View style={{ width: 24 }} />
 			</View>
 
-			<ScrollView className="p-5">
+			<ScrollView 
+				className="p-5"
+				contentContainerStyle={{ paddingBottom: 200 }} 
+			>
 				{/* --- UI GANTI FOTO --- */}
 				<View className="items-center mb-8">
 					<View className="relative">
@@ -219,6 +244,32 @@ const EditProfileScreen = () => {
 
 					<View>
 						<Text className="text-gray-500 text-xs mb-1 ml-1">
+							Tanggal Lahir
+						</Text>
+						<TouchableOpacity
+							onPress={() => setShowDatePicker(true)}
+							className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 flex-row justify-between items-center"
+						>
+							<Text className="text-gray-800">
+								{form.date_birth
+									? formatDate(form.date_birth)
+									: "Pilih Tanggal Lahir"}
+							</Text>
+							<Calendar size={20} color="#6B7280" />
+						</TouchableOpacity>
+						{showDatePicker && (
+							<DateTimePicker
+								value={datePickerValue}
+								mode="date"
+								display="default"
+								onChange={onDateChange}
+								maximumDate={new Date()} // Tidak boleh lahir di masa depan
+							/>
+						)}
+					</View>
+
+					<View>
+						<Text className="text-gray-500 text-xs mb-1 ml-1">
 							Nomor HP
 						</Text>
 						<TextInput
@@ -260,11 +311,17 @@ const EditProfileScreen = () => {
 						/>
 					</View>
 				</View>
+			</ScrollView>
 
+			{/* --- STICKY FOOTER --- */}
+			<View 
+				className="absolute bottom-0 left-0 right-0 bg-white p-5 border-t border-gray-100 shadow-lg"
+				style={{ paddingBottom: Platform.OS === 'ios' ? 20 : 20 + insets.bottom }}
+			>
 				<TouchableOpacity
 					onPress={handleSave}
 					disabled={saving}
-					className="mt-8 bg-blue-600 py-4 rounded-xl flex-row justify-center items-center shadow-lg shadow-blue-200"
+					className="bg-blue-600 py-4 rounded-xl flex-row justify-center items-center shadow-lg shadow-blue-200"
 				>
 					{saving ? (
 						<ActivityIndicator color="white" />
@@ -277,10 +334,7 @@ const EditProfileScreen = () => {
 						</>
 					)}
 				</TouchableOpacity>
-
-				{/* Spacer Bawah */}
-				<View className="h-10" />
-			</ScrollView>
+			</View>
 		</View>
 	);
 };

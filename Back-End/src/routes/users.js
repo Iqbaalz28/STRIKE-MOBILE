@@ -28,6 +28,8 @@ export default async function (fastify, options) {
                     u.name, 
                     u.email, 
                     u.bio, 
+                    u.address,
+                    u.phone,
                     u.avatar_img, 
                     u.date_birth,
                     u.id_payment_method,
@@ -96,7 +98,7 @@ export default async function (fastify, options) {
       try {
         const userId = request.user.id;
         // Ambil semua kemungkinan field yang dikirim frontend
-        const { name, bio, date_birth, avatar_img, id_payment_method } =
+        const { name, bio, date_birth, avatar_img, id_payment_method, phone, address } =
           request.body;
 
         // Validasi tanggal kosong jadi null
@@ -111,10 +113,12 @@ export default async function (fastify, options) {
                     bio = COALESCE(?, bio), 
                     date_birth = COALESCE(?, date_birth),
                     avatar_img = COALESCE(?, avatar_img),
-                    id_payment_method = COALESCE(?, id_payment_method)
+                    id_payment_method = COALESCE(?, id_payment_method),
+                    phone = COALESCE(?, phone),
+                    address = COALESCE(?, address)
                 WHERE id = ?
             `,
-          [name, bio, validDate, avatar_img, id_payment_method, userId],
+          [name, bio, validDate, avatar_img, id_payment_method, phone, address, userId],
         );
 
         return { message: "Profil berhasil diperbarui" };
