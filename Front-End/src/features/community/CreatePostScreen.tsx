@@ -127,12 +127,12 @@ const CreatePostScreen = () => {
 				<TouchableOpacity onPress={() => navigation.goBack()}>
 					<X size={24} color="black" />
 				</TouchableOpacity>
-				<Text className="font-bold text-lg">Buat Postingan</Text>
+				<Text className="font-outfit-bold text-lg">Buat Postingan</Text>
 				<TouchableOpacity onPress={handleSubmit} disabled={loading}>
 					{loading ? (
 						<ActivityIndicator color="#2563EB" />
 					) : (
-						<Text className="text-blue-600 font-bold text-lg">
+						<Text className="text-blue-600 font-outfit-bold text-lg">
 							Post
 						</Text>
 					)}
@@ -141,7 +141,7 @@ const CreatePostScreen = () => {
 
 			<ScrollView className="p-5">
 				{/* Category Selector */}
-				<Text className="text-gray-500 text-xs mb-2 font-bold uppercase tracking-wider">
+				<Text className="text-gray-500 text-xs mb-2 font-outfit-bold uppercase tracking-wider">
 					Kategori
 				</Text>
 				<ScrollView
@@ -159,7 +159,7 @@ const CreatePostScreen = () => {
 								}`}
 						>
 							<Text
-								className={`capitalize font-bold ${form.category === cat
+								className={`capitalize font-outfit-bold ${form.category === cat
 									? "text-white"
 									: "text-gray-500"
 									}`}
@@ -193,14 +193,14 @@ const CreatePostScreen = () => {
 								className="flex-1 bg-gray-50 border border-gray-200 border-dashed rounded-xl h-32 justify-center items-center"
 							>
 								<Camera size={24} color="#6B7280" />
-								<Text className="text-gray-500 text-xs mt-2 font-medium">Ambil Foto</Text>
+								<Text className="text-gray-500 text-xs mt-2 font-outfit-medium">Ambil Foto</Text>
 							</TouchableOpacity>
 							<TouchableOpacity
 								onPress={pickImage}
 								className="flex-1 bg-gray-50 border border-gray-200 border-dashed rounded-xl h-32 justify-center items-center"
 							>
 								<ImageIcon size={24} color="#6B7280" />
-								<Text className="text-gray-500 text-xs mt-2 font-medium">Buka Galeri</Text>
+								<Text className="text-gray-500 text-xs mt-2 font-outfit-medium">Buka Galeri</Text>
 							</TouchableOpacity>
 						</View>
 					)}
@@ -208,7 +208,7 @@ const CreatePostScreen = () => {
 
 				<TextInput
 					placeholder="Judul Postingan"
-					className="text-2xl font-bold text-gray-900 mb-4"
+					className="text-2xl font-outfit-bold text-gray-900 mb-4"
 					placeholderTextColor="#9CA3AF"
 					value={form.title}
 					onChangeText={(t) => setForm({ ...form, title: t })}

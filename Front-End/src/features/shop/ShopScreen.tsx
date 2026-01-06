@@ -125,7 +125,10 @@ const ShopScreen = () => {
 
 	const handleApplyFilter = (filters: any) => {
 		setPriceFilter({ min: filters.minPrice, max: filters.maxPrice });
-		if (filters.category) {
+		// Jika category kosong str (dari reset), set ke "all"
+		if (filters.category === "" || !filters.category) {
+			setSelectedCategory("all");
+		} else {
 			setSelectedCategory(filters.category.toLowerCase());
 		}
 	};
@@ -135,7 +138,7 @@ const ShopScreen = () => {
 			{/* Header & Search */}
 			<View className="px-4 mb-4">
 				<View className="flex-row items-center justify-between mb-4">
-					<Text className="text-2xl font-bold text-gray-900 font-[Outfit_700Bold]">
+					<Text className="text-2xl font-outfit-bold text-gray-900 font-outfit-bold">
 						Toko Alat
 					</Text>
 					<TouchableOpacity
@@ -152,7 +155,7 @@ const ShopScreen = () => {
 						<Search size={20} color="#9CA3AF" />
 						<TextInput
 							placeholder="Cari joran, umpan..."
-							className="flex-1 ml-2 text-gray-800 font-[Outfit_400Regular]"
+							className="flex-1 ml-2 text-gray-800 font-outfit"
 							value={searchQuery}
 							onChangeText={setSearchQuery}
 						/>
@@ -183,7 +186,7 @@ const ShopScreen = () => {
 								}`}
 						>
 							<Text
-								className={`font-medium ${selectedCategory === item.id
+								className={`font-outfit-medium ${selectedCategory === item.id
 									? "text-white"
 									: "text-gray-600"
 									}`}
@@ -249,6 +252,12 @@ const ShopScreen = () => {
 				visible={isFilterVisible}
 				onClose={() => setFilterVisible(false)}
 				onApply={handleApplyFilter}
+				initialFilters={{
+					minPrice: priceFilter.min,
+					maxPrice: priceFilter.max,
+					category:
+						selectedCategory === "all" ? "" : selectedCategory,
+				}}
 			/>
 		</View>
 	);

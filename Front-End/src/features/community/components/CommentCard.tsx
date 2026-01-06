@@ -5,7 +5,7 @@ const CommentCard = ({ comment }: { comment: any }) => {
 	return (
 		<View className="bg-white p-4 rounded-xl mb-3 shadow-sm border border-gray-100">
 			<View className="flex-row items-center mb-2">
-				<Text className="font-bold text-sm text-gray-800">
+				<Text className="font-outfit-bold text-sm text-gray-800">
 					{comment.author?.name || comment.username}
 				</Text>
 				<Text className="text-xs text-gray-400 ml-2">

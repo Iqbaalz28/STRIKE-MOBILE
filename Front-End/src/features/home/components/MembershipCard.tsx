@@ -14,7 +14,7 @@ interface MembershipCardProps {
 }
 
 const MembershipCard = ({ userData }: MembershipCardProps) => {
-    const navigation = useNavigation<any>();
+	const navigation = useNavigation<any>();
 
 	// Fallback values
 	const membershipName = userData.membership_name || "Belum Berlangganan";
@@ -35,20 +35,20 @@ const MembershipCard = ({ userData }: MembershipCardProps) => {
 
 				{/* Status Badge (Sekarang Menampilkan Nama User) */}
 				<View className="bg-blue-700 self-start px-3 py-1 rounded-full mb-3">
-					<Text className="text-white text-xs font-bold">
+					<Text className="text-white text-xs font-outfit-bold">
 						{userName}
 					</Text>
 				</View>
 
 				{/* Membership Name (Big Title) */}
-				<Text className="text-white text-2xl font-bold mb-4 font-[Outfit_700Bold]">
+				<Text className="text-white text-2xl font-outfit-bold mb-4 font-outfit-bold">
 					{membershipName}
 				</Text>
 
 				{/* Stats Row */}
 				<View className="flex-row justify-around mb-5">
 					<View className="items-center">
-						<Text className="text-white text-2xl font-bold font-[Outfit_700Bold]">
+						<Text className="text-white text-2xl font-outfit-bold font-outfit-bold">
 							{points}
 						</Text>
 						<Text className="text-blue-200 text-xs">Points</Text>
@@ -57,7 +57,7 @@ const MembershipCard = ({ userData }: MembershipCardProps) => {
 					<View className="w-px bg-blue-400 mx-4" />
 
 					<View className="items-center">
-						<Text className="text-white text-2xl font-bold font-[Outfit_700Bold]">
+						<Text className="text-white text-2xl font-outfit-bold font-outfit-bold">
 							{bookingCount}
 						</Text>
 						<Text className="text-blue-200 text-xs">Booking</Text>
@@ -66,7 +66,7 @@ const MembershipCard = ({ userData }: MembershipCardProps) => {
 					<View className="w-px bg-blue-400 mx-4" />
 
 					<View className="items-center">
-						<Text className="text-white text-2xl font-bold font-[Outfit_700Bold]">
+						<Text className="text-white text-2xl font-outfit-bold font-outfit-bold">
 							{level}
 						</Text>
 						<Text className="text-blue-200 text-xs">Level</Text>
@@ -74,11 +74,11 @@ const MembershipCard = ({ userData }: MembershipCardProps) => {
 				</View>
 
 				{/* Upgrade Button */}
-				<TouchableOpacity 
-                    onPress={() => navigation.navigate("Membership")}
-                    className="bg-white py-3 rounded-xl items-center"
-                >
-					<Text className="text-blue-600 font-bold">
+				<TouchableOpacity
+					onPress={() => navigation.navigate("Membership")}
+					className="bg-white py-3 rounded-xl items-center"
+				>
+					<Text className="text-blue-600 font-outfit-bold">
 						Upgrade Membership
 					</Text>
 				</TouchableOpacity>

@@ -60,7 +60,7 @@ const CommunityScreen = () => {
 		<View className="flex-1 bg-gray-50">
 			{/* Header */}
 			<View className="pt-12 pb-4 px-5 bg-white border-b border-gray-100">
-				<Text className="text-2xl font-bold text-gray-900 font-[Outfit_700Bold]">
+				<Text className="text-2xl font-outfit-bold text-gray-900 font-outfit-bold">
 					Komunitas
 				</Text>
 				<Text className="text-gray-500 text-sm">

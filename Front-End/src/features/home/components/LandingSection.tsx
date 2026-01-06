@@ -31,11 +31,11 @@ const LandingSection = () => {
 
 			{/* Konten Teks */}
 			<View className="absolute top-20 left-0 w-full px-6 z-40 items-center">
-				<Text className="font-bold text-5xl text-white text-center mb-4 font-[Outfit_700Bold]">
+				<Text className="font-outfit-bold text-5xl text-white text-center mb-4 font-outfit-bold">
 					Strike It!
 				</Text>
 
-				<Text className="text-gray-100 text-center text-sm leading-relaxed font-[Outfit_400Regular] mb-6">
+				<Text className="text-gray-100 text-center text-sm leading-relaxed font-outfit mb-6">
 					Komunitas pemancing yang berdedikasi menciptakan pengalaman
 					tak terlupakan. Perjalanan Anda dimulai di sini.
 				</Text>
@@ -52,7 +52,7 @@ const LandingSection = () => {
 						}
 						className="bg-white/20 border border-white/30 px-6 py-3 rounded-xl backdrop-blur-md"
 					>
-						<Text className="text-white font-bold font-[Outfit_500Medium]">
+						<Text className="text-white font-outfit-bold font-outfit-medium">
 							Book Sekarang
 						</Text>
 					</TouchableOpacity>
@@ -67,7 +67,7 @@ const LandingSection = () => {
 						}
 						className="bg-white/20 border border-white/30 px-6 py-3 rounded-xl backdrop-blur-md"
 					>
-						<Text className="text-white font-bold font-[Outfit_500Medium]">
+						<Text className="text-white font-outfit-bold font-outfit-medium">
 							Sewa Alat
 						</Text>
 					</TouchableOpacity>

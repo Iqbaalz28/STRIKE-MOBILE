@@ -44,7 +44,7 @@ const PaymentMethod = ({
 
 	return (
 		<View className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-			<Text className="text-xl font-bold mb-4 text-gray-900 font-[Outfit_700Bold]">
+			<Text className="text-xl font-outfit-bold mb-4 text-gray-900 font-outfit-bold">
 				Metode Pembayaran
 			</Text>
 
@@ -58,16 +58,15 @@ const PaymentMethod = ({
 					<TouchableOpacity
 						key={tab.id}
 						onPress={() => setActiveTab(tab.id)}
-						className={`px-4 py-2 mr-2 rounded-full border ${
-							activeTab === tab.id
-								? "bg-blue-50 border-blue-600"
-								: "bg-white border-gray-200"
-						}`}
+						className={`px-4 py-2 mr-2 rounded-full border ${activeTab === tab.id
+							? "bg-blue-50 border-blue-600"
+							: "bg-white border-gray-200"
+							}`}
 					>
 						<Text
 							className={
 								activeTab === tab.id
-									? "text-blue-600 font-bold"
+									? "text-blue-600 font-outfit-bold"
 									: "text-gray-500"
 							}
 						>
@@ -85,24 +84,22 @@ const PaymentMethod = ({
 							<TouchableOpacity
 								key={bank}
 								onPress={() => setSelectedBank(bank)}
-								className={`flex-row items-center p-3 border rounded-xl mb-2 ${
-									selectedBank === bank
-										? "border-blue-600 bg-blue-50"
-										: "border-gray-200"
-								}`}
+								className={`flex-row items-center p-3 border rounded-xl mb-2 ${selectedBank === bank
+									? "border-blue-600 bg-blue-50"
+									: "border-gray-200"
+									}`}
 							>
 								<View
-									className={`w-4 h-4 rounded-full border mr-3 items-center justify-center ${
-										selectedBank === bank
-											? "border-blue-600"
-											: "border-gray-400"
-									}`}
+									className={`w-4 h-4 rounded-full border mr-3 items-center justify-center ${selectedBank === bank
+										? "border-blue-600"
+										: "border-gray-400"
+										}`}
 								>
 									{selectedBank === bank && (
 										<View className="w-2 h-2 rounded-full bg-blue-600" />
 									)}
 								</View>
-								<Text className="capitalize font-medium text-gray-800">
+								<Text className="capitalize font-outfit-medium text-gray-800">
 									{bank} Virtual Account
 								</Text>
 							</TouchableOpacity>
@@ -133,7 +130,7 @@ const PaymentMethod = ({
 				)}
 				{activeTab === "cod" && (
 					<View className="py-4 items-center">
-						<Text className="text-gray-800 font-bold">
+						<Text className="text-gray-800 font-outfit-bold">
 							Bayar di Tempat
 						</Text>
 						<Text className="text-gray-500 text-center text-sm mt-1">

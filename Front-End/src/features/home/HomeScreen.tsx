@@ -38,22 +38,45 @@ const HomeScreen = () => {
 	const [discounts, setDiscounts] = useState<any[]>([]);
 	const [activities, setActivities] = useState<any[]>([]);
 
+	// State untuk stats
+	const [stats, setStats] = useState({
+		totalBookings: 0,
+		totalShopping: 0, // dalam Rupiah
+	});
+
 	const fetchData = async () => {
 		try {
-			const [userRes, locRes, discRes, bookingRes] = await Promise.all([
+			// Tambahkan getMyOrders ke Promise.all
+			const [userRes, locRes, discRes, bookingRes, orderRes] = await Promise.all([
 				api.getMyProfile().catch(() => ({ data: {} })),
 				api.getLocations().catch(() => ({ data: [] })),
 				api.getDiscounts().catch((e) => { console.log("Discount fetch error:", e); return { data: [] }; }),
 				api.getMyBookings().catch(() => ({ data: [] })),
+				api.getMyOrders().catch(() => ({ data: [] })),
 			]);
+
 			setUserData(userRes.data);
 			setLocations(Array.isArray(locRes.data) ? locRes.data.slice(0, 3) : []);
 			setDiscounts(Array.isArray(discRes.data) ? discRes.data.slice(0, 2) : []);
 
+			// Hitung Stats
+			const bookings = Array.isArray(bookingRes.data) ? bookingRes.data : [];
+			const orders = Array.isArray(orderRes.data) ? orderRes.data : [];
+
+			// 1. Total Booking: count length
+			const totalBook = bookings.length;
+
+			// 2. Total Shopping: sum total_price from orders
+			// Asumsi order punya field `total_price`
+			const totalShop = orders.reduce((acc: number, curr: any) => acc + (curr.total_price || 0), 0);
+
+			setStats({
+				totalBookings: totalBook,
+				totalShopping: totalShop,
+			});
+
 			// Ambil 3 booking terbaru sebagai aktivitas
-			const recentBookings = Array.isArray(bookingRes.data)
-				? bookingRes.data.slice(0, 3)
-				: [];
+			const recentBookings = bookings.slice(0, 3);
 			setActivities(recentBookings);
 
 		} catch (error) {
@@ -84,6 +107,17 @@ const HomeScreen = () => {
 		return `${BASE_URL}/${path}`;
 	};
 
+	// Helper format formatShortCurrency (1.2jt, 500rb)
+	const formatShortCurrency = (amount: number) => {
+		if (amount >= 1_000_000) {
+			return `Rp ${(amount / 1_000_000).toFixed(1).replace(/\.0$/, "")}jt`;
+		}
+		if (amount >= 1_000) {
+			return `Rp ${(amount / 1_000).toFixed(0)}rb`;
+		}
+		return `Rp ${amount.toLocaleString("id-ID")}`;
+	};
+
 	// Quick Actions Menu
 	const quickActions = [
 		{ icon: MapPin, label: "Booking", color: "#3B82F6", bg: "#dae4f2ff", route: "BookingStack" },
@@ -108,7 +142,7 @@ const HomeScreen = () => {
 					<View className="flex-row justify-between items-center">
 						<View className="flex-1">
 							<Text className="text-slate-400 text-sm">Selamat datang,</Text>
-							<Text className="text-slate-900 text-2xl font-bold mt-0.5">
+							<Text className="text-slate-900 text-2xl font-outfit-bold mt-0.5">
 								{userData.name || "Pengguna"}
 							</Text>
 						</View>
@@ -140,24 +174,24 @@ const HomeScreen = () => {
 						<View className="flex-row justify-between items-start">
 							<View>
 								<Text className="text-blue-100 text-sm">Membership</Text>
-								<Text className="text-white text-2xl font-bold mt-1">
+								<Text className="text-white text-2xl font-outfit-bold mt-1">
 									{userData.membership_name || "Standard"}
 								</Text>
-							</View>
-							<View className="bg-white/20 px-4 py-2 rounded-full flex-row items-center">
-								<Star size={14} color="#FCD34D" fill="#FCD34D" />
-								<Text className="text-white font-bold ml-1.5">Premium</Text>
 							</View>
 						</View>
 
 						<View className="flex-row mt-6 gap-6">
 							<View>
 								<Text className="text-blue-200 text-xs">Total Booking</Text>
-								<Text className="text-white text-xl font-bold">12</Text>
+								<Text className="text-white text-xl font-outfit-bold">
+									{stats.totalBookings}
+								</Text>
 							</View>
 							<View>
 								<Text className="text-blue-200 text-xs">Total Shopping</Text>
-								<Text className="text-white text-xl font-bold">Rp 1.2jt</Text>
+								<Text className="text-white text-xl font-outfit-bold">
+									{formatShortCurrency(stats.totalShopping)}
+								</Text>
 							</View>
 						</View>
 					</TouchableOpacity>
@@ -179,7 +213,7 @@ const HomeScreen = () => {
 								>
 									<action.icon size={24} color={action.color} />
 								</View>
-								<Text className="text-slate-600 text-xs font-medium">{action.label}</Text>
+								<Text className="text-slate-600 text-xs font-outfit-medium">{action.label}</Text>
 							</TouchableOpacity>
 						))}
 					</View>
@@ -195,7 +229,7 @@ const HomeScreen = () => {
 							<Ticket size={24} color="#FFFFFF" />
 						</View>
 						<View className="flex-1 ml-4">
-							<Text className="text-amber-800 font-bold text-base">
+							<Text className="text-amber-800 font-outfit-bold text-base">
 								{discounts[0]?.discount_value || "10%"} OFF
 							</Text>
 							<Text className="text-amber-600 text-sm">
@@ -211,9 +245,9 @@ const HomeScreen = () => {
 				{/* Popular Spots */}
 				<View className="mb-8">
 					<View className="flex-row justify-between items-center px-6 mb-4">
-						<Text className="text-slate-900 text-lg font-bold">Lokasi Populer</Text>
+						<Text className="text-slate-900 text-lg font-outfit-bold">Lokasi Populer</Text>
 						<TouchableOpacity onPress={() => navigation.navigate("BookingStack", { screen: "LocationList" })}>
-							<Text className="text-blue-600 text-sm font-medium">Lihat Semua</Text>
+							<Text className="text-blue-600 text-sm font-outfit-medium">Lihat Semua</Text>
 						</TouchableOpacity>
 					</View>
 
@@ -244,7 +278,7 @@ const HomeScreen = () => {
 									resizeMode="cover"
 								/>
 								<View className="p-3">
-									<Text className="text-slate-900 font-bold text-sm" numberOfLines={1}>
+									<Text className="text-slate-900 font-outfit-bold text-sm" numberOfLines={1}>
 										{loc.name}
 									</Text>
 									<Text className="text-slate-400 text-xs mt-0.5" numberOfLines={1}>
@@ -252,8 +286,9 @@ const HomeScreen = () => {
 									</Text>
 									<View className="flex-row items-center mt-2">
 										<Star size={12} color="#F59E0B" fill="#F59E0B" />
-										<Text className="text-slate-600 text-xs ml-1">4.8</Text>
-										<Text className="text-blue-600 font-bold text-sm ml-auto">
+										<Text className="text-slate-600 text-xs ml-1">{Number(loc.rating_average || 0).toFixed(1)}</Text>
+										<Text className="text-slate-400 text-xs ml-1">({loc.total_reviews || 0})</Text>
+										<Text className="text-blue-600 font-outfit-bold text-sm ml-auto">
 											Rp {Number(loc.price_per_hour || 0).toLocaleString("id-ID")}/jam
 										</Text>
 									</View>
@@ -266,9 +301,9 @@ const HomeScreen = () => {
 				{/* Activity Section */}
 				<View className="px-6">
 					<View className="flex-row justify-between items-center mb-4">
-						<Text className="text-slate-900 text-lg font-bold">Aktivitas Terbaru</Text>
+						<Text className="text-slate-900 text-lg font-outfit-bold">Aktivitas Terbaru</Text>
 						<TouchableOpacity onPress={() => navigation.navigate("History")}>
-							<Text className="text-blue-600 text-sm font-medium">Lihat Semua</Text>
+							<Text className="text-blue-600 text-sm font-outfit-medium">Lihat Semua</Text>
 						</TouchableOpacity>
 					</View>
 
@@ -280,7 +315,7 @@ const HomeScreen = () => {
 										<MapPin size={24} color="#10B981" />
 									</View>
 									<View className="flex-1 ml-4">
-										<Text className="text-slate-900 font-medium">Booking {item.status === 'completed' ? 'Selesai' : 'Berhasil'}</Text>
+										<Text className="text-slate-900 font-outfit-medium">Booking {item.status === 'completed' ? 'Selesai' : 'Berhasil'}</Text>
 										<Text className="text-slate-400 text-sm" numberOfLines={1}>
 											{item.location_name || "Lokasi"} • Spot {item.spot_number}
 										</Text>

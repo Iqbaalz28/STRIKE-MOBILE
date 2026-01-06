@@ -115,7 +115,7 @@ const HistoryScreen = () => {
 				>
 					<ArrowLeft size={24} color="#1F2937" />
 				</TouchableOpacity>
-				<Text className="text-xl font-bold text-gray-900 font-[Outfit_700Bold]">
+				<Text className="text-xl font-outfit-bold text-gray-900 font-outfit-bold">
 					Riwayat Pesanan
 				</Text>
 			</View>
@@ -132,7 +132,7 @@ const HistoryScreen = () => {
 							}`}
 					>
 						<Text
-							className={`capitalize font-bold ${filter === f ? "text-white" : "text-gray-600"
+							className={`capitalize font-outfit-bold ${filter === f ? "text-white" : "text-gray-600"
 								}`}
 						>
 							{f === "all" ? "Semua" : f}

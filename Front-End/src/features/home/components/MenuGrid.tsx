@@ -81,11 +81,11 @@ const MenuGrid = () => {
 
 							{/* Bagian Bawah: Teks */}
 							<View>
-								<Text className="text-gray-900 font-bold text-base font-[Outfit_700Bold]">
+								<Text className="text-gray-900 font-outfit-bold text-base font-outfit-bold">
 									{item.title}
 								</Text>
 								<Text
-									className="text-gray-500 text-xs font-[Outfit_400Regular]"
+									className="text-gray-500 text-xs font-outfit"
 									numberOfLines={1}
 								>
 									{item.subtitle}

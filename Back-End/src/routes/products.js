@@ -1,63 +1,72 @@
 export default async function (fastify, options) {
   // 1. GET ALL PRODUCTS (List)
+  // Rating dan total_reviews dihitung dinamis dari tabel product_reviews
   fastify.get("/", async (request, reply) => {
     try {
-      // Tambahkan 'type', 'page', 'limit' di destructuring query
       const { category, search, minPrice, maxPrice, type, page = 1, limit = 10 } = request.query;
 
-      // Konversi page & limit ke number
       const pageNum = parseInt(page) || 1;
       const limitNum = parseInt(limit) || 10;
       const offset = (pageNum - 1) * limitNum;
 
-      let query = "SELECT * FROM products WHERE 1=1";
+      // Base query dengan rating dinamis
+      let baseSelect = `
+        SELECT 
+          p.*,
+          COALESCE(AVG(pr.rating), 0) as rating_average,
+          COUNT(pr.id) as total_reviews
+        FROM products p
+        LEFT JOIN product_reviews pr ON p.id = pr.id_product
+      `;
+
+      let whereClause = "WHERE 1=1";
       const params = [];
 
       // 1. Filter Kategori
       if (category) {
-        query = `
-                    SELECT p.* FROM products p 
-                    JOIN category_products c ON p.id_category = c.id 
-                    WHERE (c.name LIKE ? OR p.name LIKE ?)
-                `;
+        baseSelect = `
+          SELECT 
+            p.*,
+            COALESCE(AVG(pr.rating), 0) as rating_average,
+            COUNT(pr.id) as total_reviews
+          FROM products p 
+          JOIN category_products c ON p.id_category = c.id 
+          LEFT JOIN product_reviews pr ON p.id = pr.id_product
+        `;
+        whereClause = "WHERE (c.name LIKE ? OR p.name LIKE ?)";
         params.push(`%${category}%`, `%${category}%`);
       }
 
       // 2. Filter Search
       if (search) {
-        query += " AND name LIKE ?";
+        whereClause += " AND p.name LIKE ?";
         params.push(`%${search}%`);
       }
 
       // 3. Filter Status (Sewa / Beli)
       if (type) {
         if (type.toLowerCase() === "sewa") {
-          query += " AND price_rent > 0";
+          whereClause += " AND p.price_rent > 0";
         } else if (type.toLowerCase() === "beli") {
-          query += " AND price_sale > 0";
+          whereClause += " AND p.price_sale > 0";
         }
       }
 
       // 4. Filter Harga
       if (minPrice) {
-        query +=
-          " AND (COALESCE(price_sale, 0) >= ? OR COALESCE(price_rent, 0) >= ?)";
+        whereClause += " AND (COALESCE(p.price_sale, 0) >= ? OR COALESCE(p.price_rent, 0) >= ?)";
         params.push(minPrice, minPrice);
       }
       if (maxPrice) {
-        query +=
-          " AND (COALESCE(price_sale, 0) <= ? OR COALESCE(price_rent, 0) <= ?)";
+        whereClause += " AND (COALESCE(p.price_sale, 0) <= ? OR COALESCE(p.price_rent, 0) <= ?)";
         params.push(maxPrice, maxPrice);
       }
 
-      // 5. Pagination (LIMIT & OFFSET)
-      query += " LIMIT ? OFFSET ?";
+      // Build final query dengan GROUP BY dan pagination
+      const query = `${baseSelect} ${whereClause} GROUP BY p.id ORDER BY p.id LIMIT ? OFFSET ?`;
       params.push(limitNum, offset);
 
       const [rows] = await fastify.db.query(query, params);
-
-      // Hitung total data (Optional, untuk meta pagination jika perlu)
-      // const [countResult] = await fastify.db.query("SELECT COUNT(*) as total FROM products"); 
 
       return {
         data: rows,
@@ -72,16 +81,27 @@ export default async function (fastify, options) {
 
   // ... (Route detail dan review tetap sama, tidak perlu diubah) ...
   // 2. GET PRODUCT DETAIL
+  // Rating dan total_reviews dihitung dinamis dari tabel product_reviews
   fastify.get("/:id", async (request, reply) => {
     try {
       const { id } = request.params;
+
+      // Ambil produk dengan rating dinamis
       const [prods] = await fastify.db.query(
-        "SELECT * FROM products WHERE id = ?",
+        `SELECT 
+          p.*,
+          COALESCE(AVG(pr.rating), 0) as rating_average,
+          COUNT(pr.id) as total_reviews
+        FROM products p
+        LEFT JOIN product_reviews pr ON p.id = pr.id_product
+        WHERE p.id = ?
+        GROUP BY p.id`,
         [id],
       );
       if (prods.length === 0)
         return reply.code(404).send({ message: "Produk tidak ditemukan" });
       const product = prods[0];
+
       const [images] = await fastify.db.query(
         "SELECT img_path, img_type FROM product_images WHERE id_product = ?",
         [id],

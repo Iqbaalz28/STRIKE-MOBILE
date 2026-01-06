@@ -115,7 +115,7 @@ const CartScreen = () => {
 				<TouchableOpacity onPress={() => navigation.goBack()}>
 					<ArrowLeft size={24} color="black" />
 				</TouchableOpacity>
-				<Text className="text-xl font-bold font-[Outfit_700Bold]">
+				<Text className="text-xl font-outfit-bold font-outfit-bold">
 					Keranjang Saya
 				</Text>
 			</View>
@@ -127,7 +127,7 @@ const CartScreen = () => {
 				contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
 				ListEmptyComponent={
 					<View className="items-center justify-center mt-20">
-						<Text className="text-center text-gray-400 font-medium">
+						<Text className="text-center text-gray-400 font-outfit-medium">
 							Keranjang masih kosong.
 						</Text>
 					</View>
@@ -165,12 +165,12 @@ const CartScreen = () => {
 							<View className="flex-1 ml-3 justify-between py-1">
 								<View>
 									<Text
-										className="font-bold text-gray-900 font-[Outfit_500Medium] text-sm"
+										className="font-outfit-bold text-gray-900 font-outfit-medium text-sm"
 										numberOfLines={2}
 									>
 										{productName}
 									</Text>
-									<Text className="text-blue-600 font-bold mt-1 text-base">
+									<Text className="text-blue-600 font-outfit-bold mt-1 text-base">
 										{formatRupiah(productPrice)}
 									</Text>
 								</View>
@@ -185,7 +185,7 @@ const CartScreen = () => {
 										>
 											<Minus size={14} color="black" />
 										</TouchableOpacity>
-										<Text className="mx-3 font-bold text-gray-800">
+										<Text className="mx-3 font-outfit-bold text-gray-800">
 											{displayQty}
 										</Text>
 										<TouchableOpacity
@@ -213,10 +213,10 @@ const CartScreen = () => {
 			{/* Bottom Bar */}
 			<View className="absolute bottom-0 w-full p-5 border-t border-gray-100 bg-white shadow-2xl pb-8">
 				<View className="flex-row justify-between mb-4">
-					<Text className="text-gray-500 font-medium">
+					<Text className="text-gray-500 font-outfit-medium">
 						Total Pembayaran
 					</Text>
-					<Text className="text-xl font-bold text-blue-600 font-[Outfit_700Bold]">
+					<Text className="text-xl font-outfit-bold text-blue-600 font-outfit-bold">
 						{formatRupiah(totalPrice)}
 					</Text>
 				</View>
@@ -228,13 +228,12 @@ const CartScreen = () => {
 						})
 					}
 					disabled={cartItems.length === 0 || totalPrice === 0}
-					className={`py-4 rounded-xl items-center ${
-						cartItems.length === 0
-							? "bg-gray-300"
-							: "bg-blue-600 shadow-lg shadow-blue-200"
-					}`}
+					className={`py-4 rounded-xl items-center ${cartItems.length === 0
+						? "bg-gray-300"
+						: "bg-blue-600 shadow-lg shadow-blue-200"
+						}`}
 				>
-					<Text className="text-white font-bold text-lg font-[Outfit_700Bold]">
+					<Text className="text-white font-outfit-bold text-lg font-outfit-bold">
 						Lanjut ke Pembayaran
 					</Text>
 				</TouchableOpacity>

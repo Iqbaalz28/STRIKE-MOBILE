@@ -155,7 +155,7 @@ const CheckoutScreen = () => {
 				<TouchableOpacity onPress={() => navigation.goBack()}>
 					<ArrowLeft size={24} color="black" />
 				</TouchableOpacity>
-				<Text className="text-xl font-bold font-[Outfit_700Bold]">
+				<Text className="text-xl font-outfit-bold font-outfit-bold">
 					Checkout
 				</Text>
 			</View>
@@ -165,13 +165,13 @@ const CheckoutScreen = () => {
 				showsVerticalScrollIndicator={false}
 			>
 				{/* Alamat Pengiriman */}
-				<Text className="font-bold text-gray-900 mb-3 font-[Outfit_700Bold]">
+				<Text className="font-outfit-bold text-gray-900 mb-3 font-outfit-bold">
 					Alamat Pengiriman
 				</Text>
 				<View className="bg-white p-4 rounded-xl border border-gray-200 mb-4">
 					<View className="flex-row items-center mb-3">
 						<MapPin size={18} color="#2563EB" />
-						<Text className="font-bold ml-2 text-gray-800">
+						<Text className="font-outfit-bold ml-2 text-gray-800">
 							Detail Lokasi
 						</Text>
 					</View>
@@ -237,7 +237,7 @@ const CheckoutScreen = () => {
 				</View>
 
 				{/* Voucher Section */}
-				<Text className="font-bold text-gray-900 mb-3 font-[Outfit_700Bold]">
+				<Text className="font-outfit-bold text-gray-900 mb-3 font-outfit-bold">
 					Kode Voucher
 				</Text>
 				<View className="bg-white p-4 rounded-xl border border-gray-200 mb-4">
@@ -269,7 +269,7 @@ const CheckoutScreen = () => {
 								{applyingVoucher ? (
 									<ActivityIndicator size="small" color="white" />
 								) : (
-									<Text className="text-white font-bold">Pakai</Text>
+									<Text className="text-white font-outfit-bold">Pakai</Text>
 								)}
 							</TouchableOpacity>
 						)}
@@ -285,7 +285,7 @@ const CheckoutScreen = () => {
 				</View>
 
 				{/* Ringkasan Item */}
-				<Text className="font-bold text-gray-900 mb-3 font-[Outfit_700Bold]">
+				<Text className="font-outfit-bold text-gray-900 mb-3 font-outfit-bold">
 					Ringkasan Pesanan
 				</Text>
 				<View className="bg-white p-4 rounded-xl border border-gray-200 mb-4">
@@ -305,11 +305,11 @@ const CheckoutScreen = () => {
 									numberOfLines={1}
 								>
 									{pName}{" "}
-									<Text className="font-bold text-gray-800">
+									<Text className="font-outfit-bold text-gray-800">
 										x{item.qty}
 									</Text>
 								</Text>
-								<Text className="font-medium text-gray-900">
+								<Text className="font-outfit-medium text-gray-900">
 									{formatRupiah(subtotal)}
 								</Text>
 							</View>
@@ -333,15 +333,15 @@ const CheckoutScreen = () => {
 					)}
 					<View className="h-[1px] bg-gray-200 my-2" />
 					<View className="flex-row justify-between">
-						<Text className="font-bold text-gray-900">Total Tagihan</Text>
-						<Text className="font-bold text-blue-600 text-lg">
+						<Text className="font-outfit-bold text-gray-900">Total Tagihan</Text>
+						<Text className="font-outfit-bold text-blue-600 text-lg">
 							{formatRupiah(grandTotal)}
 						</Text>
 					</View>
 				</View>
 
 				{/* Metode Pembayaran */}
-				<Text className="font-bold text-gray-900 mb-3 font-[Outfit_700Bold]">
+				<Text className="font-outfit-bold text-gray-900 mb-3 font-outfit-bold">
 					Metode Pembayaran
 				</Text>
 				<PaymentMethod
@@ -364,7 +364,7 @@ const CheckoutScreen = () => {
 					{processing ? (
 						<ActivityIndicator color="white" />
 					) : (
-						<Text className="text-white font-bold text-lg font-[Outfit_700Bold]">
+						<Text className="text-white font-outfit-bold text-lg font-outfit-bold">
 							Bayar {formatRupiah(grandTotal)}
 						</Text>
 					)}

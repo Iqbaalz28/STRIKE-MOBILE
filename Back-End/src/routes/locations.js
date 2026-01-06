@@ -1,11 +1,20 @@
 export default async function (fastify, options) {
   // --- 1. GET ALL LOCATIONS (List) ---
   // URL: GET /locations
-  // INI YANG SEBELUMNYA HILANG
+  // Rating dan total_reviews dihitung dinamis dari tabel location_reviews
   fastify.get("/", async (request, reply) => {
     try {
-      // Ambil semua kolom dari tabel locations
-      const [rows] = await fastify.db.query("SELECT * FROM locations");
+      // Ambil lokasi dengan rating dan total reviews dihitung dari tabel reviews
+      const [rows] = await fastify.db.query(`
+        SELECT 
+          l.*,
+          COALESCE(AVG(lr.rating), 0) as rating_average,
+          COUNT(lr.id) as total_reviews
+        FROM locations l
+        LEFT JOIN location_reviews lr ON l.id = lr.id_location
+        GROUP BY l.id
+        ORDER BY l.id
+      `);
       return rows;
     } catch (error) {
       request.log.error(error);
@@ -78,13 +87,21 @@ export default async function (fastify, options) {
 
   // 2. GET LOCATION DETAIL
   // URL: GET /locations/:id
+  // Rating dan total_reviews dihitung dinamis dari tabel location_reviews
   fastify.get("/:id", async (request, reply) => {
     try {
       const { id } = request.params;
 
-      // A. Ambil Data Utama Lokasi
+      // A. Ambil Data Utama Lokasi dengan rating dinamis
       const [locs] = await fastify.db.query(
-        "SELECT * FROM locations WHERE id = ?",
+        `SELECT 
+          l.*,
+          COALESCE(AVG(lr.rating), 0) as rating_average,
+          COUNT(lr.id) as total_reviews
+        FROM locations l
+        LEFT JOIN location_reviews lr ON l.id = lr.id_location
+        WHERE l.id = ?
+        GROUP BY l.id`,
         [id],
       );
       if (locs.length === 0)

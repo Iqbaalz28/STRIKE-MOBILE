@@ -55,7 +55,7 @@ const SplashScreen = ({
 
 	return (
 		<View className="flex-1 justify-center items-center bg-blue-600">
-			<Text className="text-4xl font-bold text-white mb-4 font-[Outfit_700Bold]">
+			<Text className="text-4xl font-outfit-bold text-white mb-4 font-outfit-bold">
 				Strike It
 			</Text>
 			<ActivityIndicator size="large" color="white" />

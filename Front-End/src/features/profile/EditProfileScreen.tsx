@@ -182,7 +182,7 @@ const EditProfileScreen = () => {
 				<TouchableOpacity onPress={() => navigation.goBack()}>
 					<ArrowLeft size={24} color="black" />
 				</TouchableOpacity>
-				<Text className="text-lg font-bold font-[Outfit_700Bold]">
+				<Text className="text-lg font-outfit-bold font-outfit-bold">
 					Edit Profil
 				</Text>
 				<View style={{ width: 24 }} />
@@ -207,7 +207,7 @@ const EditProfileScreen = () => {
 						</TouchableOpacity>
 					</View>
 					<Text
-						className="text-blue-600 text-sm font-bold mt-3 font-[Outfit_700Bold]"
+						className="text-blue-600 text-sm font-outfit-bold mt-3 font-outfit-bold"
 						onPress={pickImage}
 					>
 						Ganti Foto Profil
@@ -295,7 +295,7 @@ const EditProfileScreen = () => {
 					) : (
 						<>
 							<Save size={20} color="white" className="mr-2" />
-							<Text className="text-white font-bold text-lg">
+							<Text className="text-white font-outfit-bold text-lg">
 								Simpan Perubahan
 							</Text>
 						</>

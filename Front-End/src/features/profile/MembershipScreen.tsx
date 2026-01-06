@@ -130,7 +130,7 @@ const MembershipScreen = () => {
 				<TouchableOpacity onPress={() => navigation.goBack()} className="mr-3">
 					<ArrowLeft size={24} color="#374151" />
 				</TouchableOpacity>
-				<Text className="text-xl font-bold text-gray-900">Membership</Text>
+				<Text className="text-xl font-outfit-bold text-gray-900">Membership</Text>
 			</View>
 
 			<ScrollView contentContainerStyle={{ padding: 20 }}>
@@ -143,7 +143,7 @@ const MembershipScreen = () => {
 						<Text className="text-blue-100 ml-2 text-sm">Langganan Aktif</Text>
 					</View>
 
-					<Text className="text-white text-2xl font-bold mb-4">
+					<Text className="text-white text-2xl font-outfit-bold mb-4">
 						{currentMembership || "Standard"}
 					</Text>
 
@@ -158,7 +158,7 @@ const MembershipScreen = () => {
 							) : (
 								<>
 									<XCircle size={18} color="white" />
-									<Text className="text-white font-medium ml-2">Batalkan Langganan</Text>
+									<Text className="text-white font-outfit-medium ml-2">Batalkan Langganan</Text>
 								</>
 							)}
 						</TouchableOpacity>
@@ -193,22 +193,22 @@ const MembershipScreen = () => {
 						>
 							{isCurrentPlan && (
 								<View className="absolute top-0 right-0 bg-green-500 px-3 py-1 rounded-bl-xl rounded-tr-lg">
-									<Text className="text-white text-xs font-bold">Aktif</Text>
+									<Text className="text-white text-xs font-outfit-bold">Aktif</Text>
 								</View>
 							)}
 							{!isCurrentPlan && !!item.is_popular && (
 								<View className="absolute top-0 right-0 bg-blue-600 px-3 py-1 rounded-bl-xl rounded-tr-lg">
-									<Text className="text-white text-xs font-bold">Terpopuler</Text>
+									<Text className="text-white text-xs font-outfit-bold">Terpopuler</Text>
 								</View>
 							)}
 
 							<View className="mb-4">
-								<Text className="text-xl font-bold text-gray-900 mb-1">{item.name}</Text>
+								<Text className="text-xl font-outfit-bold text-gray-900 mb-1">{item.name}</Text>
 								<Text className="text-gray-500 text-sm">{item.description}</Text>
 							</View>
 
 							<View className="mb-6 flex-row items-baseline">
-								<Text className="text-2xl font-bold text-blue-600">
+								<Text className="text-2xl font-outfit-bold text-blue-600">
 									{formatRupiah(item.price_per_month)}
 								</Text>
 								<Text className="text-gray-400 text-sm ml-1">/bulan</Text>
@@ -228,7 +228,7 @@ const MembershipScreen = () => {
 							{isCurrentPlan ? (
 								<View className="bg-green-100 py-3 rounded-xl items-center flex-row justify-center">
 									<CheckCircle2 size={18} color="#16A34A" />
-									<Text className="text-green-700 font-bold ml-2">Paket Aktif</Text>
+									<Text className="text-green-700 font-outfit-bold ml-2">Paket Aktif</Text>
 								</View>
 							) : (
 								<TouchableOpacity
@@ -242,7 +242,7 @@ const MembershipScreen = () => {
 									) : (
 										<View className="flex-row items-center">
 											<ShieldCheck size={18} color="white" style={{ marginRight: 8 }} />
-											<Text className="text-white font-bold">Pilih Paket ini</Text>
+											<Text className="text-white font-outfit-bold">Pilih Paket ini</Text>
 										</View>
 									)}
 								</TouchableOpacity>

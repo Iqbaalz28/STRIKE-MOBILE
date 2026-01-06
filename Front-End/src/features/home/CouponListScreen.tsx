@@ -54,18 +54,18 @@ const CouponListScreen = () => {
 
 				<View className="flex-row items-center justify-between">
 					<View className="flex-1">
-						<Text className="text-blue-100 text-xs mb-1 font-[Outfit_400Regular]">
+						<Text className="text-blue-100 text-xs mb-1 font-outfit">
 							Voucher Spesial
 						</Text>
 						{/* Discount Value */}
-						<Text className="text-white text-3xl font-bold font-[Outfit_700Bold]">
+						<Text className="text-white text-3xl font-outfit-bold font-outfit-bold">
 							{item.discount_value} OFF
 						</Text>
 
 						{/* Coupon Code */}
 						<View className="flex-row items-center mt-2 bg-blue-800/40 px-3 py-1.5 rounded-lg self-start border border-blue-400/30">
 							<Text className="text-blue-200 text-[10px] mr-2">KODE:</Text>
-							<Text className="text-white font-bold tracking-widest text-sm font-mono">
+							<Text className="text-white font-outfit-bold tracking-widest text-sm font-mono">
 								{item.code}
 							</Text>
 						</View>
@@ -76,7 +76,7 @@ const CouponListScreen = () => {
 								<Text className={`text-xs ${isAlmostFull ? "text-yellow-300" : "text-blue-200"}`}>
 									{usedCount} dari {maxUsage} terpakai
 								</Text>
-								<Text className={`text-xs font-bold ${isAlmostFull ? "text-yellow-300" : "text-blue-200"}`}>
+								<Text className={`text-xs font-outfit-bold ${isAlmostFull ? "text-yellow-300" : "text-blue-200"}`}>
 									{Math.round(usagePercent)}%
 								</Text>
 							</View>
@@ -115,7 +115,7 @@ const CouponListScreen = () => {
 				>
 					<ArrowLeft size={24} color="#1F2937" />
 				</TouchableOpacity>
-				<Text className="text-xl font-bold text-gray-900 font-[Outfit_700Bold]">
+				<Text className="text-xl font-outfit-bold text-gray-900 font-outfit-bold">
 					Semua Kupon
 				</Text>
 			</View>
@@ -127,7 +127,7 @@ const CouponListScreen = () => {
 				contentContainerStyle={{ paddingVertical: 10 }}
 				ListEmptyComponent={
 					<View className="items-center justify-center py-10">
-						<Text className="text-gray-500 font-[Outfit_400Regular]">
+						<Text className="text-gray-500 font-outfit">
 							Tidak ada kupon tersedia saat ini.
 						</Text>
 					</View>

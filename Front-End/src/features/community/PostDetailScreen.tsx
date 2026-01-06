@@ -103,7 +103,7 @@ const PostDetailScreen = () => {
 				<TouchableOpacity onPress={() => navigation.goBack()}>
 					<ArrowLeft size={24} color="black" />
 				</TouchableOpacity>
-				<Text className="text-lg font-bold">Detail Postingan</Text>
+				<Text className="text-lg font-outfit-bold">Detail Postingan</Text>
 			</View>
 
 			<ScrollView className="flex-1">
@@ -120,7 +120,7 @@ const PostDetailScreen = () => {
 							className="w-12 h-12 rounded-full bg-gray-200"
 						/>
 						<View className="ml-3">
-							<Text className="font-bold text-lg">
+							<Text className="font-outfit-bold text-lg">
 								{post?.author_name}
 							</Text>
 							<Text className="text-gray-500">
@@ -131,7 +131,7 @@ const PostDetailScreen = () => {
 						</View>
 					</View>
 
-					<Text className="text-xl font-bold text-gray-900 mb-2 font-[Outfit_700Bold]">
+					<Text className="text-xl font-outfit-bold text-gray-900 mb-2 font-outfit-bold">
 						{post?.title}
 					</Text>
 					<Text className="text-gray-700 leading-relaxed text-base">
@@ -154,7 +154,7 @@ const PostDetailScreen = () => {
 
 				{/* Comments Section */}
 				<View className="p-5 bg-gray-50 min-h-screen">
-					<Text className="font-bold text-gray-600 mb-4">
+					<Text className="font-outfit-bold text-gray-600 mb-4">
 						Komentar ({comments.length})
 					</Text>
 

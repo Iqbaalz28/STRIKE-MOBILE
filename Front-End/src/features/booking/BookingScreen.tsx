@@ -374,12 +374,12 @@ const BookingScreen = () => {
 				/>
 				<View className="p-4">
 					<View className="flex-row justify-between items-center mb-2">
-						<Text className="text-blue-600 font-bold text-lg">
+						<Text className="text-blue-600 font-outfit-bold text-lg">
 							Rp {Number(price).toLocaleString("id-ID")}/jam
 						</Text>
 						<Text className="text-gray-500 text-sm">per {duration} jam</Text>
 					</View>
-					<Text className="text-xl font-bold text-gray-900 mb-2">
+					<Text className="text-xl font-outfit-bold text-gray-900 mb-2">
 						{locationName}
 					</Text>
 					<Text className="text-gray-500 text-sm mb-3">{locationAddress}</Text>
@@ -387,11 +387,11 @@ const BookingScreen = () => {
 					<View className="bg-blue-50 rounded-lg p-3">
 						<View className="flex-row justify-between items-center mb-1">
 							<Text className="text-gray-600 text-sm">Durasi Booking</Text>
-							<Text className="text-gray-900 font-bold">{duration} jam</Text>
+							<Text className="text-gray-900 font-outfit-bold">{duration} jam</Text>
 						</View>
 						<View className="flex-row justify-between items-center">
 							<Text className="text-gray-600 text-sm">Total Harga</Text>
-							<Text className="text-blue-600 font-bold text-lg">
+							<Text className="text-blue-600 font-outfit-bold text-lg">
 								Rp {(totalPrice || price * duration).toLocaleString("id-ID")}
 							</Text>
 						</View>
@@ -459,7 +459,7 @@ const BookingScreen = () => {
 										}`}
 								>
 									<Text
-										className={`font-bold text-sm ${isFull
+										className={`font-outfit-bold text-sm ${isFull
 											? "text-red-500"
 											: isInRange
 												? "text-white"
@@ -479,7 +479,7 @@ const BookingScreen = () => {
 				{selectedHour !== null && (
 					<View className="mt-3 bg-blue-50 rounded-lg p-3 flex-row items-center">
 						<Check size={16} color="#2563EB" />
-						<Text className="text-blue-700 ml-2 font-medium">
+						<Text className="text-blue-700 ml-2 font-outfit-medium">
 							Jam terpilih: {selectedHour.toString().padStart(2, "0")}:00 - {(selectedHour + duration).toString().padStart(2, "0")}:00
 						</Text>
 					</View>
@@ -590,7 +590,7 @@ const BookingScreen = () => {
 
 									{/* Center Area */}
 									<View className="border border-gray-300 rounded-lg justify-center items-center w-48 mx-2 bg-white">
-										<Text className="text-gray-900 text-center font-medium">
+										<Text className="text-gray-900 text-center font-outfit-medium">
 											Area Pemancingan
 										</Text>
 									</View>
@@ -610,21 +610,21 @@ const BookingScreen = () => {
 
 						{/* Legend / Informasi Kursi */}
 						<View className="items-center mb-8">
-							<Text className="text-blue-900 font-bold text-lg mb-4">
+							<Text className="text-blue-900 font-outfit-bold text-lg mb-4">
 								Informasi Kursi
 							</Text>
 							<View className="flex-row gap-4">
 								<View className="items-center bg-white p-4 rounded-2xl shadow-sm w-24 border border-gray-100">
 									<Store size={32} color="#2563EB" fill="#2563EB" strokeWidth={1.5} />
-									<Text className="text-blue-900 text-xs mt-2 font-medium">Dipilih</Text>
+									<Text className="text-blue-900 text-xs mt-2 font-outfit-medium">Dipilih</Text>
 								</View>
 								<View className="items-center bg-white p-4 rounded-2xl shadow-sm w-24 border border-gray-100">
 									<Store size={32} color="#000000" strokeWidth={1.5} />
-									<Text className="text-blue-900 text-xs mt-2 font-medium">Tersedia</Text>
+									<Text className="text-blue-900 text-xs mt-2 font-outfit-medium">Tersedia</Text>
 								</View>
 								<View className="items-center bg-white p-4 rounded-2xl shadow-sm w-24 border border-gray-100">
 									<Store size={32} color="#EF4444" fill="#EF4444" strokeWidth={1.5} />
-									<Text className="text-blue-900 text-xs mt-2 font-medium">Terisi</Text>
+									<Text className="text-blue-900 text-xs mt-2 font-outfit-medium">Terisi</Text>
 								</View>
 							</View>
 						</View>
@@ -633,7 +633,7 @@ const BookingScreen = () => {
 						{selectedSpot && (
 							<View className="bg-blue-600 rounded-2xl p-4 mb-6 mx-4">
 								<Text className="text-white text-sm mb-1 text-center">Spot Terpilih</Text>
-								<Text className="text-white font-bold text-3xl text-center">
+								<Text className="text-white font-outfit-bold text-3xl text-center">
 									{selectedSpot}
 								</Text>
 							</View>
@@ -649,51 +649,51 @@ const BookingScreen = () => {
 		<View>
 			{/* Detail Booking Card */}
 			<View className="bg-blue-600 rounded-2xl p-5 mb-6">
-				<Text className="text-white font-bold text-lg mb-4">Detail Booking</Text>
+				<Text className="text-white font-outfit-bold text-lg mb-4">Detail Booking</Text>
 
 				<View className="flex-row justify-between mb-2">
 					<Text className="text-white/80">Lokasi</Text>
-					<Text className="text-white font-medium">{locationName}</Text>
+					<Text className="text-white font-outfit-medium">{locationName}</Text>
 				</View>
 
 				<View className="flex-row justify-between mb-2">
 					<Text className="text-white/80">Durasi</Text>
-					<Text className="text-white font-medium">{duration} jam</Text>
+					<Text className="text-white font-outfit-medium">{duration} jam</Text>
 				</View>
 
 				<View className="flex-row justify-between mb-2">
 					<Text className="text-white/80">Waktu</Text>
-					<Text className="text-white font-medium">
+					<Text className="text-white font-outfit-medium">
 						{selectedHour !== null ? `${selectedHour.toString().padStart(2, "0")}:00 - ${(selectedHour + duration).toString().padStart(2, "0")}:00` : "-"}
 					</Text>
 				</View>
 
 				<View className="flex-row justify-between mb-3">
 					<Text className="text-white/80">Jumlah Spot</Text>
-					<Text className="text-white font-medium">1 spot</Text>
+					<Text className="text-white font-outfit-medium">1 spot</Text>
 				</View>
 
 				{selectedSpot && (
 					<View className="bg-blue-500 rounded-xl p-3 items-center justify-center">
-						<Text className="text-white font-bold text-2xl">{selectedSpot}</Text>
+						<Text className="text-white font-outfit-bold text-2xl">{selectedSpot}</Text>
 					</View>
 				)}
 			</View>
 
 			{/* Rincian Harga */}
 			<View className="mb-6">
-				<Text className="font-bold text-lg text-gray-900 mb-3">Rincian Harga</Text>
+				<Text className="font-outfit-bold text-lg text-gray-900 mb-3">Rincian Harga</Text>
 
 				<View className="flex-row justify-between mb-2">
 					<Text className="text-gray-600">Subtotal</Text>
-					<Text className="text-gray-900 font-medium">
+					<Text className="text-gray-900 font-outfit-medium">
 						Rp {subtotal.toLocaleString("id-ID")}
 					</Text>
 				</View>
 
 				<View className="flex-row justify-between mb-2">
 					<Text className="text-gray-600">Pajak (10%)</Text>
-					<Text className="text-gray-900 font-medium">
+					<Text className="text-gray-900 font-outfit-medium">
 						Rp {tax.toLocaleString("id-ID")}
 					</Text>
 				</View>
@@ -701,7 +701,7 @@ const BookingScreen = () => {
 				{discountAmount > 0 && (
 					<View className="flex-row justify-between mb-2">
 						<Text className="text-green-600">Diskon Voucher</Text>
-						<Text className="text-green-600 font-medium">
+						<Text className="text-green-600 font-outfit-medium">
 							- Rp {discountAmount.toLocaleString("id-ID")}
 						</Text>
 					</View>
@@ -710,8 +710,8 @@ const BookingScreen = () => {
 				<View className="h-[1px] bg-gray-200 mb-3" />
 
 				<View className="flex-row justify-between">
-					<Text className="font-bold text-lg text-gray-900">Total Pembayaran</Text>
-					<Text className="font-bold text-xl text-blue-600">
+					<Text className="font-outfit-bold text-lg text-gray-900">Total Pembayaran</Text>
+					<Text className="font-outfit-bold text-xl text-blue-600">
 						Rp {total.toLocaleString("id-ID")}
 					</Text>
 				</View>
@@ -719,7 +719,7 @@ const BookingScreen = () => {
 
 			{/* Metode Pembayaran */}
 			<View className="mb-6">
-				<Text className="font-bold text-lg text-gray-900 mb-3">Metode Pembayaran</Text>
+				<Text className="font-outfit-bold text-lg text-gray-900 mb-3">Metode Pembayaran</Text>
 
 				{/* Card Payment */}
 				<TouchableOpacity
@@ -737,17 +737,17 @@ const BookingScreen = () => {
 					</View>
 					<CreditCard size={24} color={selectedPayment === "card" ? "#2563EB" : "#6B7280"} />
 					<Text
-						className={`ml-3 font-medium ${selectedPayment === "card" ? "text-blue-600" : "text-gray-700"
+						className={`ml-3 font-outfit-medium ${selectedPayment === "card" ? "text-blue-600" : "text-gray-700"
 							}`}
 					>
 						Kartu Kredit/Debit
 					</Text>
 					<View className="ml-auto flex-row gap-2">
 						<View className="bg-gray-200 px-2 py-1 rounded">
-							<Text className="text-xs font-bold">VISA</Text>
+							<Text className="text-xs font-outfit-bold">VISA</Text>
 						</View>
 						<View className="bg-gray-200 px-2 py-1 rounded">
-							<Text className="text-xs font-bold">MC</Text>
+							<Text className="text-xs font-outfit-bold">MC</Text>
 						</View>
 					</View>
 				</TouchableOpacity>
@@ -768,7 +768,7 @@ const BookingScreen = () => {
 					</View>
 					<Store size={24} color={selectedPayment === "qris" ? "#2563EB" : "#6B7280"} />
 					<Text
-						className={`ml-3 font-medium ${selectedPayment === "qris" ? "text-blue-600" : "text-gray-700"
+						className={`ml-3 font-outfit-medium ${selectedPayment === "qris" ? "text-blue-600" : "text-gray-700"
 							}`}
 					>
 						QRIS (Scan & Pay)
@@ -830,7 +830,7 @@ const BookingScreen = () => {
 
 			{/* Voucher */}
 			<View className="mb-6">
-				<Text className="font-bold text-lg text-gray-900 mb-3">
+				<Text className="font-outfit-bold text-lg text-gray-900 mb-3">
 					Punya Kode Voucher?
 				</Text>
 				<View className="flex-row gap-2">
@@ -848,7 +848,7 @@ const BookingScreen = () => {
 							onPress={removeVoucher}
 							className="bg-red-500 px-4 rounded-xl justify-center"
 						>
-							<Text className="text-white font-bold">Hapus</Text>
+							<Text className="text-white font-outfit-bold">Hapus</Text>
 						</TouchableOpacity>
 					) : (
 						<TouchableOpacity
@@ -860,7 +860,7 @@ const BookingScreen = () => {
 							{applyingVoucher ? (
 								<ActivityIndicator size="small" color="white" />
 							) : (
-								<Text className="text-white font-bold">Pakai</Text>
+								<Text className="text-white font-outfit-bold">Pakai</Text>
 							)}
 						</TouchableOpacity>
 					)}
@@ -868,7 +868,7 @@ const BookingScreen = () => {
 				{isVoucherApplied && (
 					<View className="mt-2 bg-green-50 p-3 rounded-lg flex-row items-center">
 						<Check size={16} color="#16A34A" />
-						<Text className="text-green-600 ml-2 text-sm font-medium">
+						<Text className="text-green-600 ml-2 text-sm font-outfit-medium">
 							Diskon Rp {discountAmount.toLocaleString("id-ID")} berhasil diterapkan!
 						</Text>
 					</View>
@@ -877,7 +877,7 @@ const BookingScreen = () => {
 
 			{/* Catatan */}
 			<View className="mb-6">
-				<Text className="font-bold text-lg text-gray-900 mb-3">
+				<Text className="font-outfit-bold text-lg text-gray-900 mb-3">
 					Catatan Booking
 				</Text>
 				<TextInput
@@ -901,7 +901,7 @@ const BookingScreen = () => {
 					<TouchableOpacity onPress={() => navigation.goBack()} className="mr-3">
 						<ArrowLeft size={24} color="#000" />
 					</TouchableOpacity>
-					<Text className="text-xl font-bold text-gray-900">
+					<Text className="text-xl font-outfit-bold text-gray-900">
 						{currentStep === 1 && "Informasi Booking"}
 						{currentStep === 2 && "Pilih Kursi"}
 						{currentStep === 3 && "Pembayaran"}
@@ -923,7 +923,7 @@ const BookingScreen = () => {
 								{currentStep > step ? (
 									<Check size={20} color="white" />
 								) : (
-									<Text className={`font-bold ${currentStep === step ? "text-white" : "text-gray-400"}`}>
+									<Text className={`font-outfit-bold ${currentStep === step ? "text-white" : "text-gray-400"}`}>
 										{step}
 									</Text>
 								)}
@@ -952,7 +952,7 @@ const BookingScreen = () => {
 							onPress={handleNext}
 							className="bg-blue-600 py-4 rounded-xl items-center shadow-lg"
 						>
-							<Text className="text-white font-bold text-base">
+							<Text className="text-white font-outfit-bold text-base">
 								Lanjutkan Pembayaran
 							</Text>
 						</TouchableOpacity>
@@ -961,7 +961,7 @@ const BookingScreen = () => {
 							onPress={() => navigation.goBack()}
 							className="bg-red-500 py-4 rounded-xl items-center"
 						>
-							<Text className="text-white font-bold text-base">
+							<Text className="text-white font-outfit-bold text-base">
 								Batalkan
 							</Text>
 						</TouchableOpacity>
@@ -976,7 +976,7 @@ const BookingScreen = () => {
 						{submitting ? (
 							<ActivityIndicator color="white" />
 						) : (
-							<Text className="text-white font-bold text-base">
+							<Text className="text-white font-outfit-bold text-base">
 								Bayar Sekarang • Rp {total.toLocaleString("id-ID")}
 							</Text>
 						)}
