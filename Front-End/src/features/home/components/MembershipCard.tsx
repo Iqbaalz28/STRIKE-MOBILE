@@ -1,16 +1,27 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { Crown } from "lucide-react-native";
+import { useNavigation } from "@react-navigation/native";
 
-const MembershipCard = () => {
-	// Mock data - nanti bisa diganti dengan data dari API/Context
-	const memberData = {
-		name: "Kawan Mancing",
-		status: "Status Membership",
-		points: 450,
-		bookingCount: 12,
-		level: 3,
+interface MembershipCardProps {
+	userData: {
+		name: string;
+		membership_name: string;
+		points: number;
+		booking_count: number;
+		level: number;
 	};
+}
+
+const MembershipCard = ({ userData }: MembershipCardProps) => {
+    const navigation = useNavigation<any>();
+
+	// Fallback values
+	const membershipName = userData.membership_name || "Belum Berlangganan";
+	const points = userData.points || 0;
+	const bookingCount = userData.booking_count || 0;
+	const level = userData.level || 1;
+	const userName = userData.name || "Pengguna";
 
 	return (
 		<View className="mx-5 my-4">
@@ -22,23 +33,23 @@ const MembershipCard = () => {
 					</View>
 				</View>
 
-				{/* Status Badge */}
+				{/* Status Badge (Sekarang Menampilkan Nama User) */}
 				<View className="bg-blue-700 self-start px-3 py-1 rounded-full mb-3">
 					<Text className="text-white text-xs font-bold">
-						{memberData.status}
+						{userName}
 					</Text>
 				</View>
 
-				{/* Member Name */}
+				{/* Membership Name (Big Title) */}
 				<Text className="text-white text-2xl font-bold mb-4 font-[Outfit_700Bold]">
-					{memberData.name}
+					{membershipName}
 				</Text>
 
 				{/* Stats Row */}
-				<View className="flex-row justify-between mb-5">
+				<View className="flex-row justify-around mb-5">
 					<View className="items-center">
 						<Text className="text-white text-2xl font-bold font-[Outfit_700Bold]">
-							{memberData.points}
+							{points}
 						</Text>
 						<Text className="text-blue-200 text-xs">Points</Text>
 					</View>
@@ -47,7 +58,7 @@ const MembershipCard = () => {
 
 					<View className="items-center">
 						<Text className="text-white text-2xl font-bold font-[Outfit_700Bold]">
-							{memberData.bookingCount}
+							{bookingCount}
 						</Text>
 						<Text className="text-blue-200 text-xs">Booking</Text>
 					</View>
@@ -56,14 +67,17 @@ const MembershipCard = () => {
 
 					<View className="items-center">
 						<Text className="text-white text-2xl font-bold font-[Outfit_700Bold]">
-							{memberData.level}
+							{level}
 						</Text>
 						<Text className="text-blue-200 text-xs">Level</Text>
 					</View>
 				</View>
 
 				{/* Upgrade Button */}
-				<TouchableOpacity className="bg-white py-3 rounded-xl items-center">
+				<TouchableOpacity 
+                    onPress={() => navigation.navigate("Membership")}
+                    className="bg-white py-3 rounded-xl items-center"
+                >
 					<Text className="text-blue-600 font-bold">
 						Upgrade Membership
 					</Text>

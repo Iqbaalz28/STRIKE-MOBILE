@@ -7,6 +7,8 @@ import {
 	Text,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
+import api from "../../services/api";
 
 // Components
 import MembershipCard from "./components/MembershipCard";
@@ -17,12 +19,32 @@ import EventSection from "./components/EventSection";
 
 const HomeScreen = () => {
 	const [refreshing, setRefreshing] = useState(false);
+	const [userData, setUserData] = useState({
+		name: "",
+		membership_name: "Standard",
+		points: 0,
+		booking_count: 0,
+		level: 1,
+	});
+
+	const fetchUserData = async () => {
+		try {
+			const response = await api.getMyProfile();
+			setUserData(response.data);
+		} catch (error) {
+			console.error("Error fetching user data:", error);
+		}
+	};
+
+	useFocusEffect(
+		useCallback(() => {
+			fetchUserData();
+		}, [])
+	);
 
 	const onRefresh = useCallback(() => {
 		setRefreshing(true);
-		setTimeout(() => {
-			setRefreshing(false);
-		}, 2000);
+		fetchUserData().finally(() => setRefreshing(false));
 	}, []);
 
 	return (
@@ -39,7 +61,7 @@ const HomeScreen = () => {
 					Halo,
 				</Text>
 				<Text className="text-gray-900 text-2xl font-bold font-[Outfit_700Bold]">
-					Strike it!
+					{userData.name || "Pengguna"}
 				</Text>
 			</View>
 
@@ -56,7 +78,7 @@ const HomeScreen = () => {
 				}
 			>
 				{/* 1. Membership Card */}
-				<MembershipCard />
+				<MembershipCard userData={userData} />
 
 				{/* 2. Menu Grid (Navigasi Utama) */}
 				<MenuGrid />

@@ -40,6 +40,7 @@ export type RootStackParamList = {
 	EventList: undefined;
 	EditProfile: undefined;
 	About: undefined;
+	Membership: undefined;
 
 	// Community Screens (Sementara taruh di Root agar bisa menimpa Tab)
 	CreatePost: undefined;

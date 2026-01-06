@@ -3,9 +3,11 @@ export const formatRupiah = (number: number) => {
 	return new Intl.NumberFormat("id-ID", {
 		style: "currency",
 		currency: "IDR",
-		minimumFractionDigits: 0,
-		maximumFractionDigits: 0,
-	}).format(number);
+		minimumFractionDigits: 2,
+		maximumFractionDigits: 2,
+	})
+		.format(number)
+		.replace("Rp", "Rp");
 };
 
 // 2. Format Tanggal (Contoh: 20 Januari 2025)

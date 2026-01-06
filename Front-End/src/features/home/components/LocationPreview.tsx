@@ -12,6 +12,7 @@ import { useNavigation } from "@react-navigation/native";
 import { MapPin, Star } from "lucide-react-native"; // Opsional: Tambah icon biar cantik
 import api from "@/services/api";
 import { getImageUrl } from "@/utils/imageHelper";
+import { formatRupiah } from "@/utils/format";
 
 const LocationPreview = () => {
 	const navigation = useNavigation<any>();
@@ -141,10 +142,7 @@ const LocationPreview = () => {
 
 									{/* Harga (Opsional, agar user langsung tahu range harga) */}
 									<Text className="text-blue-600 font-bold text-xs mt-2">
-										Rp{" "}
-										{location?.price_per_hour?.toLocaleString(
-											"id-ID",
-										) || "50.000"}
+										{formatRupiah(location?.price_per_hour || 0)}
 										<Text className="text-gray-400 font-normal">
 											{" "}
 											/jam

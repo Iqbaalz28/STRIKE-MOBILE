@@ -19,6 +19,7 @@ import EventListScreen from "@/features/home/EventListScreen";
 import EditProfileScreen from "@/features/profile/EditProfileScreen";
 import AboutScreen from "@/features/profile/AboutScreen";
 import HistoryScreen from "@/features/profile/HistoryScreen";
+import MembershipScreen from "@/features/profile/MembershipScreen";
 
 // 4. Community
 import CreatePostScreen from "@/features/community/CreatePostScreen";
@@ -110,6 +111,7 @@ const RootNavigator = () => {
 					/>
 					<Stack.Screen name="About" component={AboutScreen} />
 					<Stack.Screen name="History" component={HistoryScreen} />
+					<Stack.Screen name="Membership" component={MembershipScreen} />
 
 					{/* Community */}
 					<Stack.Screen

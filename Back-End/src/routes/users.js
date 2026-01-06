@@ -48,7 +48,38 @@ export default async function (fastify, options) {
           return reply.code(404).send({ message: "User tidak ditemukan" });
         }
 
-        return rows[0];
+        const user = rows[0];
+
+        // --- CALCULATION FOR GAMIFICATION ---
+        const [bookingStats] = await fastify.db.query(
+            `SELECT COUNT(*) as booking_count, SUM(total_price) as total_spent 
+             FROM bookings 
+             WHERE id_user = ? AND status = 'completed'`,
+            [userId]
+        );
+
+        const bookingCount = bookingStats[0].booking_count || 0;
+        const totalSpent = Number(bookingStats[0].total_spent) || 0;
+        
+        // Logic Points: misal 1 point per 10.000 rupiah
+        const points = Math.floor(totalSpent / 10000);
+
+        // Logic Level:
+        // 1: Kawan Mancing / Default
+        // 2: Juragan Mancing 
+        // 3: Jawara Mancing
+        let level = 1;
+        const mName = (user.membership_name || "").toLowerCase();
+        if (mName.includes("juragan")) level = 2;
+        if (mName.includes("jawara")) level = 3;
+
+        return {
+            ...user,
+            // Return calculated stats
+            booking_count: bookingCount,
+            points: points,
+            level: level
+        };
       } catch (error) {
         request.log.error(error);
         return reply.code(500).send({ message: "Gagal mengambil profil" });
