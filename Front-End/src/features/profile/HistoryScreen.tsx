@@ -19,55 +19,59 @@ const HistoryScreen = () => {
 	const [refreshing, setRefreshing] = useState(false);
 	const [filter, setFilter] = useState("all"); // all, booking, shop
 
-    const formatDateSafe = (dateString: string) => {
-        if (!dateString) return "-";
-        // Fix for Safari/Android: replace space with T for ISO format if needed
-        // MySQL datetime: "2025-11-20 13:44:27" -> "2025-11-20T13:44:27"
-        const isoString = dateString.replace(" ", "T");
-        try {
-            const date = new Date(isoString);
-            // Check if date is valid
-            if (isNaN(date.getTime())) return dateString;
-            
-            return date.toLocaleDateString("id-ID", {
-                day: 'numeric', month: 'long', year: 'numeric'
-            });
-        } catch (e) {
-            return dateString;
-        }
-    };
+	const formatDateSafe = (dateString: string) => {
+		if (!dateString) return "-";
+		// Fix for Safari/Android: replace space with T for ISO format if needed
+		// MySQL datetime: "2025-11-20 13:44:27" -> "2025-11-20T13:44:27"
+		const isoString = dateString.replace(" ", "T");
+		try {
+			const date = new Date(isoString);
+			// Check if date is valid
+			if (isNaN(date.getTime())) return dateString;
+
+			return date.toLocaleDateString("id-ID", {
+				day: 'numeric', month: 'long', year: 'numeric'
+			});
+		} catch (e) {
+			return dateString;
+		}
+	};
 
 	// --- FETCH DATA ---
 	const fetchData = async () => {
 		try {
 			// Kita ambil data Booking dan Order secara paralel
-			// (Asumsi API getMyBookings ada, jika belum ada di api.ts nanti kita tambahkan)
-			// [BENAR] - Panggil method service yang sudah didefinisikan
 			const [bookingsRes, ordersRes] = await Promise.all([
-				api
-					.getMyBookings()
-					.catch(() => ({ data: [] })), // Gunakan getMyBookings()
+				api.getMyBookings().catch(() => ({ data: [] })),
 				api.getMyOrders().catch(() => ({ data: [] })),
 			]);
 
-			// Format Data Booking
+			// Format Data Booking with review data
 			const bookings = bookingsRes.data.map((b: any) => ({
 				id: b.id,
+				originalId: b.id,
 				title: b.location_name || "Lokasi Pemancingan",
-				date: formatDateSafe(b.booking_start), // Use booking_start instead of booking_date
+				date: formatDateSafe(b.booking_start),
 				price: b.total_price,
-				status: b.status, // terbayar, pending, dll
-				type: "booking",
+				status: b.status,
+				type: "booking" as const,
+				targetId: b.id_location, // Location ID for review
+				hasReviewed: Boolean(b.is_reviewed), // From backend
 			}));
 
-			// Format Data Shop Order
+			// Format Data Shop Order with review data
 			const orders = ordersRes.data.map((o: any) => ({
 				id: o.id,
-				title: `Order #${o.order_number || o.id}`, // Use order_number if available
+				originalId: o.id,
+				title: o.first_product_name
+					? `${o.first_product_name}${o.total_items > 1 ? ` (+${o.total_items - 1} lainnya)` : ""}`
+					: `Order #${o.order_number || o.id}`,
 				date: formatDateSafe(o.created_at),
 				price: o.total_amount,
 				status: o.status,
-				type: "shop",
+				type: "shop" as const,
+				targetId: o.first_product_id, // Product ID for review
+				hasReviewed: o.review_count > 0, // From backend
 			}));
 
 			// Gabungkan dan Sortir berdasarkan tanggal (terbaru diatas)
@@ -122,16 +126,14 @@ const HistoryScreen = () => {
 					<TouchableOpacity
 						key={f}
 						onPress={() => setFilter(f)}
-						className={`px-4 py-2 rounded-full border ${
-							filter === f
-								? "bg-blue-600 border-blue-600"
-								: "bg-white border-gray-300"
-						}`}
+						className={`px-4 py-2 rounded-full border ${filter === f
+							? "bg-blue-600 border-blue-600"
+							: "bg-white border-gray-300"
+							}`}
 					>
 						<Text
-							className={`capitalize font-bold ${
-								filter === f ? "text-white" : "text-gray-600"
-							}`}
+							className={`capitalize font-bold ${filter === f ? "text-white" : "text-gray-600"
+								}`}
 						>
 							{f === "all" ? "Semua" : f}
 						</Text>
@@ -153,7 +155,12 @@ const HistoryScreen = () => {
 						`${item.type}-${item.id}-${index}`
 					}
 					contentContainerStyle={{ padding: 20 }}
-					renderItem={({ item }) => <HistoryCard item={item} />}
+					renderItem={({ item }) => (
+						<HistoryCard
+							item={item}
+							onReviewSubmitted={fetchData}
+						/>
+					)}
 					refreshControl={
 						<RefreshControl
 							refreshing={refreshing}

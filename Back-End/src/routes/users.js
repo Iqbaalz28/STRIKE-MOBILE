@@ -127,7 +127,30 @@ export default async function (fastify, options) {
     },
   );
 
-  // --- 4. GET USER BY ID ---
+  // --- 4. CANCEL MEMBERSHIP (POST) ---
+  // URL: POST /users/cancel-membership
+  fastify.post(
+    "/users/cancel-membership",
+    { onRequest: [fastify.authenticate] },
+    async (request, reply) => {
+      try {
+        const userId = request.user.id;
+
+        // Set id_membership ke NULL (artinya balik ke Standard / Free)
+        await fastify.db.query(
+          "UPDATE users SET id_membership = NULL WHERE id = ?",
+          [userId]
+        );
+
+        return { message: "Langganan berhasil dibatalkan. Kembali ke paket Standard." };
+      } catch (err) {
+        request.log.error(err);
+        return reply.code(500).send({ message: "Gagal membatalkan langganan" });
+      }
+    }
+  );
+
+  // --- 5. GET USER BY ID ---
   // URL: GET /users/:id
   fastify.get("/users/:id", async (req, reply) => {
     const [rows] = await fastify.db.execute(

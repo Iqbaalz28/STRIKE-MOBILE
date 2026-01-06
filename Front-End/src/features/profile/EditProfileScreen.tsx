@@ -28,11 +28,9 @@ const EditProfileScreen = () => {
 	const [form, setForm] = useState({
 		name: "",
 		email: "",
-		phone: "",
 		date_birth: "",
-		address: "",
 		bio: "",
-		avatar_img: "", // Tambahkan field ini
+		avatar_img: "",
 	});
 
 	// State untuk Gambar Baru (Local URI)
@@ -55,9 +53,7 @@ const EditProfileScreen = () => {
 			setForm({
 				name: user.name || "",
 				email: user.email || "",
-				phone: user.phone || "",
 				date_birth: user.date_birth || "",
-				address: user.address || "",
 				bio: user.bio || "",
 				avatar_img: user.avatar_img || "",
 			});
@@ -192,9 +188,9 @@ const EditProfileScreen = () => {
 				<View style={{ width: 24 }} />
 			</View>
 
-			<ScrollView 
+			<ScrollView
 				className="p-5"
-				contentContainerStyle={{ paddingBottom: 200 }} 
+				contentContainerStyle={{ paddingBottom: 200 }}
 			>
 				{/* --- UI GANTI FOTO --- */}
 				<View className="items-center mb-8">
@@ -270,35 +266,6 @@ const EditProfileScreen = () => {
 
 					<View>
 						<Text className="text-gray-500 text-xs mb-1 ml-1">
-							Nomor HP
-						</Text>
-						<TextInput
-							value={form.phone}
-							onChangeText={(t) => setForm({ ...form, phone: t })}
-							keyboardType="phone-pad"
-							className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-800"
-							placeholder="08xxxxxxxx"
-						/>
-					</View>
-
-					<View>
-						<Text className="text-gray-500 text-xs mb-1 ml-1">
-							Alamat
-						</Text>
-						<TextInput
-							value={form.address}
-							onChangeText={(t) =>
-								setForm({ ...form, address: t })
-							}
-							multiline
-							numberOfLines={3}
-							className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-800 h-24"
-							style={{ textAlignVertical: "top" }}
-						/>
-					</View>
-
-					<View>
-						<Text className="text-gray-500 text-xs mb-1 ml-1">
 							Bio Singkat
 						</Text>
 						<TextInput
@@ -314,7 +281,7 @@ const EditProfileScreen = () => {
 			</ScrollView>
 
 			{/* --- STICKY FOOTER --- */}
-			<View 
+			<View
 				className="absolute bottom-0 left-0 right-0 bg-white p-5 border-t border-gray-100 shadow-lg"
 				style={{ paddingBottom: Platform.OS === 'ios' ? 20 : 20 + insets.bottom }}
 			>

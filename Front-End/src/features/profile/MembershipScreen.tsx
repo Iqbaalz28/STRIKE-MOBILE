@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
 	View,
 	Text,
@@ -9,8 +9,8 @@ import {
 	StatusBar,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ArrowLeft, CheckCircle2, ShieldCheck } from "lucide-react-native";
-import { useNavigation } from "@react-navigation/native";
+import { ArrowLeft, CheckCircle2, ShieldCheck, XCircle, Crown } from "lucide-react-native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import api from "../../services/api";
 import { formatRupiah } from "../../utils/format";
 
@@ -20,23 +20,31 @@ interface Membership {
 	description: string;
 	price_per_month: number;
 	benefits: string;
-    is_popular?: boolean;
+	is_popular?: boolean;
 }
 
 const MembershipScreen = () => {
 	const navigation = useNavigation();
 	const [memberships, setMemberships] = useState<Membership[]>([]);
+	const [currentMembership, setCurrentMembership] = useState<string | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [processingId, setProcessingId] = useState<number | null>(null);
+	const [cancelling, setCancelling] = useState(false);
 
-	useEffect(() => {
-		fetchMemberships();
-	}, []);
+	useFocusEffect(
+		useCallback(() => {
+			fetchData();
+		}, [])
+	);
 
-	const fetchMemberships = async () => {
+	const fetchData = async () => {
 		try {
-			const res = await api.getMemberships();
-			setMemberships(res.data);
+			const [membershipRes, profileRes] = await Promise.all([
+				api.getMemberships(),
+				api.getMyProfile().catch(() => ({ data: {} })),
+			]);
+			setMemberships(membershipRes.data);
+			setCurrentMembership(profileRes.data?.membership_name || "Standard");
 		} catch (error) {
 			console.error("Gagal memuat membership", error);
 			Alert.alert("Error", "Gagal memuat data membership");
@@ -58,13 +66,46 @@ const MembershipScreen = () => {
 						try {
 							await api.upgradeMembership(membership.id);
 							Alert.alert("Berhasil", `Selamat! Anda sekarang adalah member ${membership.name}.`);
-							navigation.goBack();
+							setCurrentMembership(membership.name);
 						} catch (error: any) {
 							console.error("Upgrade gagal", error);
 							const msg = error.response?.data?.message || "Terjadi kesalahan saat upgrade.";
 							Alert.alert("Gagal", msg);
 						} finally {
 							setProcessingId(null);
+						}
+					},
+				},
+			]
+		);
+	};
+
+	const handleCancelMembership = () => {
+		if (currentMembership === "Standard") {
+			Alert.alert("Info", "Anda sudah menggunakan paket Standard (gratis).");
+			return;
+		}
+
+		Alert.alert(
+			"Batalkan Langganan",
+			`Apakah Anda yakin ingin membatalkan langganan ${currentMembership}? Anda akan kembali ke paket Standard.`,
+			[
+				{ text: "Tidak", style: "cancel" },
+				{
+					text: "Ya, Batalkan",
+					style: "destructive",
+					onPress: async () => {
+						setCancelling(true);
+						try {
+							await api.cancelMembership();
+							Alert.alert("Berhasil", "Langganan Anda telah dibatalkan. Anda sekarang menggunakan paket Standard.");
+							setCurrentMembership("Standard");
+						} catch (error: any) {
+							console.error("Cancel gagal", error);
+							const msg = error.response?.data?.message || "Terjadi kesalahan saat membatalkan langganan.";
+							Alert.alert("Gagal", msg);
+						} finally {
+							setCancelling(false);
 						}
 					},
 				},
@@ -89,34 +130,77 @@ const MembershipScreen = () => {
 				<TouchableOpacity onPress={() => navigation.goBack()} className="mr-3">
 					<ArrowLeft size={24} color="#374151" />
 				</TouchableOpacity>
-				<Text className="text-xl font-bold text-gray-900">Pilih Membership</Text>
+				<Text className="text-xl font-bold text-gray-900">Membership</Text>
 			</View>
 
 			<ScrollView contentContainerStyle={{ padding: 20 }}>
+				{/* Current Membership Card */}
+				<View className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-5 mb-6" style={{ backgroundColor: "#2563EB" }}>
+					<View className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-white/10" />
+
+					<View className="flex-row items-center mb-3">
+						<Crown size={24} color="#FCD34D" />
+						<Text className="text-blue-100 ml-2 text-sm">Langganan Aktif</Text>
+					</View>
+
+					<Text className="text-white text-2xl font-bold mb-4">
+						{currentMembership || "Standard"}
+					</Text>
+
+					{currentMembership && currentMembership !== "Standard" && (
+						<TouchableOpacity
+							onPress={handleCancelMembership}
+							disabled={cancelling}
+							className="bg-white/20 py-3 px-4 rounded-xl flex-row items-center justify-center"
+						>
+							{cancelling ? (
+								<ActivityIndicator size="small" color="white" />
+							) : (
+								<>
+									<XCircle size={18} color="white" />
+									<Text className="text-white font-medium ml-2">Batalkan Langganan</Text>
+								</>
+							)}
+						</TouchableOpacity>
+					)}
+
+					{currentMembership === "Standard" && (
+						<Text className="text-blue-200 text-sm">
+							Upgrade ke paket Premium untuk fitur eksklusif!
+						</Text>
+					)}
+				</View>
+
 				<Text className="text-center text-gray-500 mb-6">
 					Nikmati fitur eksklusif dan potongan harga dengan upgrade membership Anda.
 				</Text>
 
 				{memberships.map((item) => {
-					// Parse benefits (assuming newline separated or just text)
-					// If DB returns a string with newlines, we can split it.
-                    // Based on SQL dump: benefits is text.
-					const benefitList = item.benefits 
-                        ? item.benefits.split('\n').filter(b => b.trim() !== '')
-                        : [];
+					const benefitList = item.benefits
+						? item.benefits.split('\n').filter(b => b.trim() !== '')
+						: [];
+					const isCurrentPlan = currentMembership === item.name;
 
 					return (
 						<View
 							key={item.id}
-							className={`bg-white rounded-2xl p-5 mb-5 shadow-sm border ${
-								item.is_popular ? "border-blue-500 border-2" : "border-gray-200"
-							}`}
+							className={`bg-white rounded-2xl p-5 mb-5 shadow-sm border ${isCurrentPlan
+								? "border-green-500 border-2"
+								: item.is_popular
+									? "border-blue-500 border-2"
+									: "border-gray-200"
+								}`}
 						>
-                            {!!item.is_popular && (
-                                <View className="absolute top-0 right-0 bg-blue-600 px-3 py-1 rounded-bl-xl rounded-tr-lg">
-                                    <Text className="text-white text-xs font-bold">Terpopuler</Text>
-                                </View>
-                            )}
+							{isCurrentPlan && (
+								<View className="absolute top-0 right-0 bg-green-500 px-3 py-1 rounded-bl-xl rounded-tr-lg">
+									<Text className="text-white text-xs font-bold">Aktif</Text>
+								</View>
+							)}
+							{!isCurrentPlan && !!item.is_popular && (
+								<View className="absolute top-0 right-0 bg-blue-600 px-3 py-1 rounded-bl-xl rounded-tr-lg">
+									<Text className="text-white text-xs font-bold">Terpopuler</Text>
+								</View>
+							)}
 
 							<View className="mb-4">
 								<Text className="text-xl font-bold text-gray-900 mb-1">{item.name}</Text>
@@ -130,7 +214,7 @@ const MembershipScreen = () => {
 								<Text className="text-gray-400 text-sm ml-1">/bulan</Text>
 							</View>
 
-                            <View className="w-full h-px bg-gray-100 mb-4" />
+							<View className="w-full h-px bg-gray-100 mb-4" />
 
 							<View className="mb-6">
 								{benefitList.map((benefit, idx) => (
@@ -141,22 +225,28 @@ const MembershipScreen = () => {
 								))}
 							</View>
 
-							<TouchableOpacity
-								onPress={() => handleUpgrade(item)}
-								disabled={processingId === item.id}
-								className={`${
-									item.is_popular ? "bg-blue-600" : "bg-gray-900"
-								} py-3 rounded-xl items-center flex-row justify-center`}
-							>
-								{processingId === item.id ? (
-									<ActivityIndicator color="white" size="small" />
-								) : (
-									<View className="flex-row items-center">
-										<ShieldCheck size={18} color="white" style={{ marginRight: 8 }} />
-										<Text className="text-white font-bold">Pilih Paket ini</Text>
-									</View>
-								)}
-							</TouchableOpacity>
+							{isCurrentPlan ? (
+								<View className="bg-green-100 py-3 rounded-xl items-center flex-row justify-center">
+									<CheckCircle2 size={18} color="#16A34A" />
+									<Text className="text-green-700 font-bold ml-2">Paket Aktif</Text>
+								</View>
+							) : (
+								<TouchableOpacity
+									onPress={() => handleUpgrade(item)}
+									disabled={processingId === item.id}
+									className={`${item.is_popular ? "bg-blue-600" : "bg-blue-800"
+										} py-3 rounded-xl items-center flex-row justify-center`}
+								>
+									{processingId === item.id ? (
+										<ActivityIndicator color="white" size="small" />
+									) : (
+										<View className="flex-row items-center">
+											<ShieldCheck size={18} color="white" style={{ marginRight: 8 }} />
+											<Text className="text-white font-bold">Pilih Paket ini</Text>
+										</View>
+									)}
+								</TouchableOpacity>
+							)}
 						</View>
 					);
 				})}

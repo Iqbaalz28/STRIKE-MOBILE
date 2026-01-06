@@ -2,8 +2,13 @@ export default async function (fastify, options) {
   // 1. GET ALL PRODUCTS (List)
   fastify.get("/", async (request, reply) => {
     try {
-      // Tambahkan 'type' di destructuring query
-      const { category, search, minPrice, maxPrice, type } = request.query;
+      // Tambahkan 'type', 'page', 'limit' di destructuring query
+      const { category, search, minPrice, maxPrice, type, page = 1, limit = 10 } = request.query;
+
+      // Konversi page & limit ke number
+      const pageNum = parseInt(page) || 1;
+      const limitNum = parseInt(limit) || 10;
+      const offset = (pageNum - 1) * limitNum;
 
       let query = "SELECT * FROM products WHERE 1=1";
       const params = [];
@@ -24,19 +29,16 @@ export default async function (fastify, options) {
         params.push(`%${search}%`);
       }
 
-      // 3. Filter Status (Sewa / Beli) - BARU
+      // 3. Filter Status (Sewa / Beli)
       if (type) {
         if (type.toLowerCase() === "sewa") {
-          // Tampilkan produk yang punya harga sewa
           query += " AND price_rent > 0";
         } else if (type.toLowerCase() === "beli") {
-          // Tampilkan produk yang punya harga jual
           query += " AND price_sale > 0";
         }
       }
 
       // 4. Filter Harga
-      // Kita cek di kedua kolom (rent & sale) agar tidak ada yang terlewat
       if (minPrice) {
         query +=
           " AND (COALESCE(price_sale, 0) >= ? OR COALESCE(price_rent, 0) >= ?)";
@@ -48,8 +50,20 @@ export default async function (fastify, options) {
         params.push(maxPrice, maxPrice);
       }
 
+      // 5. Pagination (LIMIT & OFFSET)
+      query += " LIMIT ? OFFSET ?";
+      params.push(limitNum, offset);
+
       const [rows] = await fastify.db.query(query, params);
-      return rows;
+
+      // Hitung total data (Optional, untuk meta pagination jika perlu)
+      // const [countResult] = await fastify.db.query("SELECT COUNT(*) as total FROM products"); 
+
+      return {
+        data: rows,
+        page: pageNum,
+        limit: limitNum
+      };
     } catch (error) {
       request.log.error(error);
       return reply.code(500).send({ message: "Gagal mengambil data produk" });

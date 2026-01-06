@@ -26,6 +26,7 @@ interface PostData {
 	content?: string;
 	body?: string; // Handle inkonsistensi backend
 	category: string;
+	img?: string | null;
 	created_at: string;
 	author: Author;
 	stats: PostStats;
@@ -43,8 +44,8 @@ const PostCard = ({ post }: { post: PostData }) => {
 	const avatarUrl = post.author?.avatar
 		? getImageUrl(post.author.avatar)
 		: `https://ui-avatars.com/api/?name=${encodeURIComponent(
-				post.author?.name || "User",
-			)}&background=random`;
+			post.author?.name || "User",
+		)}&background=random`;
 
 	const handleLike = async () => {
 		// Optimistic Update (Update UI duluan biar terasa cepat)
@@ -104,6 +105,17 @@ const PostCard = ({ post }: { post: PostData }) => {
 				{post.content || post.body || "Tidak ada konten pratinjau."}
 			</Text>
 
+			{/* Post Image */}
+			{post.img && (
+				<Image
+					source={{ uri: getImageUrl(post.img) }}
+					className="w-full h-48 rounded-xl mb-4 bg-gray-100"
+					resizeMode="cover"
+				/>
+			)}
+
+
+
 			{/* Footer: Stats */}
 			<View className="flex-row justify-between items-center border-t border-gray-100 pt-3">
 				<View className="flex-row gap-4">
@@ -138,9 +150,8 @@ const PostCard = ({ post }: { post: PostData }) => {
 						fill={isLiked ? "#2563EB" : "transparent"}
 					/>
 					<Text
-						className={`text-xs font-bold ${
-							isLiked ? "text-blue-600" : "text-gray-500"
-						}`}
+						className={`text-xs font-bold ${isLiked ? "text-blue-600" : "text-gray-500"
+							}`}
 					>
 						{likes}
 					</Text>

@@ -14,9 +14,40 @@ export default async function (fastify, options) {
           shipping_cost = 0,
           tax_amount = 0,
           discount_amount = 0,
+          voucher_code, // Tambahan: Terima kode voucher
         } = request.body;
 
         await connection.beginTransaction();
+
+        // 0. Validasi & Hitung Diskon Server-Side
+        let finalDiscount = 0;
+
+        if (voucher_code) {
+          const [discounts] = await connection.query(
+            "SELECT id, discount_value, used_count, max_usage FROM discounts WHERE code = ? FOR UPDATE",
+            [voucher_code]
+          );
+
+          if (discounts.length > 0) {
+            const disc = discounts[0];
+            if (disc.used_count < disc.max_usage) {
+              // Update Used Count
+              await connection.query(
+                "UPDATE discounts SET used_count = used_count + 1 WHERE id = ?",
+                [disc.id]
+              );
+
+              // Simpan info untuk perhitungan nanti
+              // Kita hitung discount amount SETELAH subtotal item diketahui
+              if (disc.discount_value.includes("%")) {
+                finalDiscount = parseFloat(disc.discount_value.replace("%", "")) / 100; // Store as percentage 0.15
+              } else {
+                finalDiscount = parseFloat(disc.discount_value); // Store as fixed value 10000
+              }
+
+            }
+          }
+        }
 
         // 1. Ambil semua item di keranjang user
         const [cartItems] = await connection.query(
@@ -33,8 +64,8 @@ export default async function (fastify, options) {
           throw new Error("Keranjang kosong");
         }
 
-        // 2. Hitung Total
-        let totalAmount = 0;
+        // 2. Hitung Total Item
+        let itemsSubtotal = 0;
         const orderItemsData = [];
 
         for (const item of cartItems) {
@@ -43,7 +74,7 @@ export default async function (fastify, options) {
               ? item.price_rent
               : item.price_sale;
           const subtotal = price * item.quantity;
-          totalAmount += subtotal;
+          itemsSubtotal += subtotal;
 
           orderItemsData.push({
             id_product: item.id_product,
@@ -54,7 +85,23 @@ export default async function (fastify, options) {
           });
         }
 
-        // 3. Buat Order Utama (UPDATE: Insert payment_method)
+        // 3. Hitung Final Total (Item + Tax + Shipping - Discount)
+        // Hitung nominal diskon jika persen
+        let validDiscountAmount = 0;
+        if (finalDiscount > 0 && finalDiscount < 1) { // Persentase (e.g. 0.15)
+          validDiscountAmount = itemsSubtotal * finalDiscount;
+        } else {
+          validDiscountAmount = finalDiscount;
+        }
+
+        // Pajak (misal 0 jika belum ada aturan baku, atau terima dari param tapi validasi)
+        // Disini kita percayakan tax_amount dari body dulu, atau set 0
+        const validTax = parseFloat(tax_amount) || 0;
+        const validShipping = parseFloat(shipping_cost) || 0;
+
+        const grandTotal = Math.max(0, itemsSubtotal + validTax + validShipping - validDiscountAmount);
+
+        // 4. Buat Order Utama
         const orderNumber = `ORD-${Date.now()}`;
         const [orderResult] = await connection.query(
           `
@@ -65,12 +112,12 @@ export default async function (fastify, options) {
           [
             userId,
             orderNumber,
-            totalAmount,
-            shipping_cost,
+            grandTotal, // <--- Ganti totalAmount dengan grandTotal
+            validShipping,
             shipping_address,
             payment_method,
-            tax_amount,
-            discount_amount,
+            validTax,
+            validDiscountAmount,
             notes,
           ],
         );

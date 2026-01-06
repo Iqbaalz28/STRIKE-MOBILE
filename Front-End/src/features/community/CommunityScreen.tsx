@@ -22,7 +22,20 @@ const CommunityScreen = () => {
 	const fetchPosts = async () => {
 		try {
 			const res = await api.getAllPosts();
-			setPosts(res.data);
+			// Map flat backend response to nested structure expected by component
+			const formattedPosts = res.data.map((p: any) => ({
+				...p,
+				author: {
+					name: p.author_name,
+					avatar: p.author_avatar,
+				},
+				stats: {
+					likes: p.likes_count || 0,
+					views: p.views_count || 0,
+					comments: p.reply_count || 0,
+				},
+			}));
+			setPosts(formattedPosts);
 		} catch (error) {
 			console.log("Error fetching posts:", error);
 		} finally {

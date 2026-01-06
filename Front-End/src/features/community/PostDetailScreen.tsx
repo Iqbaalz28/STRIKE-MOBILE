@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { ArrowLeft, Send } from "lucide-react-native";
-import api from "@/services/api";
+import api, { BASE_URL } from "@/services/api";
 import CommentCard from "./components/CommentCard";
 
 const PostDetailScreen = () => {
@@ -37,7 +37,16 @@ const PostDetailScreen = () => {
 				api.getPostComments(id),
 			]);
 			setPost(postRes.data);
-			setComments(commentRes.data);
+
+			// Map flat comments to nested structure
+			const formattedComments = commentRes.data.map((c: any) => ({
+				...c,
+				author: {
+					name: c.author_name,
+					avatar: c.author_avatar
+				}
+			}));
+			setComments(formattedComments);
 		} catch (error) {
 			console.log("Error load detail:", error);
 		} finally {
@@ -53,7 +62,14 @@ const PostDetailScreen = () => {
 			setNewComment("");
 			// Refresh comments
 			const res = await api.getPostComments(id);
-			setComments(res.data);
+			const formattedComments = res.data.map((c: any) => ({
+				...c,
+				author: {
+					name: c.author_name,
+					avatar: c.author_avatar
+				}
+			}));
+			setComments(formattedComments);
 		} catch (error) {
 			console.log("Gagal komen:", error);
 		} finally {
@@ -64,9 +80,8 @@ const PostDetailScreen = () => {
 	// Helper Avatar (sama kyk PostCard)
 	const getAvatar = (path: string, name: string) => {
 		if (!path)
-			return `https://ui-avatars.com/api/?name=${
-				name || "User"
-			}&background=random`;
+			return `https://ui-avatars.com/api/?name=${name || "User"
+				}&background=random`;
 		return path.startsWith("http")
 			? path
 			: `http://10.0.2.2:3000/uploads/${path}`;
@@ -122,6 +137,19 @@ const PostDetailScreen = () => {
 					<Text className="text-gray-700 leading-relaxed text-base">
 						{post?.body || post?.content}
 					</Text>
+
+					{/* Post Image */}
+					{post?.img && (
+						<Image
+							source={{
+								uri: post.img.startsWith("http")
+									? post.img
+									: `${BASE_URL}/${post.img}`
+							}}
+							className="w-full h-64 rounded-xl mt-4 bg-gray-100"
+							resizeMode="cover"
+						/>
+					)}
 				</View>
 
 				{/* Comments Section */}

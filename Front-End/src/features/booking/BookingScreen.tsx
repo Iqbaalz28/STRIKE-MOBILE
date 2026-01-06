@@ -42,7 +42,7 @@ const BookingScreen = () => {
 
 	// --- STATE ---
 	const [currentStep, setCurrentStep] = useState(1);
-	
+
 	// Step 1: Informasi Booking
 	const [fullName, setFullName] = useState("");
 	const [email, setEmail] = useState("");
@@ -51,12 +51,15 @@ const BookingScreen = () => {
 		initialDate ? new Date(initialDate) : new Date()
 	);
 	const [showDatePicker, setShowDatePicker] = useState(false);
-	
+	const [selectedHour, setSelectedHour] = useState<number | null>(null);
+	const [hourAvailability, setHourAvailability] = useState<any[]>([]);
+	const [loadingHours, setLoadingHours] = useState(false);
+
 	// Step 2: Pilih Spot
 	const [selectedSpot, setSelectedSpot] = useState<string | null>(null);
 	const [spots, setSpots] = useState<any[]>([]);
 	const [loadingSpots, setLoadingSpots] = useState(false);
-	
+
 	// Step 3: Pembayaran
 	const [selectedPayment, setSelectedPayment] = useState<"card" | "qris">("card");
 	const [cardNumber, setCardNumber] = useState("");
@@ -66,7 +69,11 @@ const BookingScreen = () => {
 	const [voucherCode, setVoucherCode] = useState("");
 	const [notes, setNotes] = useState("");
 
-	
+	// Voucher/Discount state
+	const [discountAmount, setDiscountAmount] = useState(0);
+	const [isVoucherApplied, setIsVoucherApplied] = useState(false);
+	const [applyingVoucher, setApplyingVoucher] = useState(false);
+
 	const [submitting, setSubmitting] = useState(false);
 
 	// --- AUTO-FILL FROM PROFILE ---
@@ -104,9 +111,55 @@ const BookingScreen = () => {
 		}
 		if (date) {
 			setSelectedDate(date);
+			setSelectedHour(null); // Reset hour when date changes
+			fetchHourAvailability(date); // Fetch availability for new date
 			if (Platform.OS === "ios") {
 				setShowDatePicker(false);
 			}
+		}
+	};
+
+	// Fetch hour availability when component mounts or date changes
+	useEffect(() => {
+		fetchHourAvailability(selectedDate);
+	}, []);
+
+	const fetchHourAvailability = async (date: Date) => {
+		setLoadingHours(true);
+		try {
+			const dateString = date.toISOString().split("T")[0];
+			const res = await api.getHourAvailability(locationId, dateString);
+			// The availability endpoint returns hourly data
+			if (Array.isArray(res.data) && res.data.length > 0 && res.data[0].time) {
+				setHourAvailability(res.data);
+			} else {
+				// Generate default availability from 8 AM to 5 PM
+				const defaultHours = [];
+				for (let h = 8; h <= 17; h++) {
+					defaultHours.push({
+						time: `${h.toString().padStart(2, "0")}:00`,
+						hour: h,
+						is_full: false,
+						remaining: 10,
+					});
+				}
+				setHourAvailability(defaultHours);
+			}
+		} catch (error) {
+			console.log("Error fetching availability:", error);
+			// Fallback: generate default hours
+			const defaultHours = [];
+			for (let h = 8; h <= 17; h++) {
+				defaultHours.push({
+					time: `${h.toString().padStart(2, "0")}:00`,
+					hour: h,
+					is_full: false,
+					remaining: 10,
+				});
+			}
+			setHourAvailability(defaultHours);
+		} finally {
+			setLoadingHours(false);
 		}
 	};
 
@@ -117,70 +170,117 @@ const BookingScreen = () => {
 		}
 	}, [currentStep]);
 
-    const generateBaseLayout = () => {
-        const layout = [];
-        // Top Row: A1-A5
-        for(let i=1; i<=5; i++) layout.push({ id: `A${i}`, number: `A${i}`, status: 'available' });
-        // Left Column: B1-B8
-        for(let i=1; i<=8; i++) layout.push({ id: `B${i}`, number: `B${i}`, status: 'available' });
-        // Right Column: C1-C8
-        for(let i=1; i<=8; i++) layout.push({ id: `C${i}`, number: `C${i}`, status: 'available' });
-        // Bottom Row: D1-D5
-        for(let i=1; i<=5; i++) layout.push({ id: `D${i}`, number: `D${i}`, status: 'available' });
-        return layout;
-    };
+	const generateBaseLayout = () => {
+		const layout = [];
+		// Top Row: A1-A5
+		for (let i = 1; i <= 5; i++) layout.push({ id: `A${i}`, number: `A${i}`, status: 'available' });
+		// Left Column: B1-B8
+		for (let i = 1; i <= 8; i++) layout.push({ id: `B${i}`, number: `B${i}`, status: 'available' });
+		// Right Column: C1-C8
+		for (let i = 1; i <= 8; i++) layout.push({ id: `C${i}`, number: `C${i}`, status: 'available' });
+		// Bottom Row: D1-D5
+		for (let i = 1; i <= 5; i++) layout.push({ id: `D${i}`, number: `D${i}`, status: 'available' });
+		return layout;
+	};
 
 	const fetchSpots = async () => {
 		setLoadingSpots(true);
 		try {
-            // 1. Generate default layout (26 spots)
-            let finalSpots = generateBaseLayout();
+			// 1. Generate default layout (26 spots)
+			let finalSpots = generateBaseLayout();
 
-            // 2. Try to fetch real data
+			// 2. Try to fetch real data with hour filtering
 			try {
-                // Use the selected date for checking availability
-                const dateString = selectedDate.toISOString().split("T")[0];
-                const res = await api.getLocationSpots(locationId, dateString);
-                const apiSpots = res.data;
+				// Use the selected date and hour for checking availability
+				const dateString = selectedDate.toISOString().split("T")[0];
+				// Pass selected hour and duration to get accurate spot availability
+				const res = await api.getLocationSpots(
+					locationId,
+					dateString,
+					selectedHour ?? undefined,
+					duration
+				);
+				const apiSpots = res.data;
 
-                if (Array.isArray(apiSpots) && apiSpots.length > 0) {
-                    // Merge API data into layout based on spot number
-                    finalSpots = finalSpots.map(defaultSpot => {
-                        const found = apiSpots.find((s: any) => s.number === defaultSpot.number);
-                        if (found) {
-                            return { ...defaultSpot, ...found };
-                        }
-                        return defaultSpot;
-                    });
-                } else {
-                    // If API returns empty, maybe randomize for demo purposes (optional)
-                    // or just keep them available.
-                    console.log("API returned empty spots, using default layout");
-                }
-            } catch (apiError) {
-                console.log("API Error, using default layout:", apiError);
-                // Fallback: Randomize some booked spots for demo if API fails
-                finalSpots = finalSpots.map(s => ({
-                    ...s,
-                    status: Math.random() > 0.8 ? "booked" : "available"
-                }));
-            }
-			
+				if (Array.isArray(apiSpots) && apiSpots.length > 0) {
+					// Merge API data into layout based on spot number
+					finalSpots = finalSpots.map(defaultSpot => {
+						const found = apiSpots.find((s: any) => s.number === defaultSpot.number);
+						if (found) {
+							return { ...defaultSpot, ...found };
+						}
+						return defaultSpot;
+					});
+				} else {
+					// If API returns empty, keep them available
+					console.log("API returned empty spots, using default layout");
+				}
+			} catch (apiError) {
+				console.log("API Error, using default layout:", apiError);
+				// Fallback: keep all available for demo
+			}
+
 			setSpots(finalSpots);
 		} finally {
 			setLoadingSpots(false);
 		}
 	};
 
-	// Calculate prices
+	// Apply Voucher Function
+	const applyVoucher = async () => {
+		if (!voucherCode.trim()) {
+			Alert.alert("Kode Kosong", "Masukkan kode voucher terlebih dahulu.");
+			return;
+		}
+
+		setApplyingVoucher(true);
+		try {
+			const res = await api.checkVoucher(voucherCode);
+
+			if (res.data.valid) {
+				const valStr = res.data.discount_value;
+				let discount = 0;
+				const subtotal = totalPrice || price * duration;
+
+				if (valStr.includes("%")) {
+					const percent = parseInt(valStr.replace("%", ""));
+					discount = Math.round(subtotal * (percent / 100));
+				} else {
+					discount = parseInt(valStr);
+				}
+
+				setDiscountAmount(discount);
+				setIsVoucherApplied(true);
+				Alert.alert("Berhasil!", `Voucher berhasil! Hemat Rp ${discount.toLocaleString("id-ID")}`);
+			}
+		} catch (error: any) {
+			setDiscountAmount(0);
+			setIsVoucherApplied(false);
+			Alert.alert("Gagal", error.response?.data?.message || "Kode voucher tidak valid.");
+		} finally {
+			setApplyingVoucher(false);
+		}
+	};
+
+	const removeVoucher = () => {
+		setVoucherCode("");
+		setDiscountAmount(0);
+		setIsVoucherApplied(false);
+	};
+
+	// Calculate prices with discount
 	const subtotal = totalPrice || price * duration;
 	const tax = Math.round(subtotal * 0.1);
-	const total = subtotal + tax;
+	const total = Math.max(0, subtotal + tax - discountAmount);
 
 	// --- VALIDATE & SUBMIT ---
 	const validateStep1 = () => {
 		if (!fullName.trim() || !email.trim() || !phone.trim()) {
 			Alert.alert("Lengkapi Data", "Semua field harus diisi.");
+			return false;
+		}
+		if (selectedHour === null) {
+			Alert.alert("Pilih Jam", "Silakan pilih jam booking terlebih dahulu.");
 			return false;
 		}
 		return true;
@@ -203,27 +303,28 @@ const BookingScreen = () => {
 	const handleBooking = async () => {
 		setSubmitting(true);
 		try {
-            // Split full name into first and last name
-            const names = fullName.trim().split(" ");
-            const firstName = names[0];
-            const lastName = names.slice(1).join(" ") || names[0]; // Fallback if no last name
+			// Split full name into first and last name
+			const names = fullName.trim().split(" ");
+			const firstName = names[0];
+			const lastName = names.slice(1).join(" ") || names[0]; // Fallback if no last name
 
-            const dateString = selectedDate.toISOString().split("T")[0];
-            // Default start time 08:00 for now since we don't have time picker
-            const bookingStart = `${dateString} 08:00:00`; 
+			const dateString = selectedDate.toISOString().split("T")[0];
+			// Use selected hour for booking start time
+			const hourStr = selectedHour !== null ? selectedHour.toString().padStart(2, "0") : "08";
+			const bookingStart = `${dateString} ${hourStr}:00:00`;
 
-            // Map payment method string to ID
-            // 1: Debit Card, 3: QRIS (based on payment_methods table)
-            const paymentMethodId = selectedPayment === "card" ? 1 : 3;
+			// Map payment method string to ID
+			// 1: Debit Card, 3: QRIS (based on payment_methods table)
+			const paymentMethodId = selectedPayment === "card" ? 1 : 3;
 
 			const payload = {
 				id_location: locationId, // Backend expects id_location
 				first_name: firstName,   // Backend expects first_name
-                last_name: lastName,     // Backend expects last_name
+				last_name: lastName,     // Backend expects last_name
 				email: email,
 				phone: phone,
 				booking_date: dateString,
-                booking_start: bookingStart, // Backend needs this for calculation
+				booking_start: bookingStart, // Backend needs this for calculation
 				spot_number: selectedSpot,
 				duration: duration,
 				// total_price: total, // Backend calculates this
@@ -282,7 +383,7 @@ const BookingScreen = () => {
 						{locationName}
 					</Text>
 					<Text className="text-gray-500 text-sm mb-3">{locationAddress}</Text>
-					
+
 					<View className="bg-blue-50 rounded-lg p-3">
 						<View className="flex-row justify-between items-center mb-1">
 							<Text className="text-gray-600 text-sm">Durasi Booking</Text>
@@ -314,7 +415,6 @@ const BookingScreen = () => {
 				</TouchableOpacity>
 			</View>
 
-			{/* Date Picker */}
 			{showDatePicker && (
 				<DateTimePicker
 					value={selectedDate}
@@ -325,6 +425,66 @@ const BookingScreen = () => {
 					locale="id-ID"
 				/>
 			)}
+
+			{/* Time Picker - Jam Booking */}
+			<View className="mb-4">
+				<Text className="text-gray-700 mb-2">
+					Jam Booking <Text className="text-red-500">*</Text>
+				</Text>
+				{loadingHours ? (
+					<View className="h-20 justify-center items-center">
+						<ActivityIndicator size="small" color="#2563EB" />
+					</View>
+				) : (
+					<View className="flex-row flex-wrap gap-2">
+						{hourAvailability.map((slot) => {
+							const hour = slot.hour !== undefined ? slot.hour : parseInt(slot.time.split(":")[0]);
+							const isFull = slot.is_full;
+							// Check if this hour is within the selected range
+							const isSelected = selectedHour === hour;
+							const isInRange = selectedHour !== null && hour >= selectedHour && hour < selectedHour + duration;
+
+							return (
+								<TouchableOpacity
+									key={hour}
+									disabled={isFull}
+									onPress={() => setSelectedHour(hour)}
+									className={`px-4 py-3 rounded-xl border-2 min-w-[70px] items-center ${isFull
+										? "bg-red-100 border-red-200 opacity-50"
+										: isInRange
+											? isSelected
+												? "bg-blue-600 border-blue-600"
+												: "bg-blue-400 border-blue-400"
+											: "bg-gray-50 border-gray-200"
+										}`}
+								>
+									<Text
+										className={`font-bold text-sm ${isFull
+											? "text-red-500"
+											: isInRange
+												? "text-white"
+												: "text-gray-700"
+											}`}
+									>
+										{hour.toString().padStart(2, "0")}:00
+									</Text>
+									{isFull && (
+										<Text className="text-red-400 text-xs">Penuh</Text>
+									)}
+								</TouchableOpacity>
+							);
+						})}
+					</View>
+				)}
+				{selectedHour !== null && (
+					<View className="mt-3 bg-blue-50 rounded-lg p-3 flex-row items-center">
+						<Check size={16} color="#2563EB" />
+						<Text className="text-blue-700 ml-2 font-medium">
+							Jam terpilih: {selectedHour.toString().padStart(2, "0")}:00 - {(selectedHour + duration).toString().padStart(2, "0")}:00
+						</Text>
+					</View>
+				)}
+			</View>
 
 			{/* Form - 3 Fields Only */}
 			<View className="space-y-4">
@@ -376,12 +536,12 @@ const BookingScreen = () => {
 		const renderSpot = (spot: any) => {
 			const isBooked = spot.status === "booked";
 			const isSelected = selectedSpot === spot.number;
-			
-            // Determine fill color
-            let fillColor = "transparent"; 
-            if (isBooked) fillColor = "#EF4444";
-            else if (isSelected) fillColor = "#2563EB";
-            
+
+			// Determine fill color
+			let fillColor = "transparent";
+			if (isBooked) fillColor = "#EF4444";
+			else if (isSelected) fillColor = "#2563EB";
+
 			return (
 				<TouchableOpacity
 					key={spot.id || spot.number}
@@ -399,11 +559,9 @@ const BookingScreen = () => {
 			);
 		};
 
-        const getSpots = (start: number, count: number) => {
-            // Ensure we don't crash if spots array is smaller than expected
-            // though fetchSpots now guarantees 26 spots.
-            return spots.slice(start, start + count);
-        };
+		const getSpots = (start: number, count: number) => {
+			return spots.slice(start, start + count);
+		};
 
 		return (
 			<View>
@@ -413,42 +571,42 @@ const BookingScreen = () => {
 					</View>
 				) : (
 					<View>
-                        {spots.length === 0 ? (
-                            <View className="h-64 justify-center items-center">
-                                <Text className="text-gray-400">Tidak ada spot tersedia</Text>
-                            </View>
-                        ) : (
-                            <View className="items-center mb-6 mt-4">
-                                {/* Top Row */}
-                                <View className="flex-row justify-center mb-2 gap-2">
-                                    {getSpots(0, 5).map(renderSpot)}
-                                </View>
+						{spots.length === 0 ? (
+							<View className="h-64 justify-center items-center">
+								<Text className="text-gray-400">Tidak ada spot tersedia</Text>
+							</View>
+						) : (
+							<View className="items-center mb-6 mt-4">
+								{/* Top Row */}
+								<View className="flex-row justify-center mb-2 gap-2">
+									{getSpots(0, 5).map(renderSpot)}
+								</View>
 
-                                <View className="flex-row justify-center items-stretch gap-2">
-                                    {/* Left Column */}
-                                    <View className="justify-center gap-2">
-                                        {getSpots(5, 8).map(renderSpot)}
-                                    </View>
+								<View className="flex-row justify-center items-stretch gap-2">
+									{/* Left Column */}
+									<View className="justify-center gap-2">
+										{getSpots(5, 8).map(renderSpot)}
+									</View>
 
-                                    {/* Center Area */}
-                                    <View className="border border-gray-300 rounded-lg justify-center items-center w-48 mx-2 bg-white">
-                                        <Text className="text-gray-900 text-center font-medium">
-                                            Area Pemancingan
-                                        </Text>
-                                    </View>
+									{/* Center Area */}
+									<View className="border border-gray-300 rounded-lg justify-center items-center w-48 mx-2 bg-white">
+										<Text className="text-gray-900 text-center font-medium">
+											Area Pemancingan
+										</Text>
+									</View>
 
-                                    {/* Right Column */}
-                                    <View className="justify-center gap-2">
-                                        {getSpots(13, 8).map(renderSpot)}
-                                    </View>
-                                </View>
+									{/* Right Column */}
+									<View className="justify-center gap-2">
+										{getSpots(13, 8).map(renderSpot)}
+									</View>
+								</View>
 
-                                {/* Bottom Row */}
-                                <View className="flex-row justify-center mt-2 gap-2">
-                                    {getSpots(21, 5).map(renderSpot)}
-                                </View>
-                            </View>
-                        )}
+								{/* Bottom Row */}
+								<View className="flex-row justify-center mt-2 gap-2">
+									{getSpots(21, 5).map(renderSpot)}
+								</View>
+							</View>
+						)}
 
 						{/* Legend / Informasi Kursi */}
 						<View className="items-center mb-8">
@@ -471,15 +629,15 @@ const BookingScreen = () => {
 							</View>
 						</View>
 
-                        {/* Selected Spot Display */}
-                        {selectedSpot && (
-                            <View className="bg-blue-600 rounded-2xl p-4 mb-6 mx-4">
-                                <Text className="text-white text-sm mb-1 text-center">Spot Terpilih</Text>
-                                <Text className="text-white font-bold text-3xl text-center">
-                                    {selectedSpot}
-                                </Text>
-                            </View>
-                        )}
+						{/* Selected Spot Display */}
+						{selectedSpot && (
+							<View className="bg-blue-600 rounded-2xl p-4 mb-6 mx-4">
+								<Text className="text-white text-sm mb-1 text-center">Spot Terpilih</Text>
+								<Text className="text-white font-bold text-3xl text-center">
+									{selectedSpot}
+								</Text>
+							</View>
+						)}
 					</View>
 				)}
 			</View>
@@ -492,17 +650,24 @@ const BookingScreen = () => {
 			{/* Detail Booking Card */}
 			<View className="bg-blue-600 rounded-2xl p-5 mb-6">
 				<Text className="text-white font-bold text-lg mb-4">Detail Booking</Text>
-				
+
 				<View className="flex-row justify-between mb-2">
 					<Text className="text-white/80">Lokasi</Text>
 					<Text className="text-white font-medium">{locationName}</Text>
 				</View>
-				
+
 				<View className="flex-row justify-between mb-2">
 					<Text className="text-white/80">Durasi</Text>
 					<Text className="text-white font-medium">{duration} jam</Text>
 				</View>
-				
+
+				<View className="flex-row justify-between mb-2">
+					<Text className="text-white/80">Waktu</Text>
+					<Text className="text-white font-medium">
+						{selectedHour !== null ? `${selectedHour.toString().padStart(2, "0")}:00 - ${(selectedHour + duration).toString().padStart(2, "0")}:00` : "-"}
+					</Text>
+				</View>
+
 				<View className="flex-row justify-between mb-3">
 					<Text className="text-white/80">Jumlah Spot</Text>
 					<Text className="text-white font-medium">1 spot</Text>
@@ -518,23 +683,32 @@ const BookingScreen = () => {
 			{/* Rincian Harga */}
 			<View className="mb-6">
 				<Text className="font-bold text-lg text-gray-900 mb-3">Rincian Harga</Text>
-				
+
 				<View className="flex-row justify-between mb-2">
 					<Text className="text-gray-600">Subtotal</Text>
 					<Text className="text-gray-900 font-medium">
 						Rp {subtotal.toLocaleString("id-ID")}
 					</Text>
 				</View>
-				
-				<View className="flex-row justify-between mb-3">
+
+				<View className="flex-row justify-between mb-2">
 					<Text className="text-gray-600">Pajak (10%)</Text>
 					<Text className="text-gray-900 font-medium">
 						Rp {tax.toLocaleString("id-ID")}
 					</Text>
 				</View>
-				
+
+				{discountAmount > 0 && (
+					<View className="flex-row justify-between mb-2">
+						<Text className="text-green-600">Diskon Voucher</Text>
+						<Text className="text-green-600 font-medium">
+							- Rp {discountAmount.toLocaleString("id-ID")}
+						</Text>
+					</View>
+				)}
+
 				<View className="h-[1px] bg-gray-200 mb-3" />
-				
+
 				<View className="flex-row justify-between">
 					<Text className="font-bold text-lg text-gray-900">Total Pembayaran</Text>
 					<Text className="font-bold text-xl text-blue-600">
@@ -546,18 +720,16 @@ const BookingScreen = () => {
 			{/* Metode Pembayaran */}
 			<View className="mb-6">
 				<Text className="font-bold text-lg text-gray-900 mb-3">Metode Pembayaran</Text>
-				
+
 				{/* Card Payment */}
 				<TouchableOpacity
 					onPress={() => setSelectedPayment("card")}
-					className={`border-2 rounded-xl p-4 mb-3 flex-row items-center ${
-						selectedPayment === "card" ? "border-blue-600 bg-blue-50" : "border-gray-200"
-					}`}
+					className={`border-2 rounded-xl p-4 mb-3 flex-row items-center ${selectedPayment === "card" ? "border-blue-600 bg-blue-50" : "border-gray-200"
+						}`}
 				>
 					<View
-						className={`w-5 h-5 rounded-full border-2 mr-3 items-center justify-center ${
-							selectedPayment === "card" ? "border-blue-600" : "border-gray-300"
-						}`}
+						className={`w-5 h-5 rounded-full border-2 mr-3 items-center justify-center ${selectedPayment === "card" ? "border-blue-600" : "border-gray-300"
+							}`}
 					>
 						{selectedPayment === "card" && (
 							<View className="w-3 h-3 rounded-full bg-blue-600" />
@@ -565,9 +737,8 @@ const BookingScreen = () => {
 					</View>
 					<CreditCard size={24} color={selectedPayment === "card" ? "#2563EB" : "#6B7280"} />
 					<Text
-						className={`ml-3 font-medium ${
-							selectedPayment === "card" ? "text-blue-600" : "text-gray-700"
-						}`}
+						className={`ml-3 font-medium ${selectedPayment === "card" ? "text-blue-600" : "text-gray-700"
+							}`}
 					>
 						Kartu Kredit/Debit
 					</Text>
@@ -584,14 +755,12 @@ const BookingScreen = () => {
 				{/* QRIS Payment */}
 				<TouchableOpacity
 					onPress={() => setSelectedPayment("qris")}
-					className={`border-2 rounded-xl p-4 flex-row items-center ${
-						selectedPayment === "qris" ? "border-blue-600 bg-blue-50" : "border-gray-200"
-					}`}
+					className={`border-2 rounded-xl p-4 flex-row items-center ${selectedPayment === "qris" ? "border-blue-600 bg-blue-50" : "border-gray-200"
+						}`}
 				>
 					<View
-						className={`w-5 h-5 rounded-full border-2 mr-3 items-center justify-center ${
-							selectedPayment === "qris" ? "border-blue-600" : "border-gray-300"
-						}`}
+						className={`w-5 h-5 rounded-full border-2 mr-3 items-center justify-center ${selectedPayment === "qris" ? "border-blue-600" : "border-gray-300"
+							}`}
 					>
 						{selectedPayment === "qris" && (
 							<View className="w-3 h-3 rounded-full bg-blue-600" />
@@ -599,9 +768,8 @@ const BookingScreen = () => {
 					</View>
 					<Store size={24} color={selectedPayment === "qris" ? "#2563EB" : "#6B7280"} />
 					<Text
-						className={`ml-3 font-medium ${
-							selectedPayment === "qris" ? "text-blue-600" : "text-gray-700"
-						}`}
+						className={`ml-3 font-medium ${selectedPayment === "qris" ? "text-blue-600" : "text-gray-700"
+							}`}
 					>
 						QRIS (Scan & Pay)
 					</Text>
@@ -670,12 +838,41 @@ const BookingScreen = () => {
 						placeholder="Contoh: DISKON10"
 						value={voucherCode}
 						onChangeText={setVoucherCode}
-						className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900"
+						editable={!isVoucherApplied}
+						autoCapitalize="characters"
+						className={`flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 uppercase ${isVoucherApplied ? "bg-green-50 border-green-200" : ""
+							}`}
 					/>
-					<TouchableOpacity className="bg-blue-600 px-6 rounded-xl justify-center">
-						<Text className="text-white font-bold">Pakai</Text>
-					</TouchableOpacity>
+					{isVoucherApplied ? (
+						<TouchableOpacity
+							onPress={removeVoucher}
+							className="bg-red-500 px-4 rounded-xl justify-center"
+						>
+							<Text className="text-white font-bold">Hapus</Text>
+						</TouchableOpacity>
+					) : (
+						<TouchableOpacity
+							onPress={applyVoucher}
+							disabled={applyingVoucher}
+							className={`px-6 rounded-xl justify-center ${applyingVoucher ? "bg-gray-400" : "bg-blue-600"
+								}`}
+						>
+							{applyingVoucher ? (
+								<ActivityIndicator size="small" color="white" />
+							) : (
+								<Text className="text-white font-bold">Pakai</Text>
+							)}
+						</TouchableOpacity>
+					)}
 				</View>
+				{isVoucherApplied && (
+					<View className="mt-2 bg-green-50 p-3 rounded-lg flex-row items-center">
+						<Check size={16} color="#16A34A" />
+						<Text className="text-green-600 ml-2 text-sm font-medium">
+							Diskon Rp {discountAmount.toLocaleString("id-ID")} berhasil diterapkan!
+						</Text>
+					</View>
+				)}
 			</View>
 
 			{/* Catatan */}
@@ -692,9 +889,6 @@ const BookingScreen = () => {
 					className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900"
 					style={{ textAlignVertical: "top" }}
 				/>
-				<Text className="text-gray-400 text-xs mt-2">
-					Contoh: Request spot dekat pohon rindang
-				</Text>
 			</View>
 		</View>
 	);
@@ -719,13 +913,12 @@ const BookingScreen = () => {
 					{[1, 2, 3].map((step) => (
 						<View key={step} className="flex-row items-center">
 							<View
-								className={`w-10 h-10 rounded-full items-center justify-center ${
-									currentStep === step
-										? "bg-blue-600"
-										: currentStep > step
+								className={`w-10 h-10 rounded-full items-center justify-center ${currentStep === step
+									? "bg-blue-600"
+									: currentStep > step
 										? "bg-green-500"
 										: "bg-gray-200"
-								}`}
+									}`}
 							>
 								{currentStep > step ? (
 									<Check size={20} color="white" />
@@ -763,7 +956,7 @@ const BookingScreen = () => {
 								Lanjutkan Pembayaran
 							</Text>
 						</TouchableOpacity>
-						
+
 						<TouchableOpacity
 							onPress={() => navigation.goBack()}
 							className="bg-red-500 py-4 rounded-xl items-center"
@@ -777,9 +970,8 @@ const BookingScreen = () => {
 					<TouchableOpacity
 						onPress={handleBooking}
 						disabled={submitting}
-						className={`py-4 rounded-xl items-center shadow-lg ${
-							submitting ? "bg-gray-400" : "bg-blue-600"
-						}`}
+						className={`py-4 rounded-xl items-center shadow-lg ${submitting ? "bg-gray-400" : "bg-blue-600"
+							}`}
 					>
 						{submitting ? (
 							<ActivityIndicator color="white" />

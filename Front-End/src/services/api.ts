@@ -172,12 +172,16 @@ export default {
 	getLocationReviews(id: number | string) {
 		return api.get(`/locations/${id}/reviews`);
 	},
-	getLocationSpots(id: number | string, date: string) {
+	getLocationSpots(id: number | string, date: string, hour?: number, duration?: number) {
+		return api.get(`/locations/${id}/spots`, { params: { date, hour, duration } });
+	},
+	// Get hourly availability for time picker
+	getHourAvailability(id: number | string, date: string) {
 		return api.get(`/locations/${id}/availability`, { params: { date } });
 	},
 	// Alias untuk backward compatibility
 	checkSpotAvailability(id: number | string, date: string) {
-		return api.get(`/locations/${id}/availability`, { params: { date } });
+		return api.get(`/locations/${id}/spots`, { params: { date } });
 	},
 	checkVoucher(code: string) {
 		return api.post("/references/discounts/check", { code });
@@ -248,6 +252,9 @@ export default {
 		return api.post("/payments/upgrade-membership", {
 			id_membership: membershipId,
 		});
+	},
+	cancelMembership() {
+		return api.post("/users/cancel-membership");
 	},
 	getPaymentMethods() {
 		return api.get("/references/payment-methods");

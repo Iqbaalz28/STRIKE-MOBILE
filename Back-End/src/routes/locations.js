@@ -129,11 +129,11 @@ export default async function (fastify, options) {
   });
 
   // 4. GET SEAT AVAILABILITY
-  // URL: GET /locations/:id/spots?date=YYYY-MM-DD
+  // URL: GET /locations/:id/spots?date=YYYY-MM-DD&hour=08&duration=2
   fastify.get("/:id/spots", async (request, reply) => {
     try {
       const { id } = request.params;
-      const { date } = request.query;
+      const { date, hour, duration } = request.query;
 
       if (!date)
         return reply.code(400).send({ message: "Tanggal booking wajib diisi" });
@@ -145,48 +145,70 @@ export default async function (fastify, options) {
       );
 
       // B. Ambil Spot yang SUDAH DIBOOKING
-      const [bookedSpots] = await fastify.db.query(
-        `
-                SELECT spot_number 
-                FROM bookings 
-                WHERE id_location = ? 
-                AND booking_date = ? 
-                AND status != 'cancelled'
-            `,
-        [id, date],
-      );
+      // Jika hour dan duration diberikan, filter berdasarkan overlap waktu
+      let bookedSpotsQuery = `
+        SELECT spot_number, booking_start, duration as booking_duration
+        FROM bookings 
+        WHERE id_location = ? 
+        AND booking_date = ? 
+        AND status != 'cancelled'
+      `;
+      const [bookedSpots] = await fastify.db.query(bookedSpotsQuery, [id, date]);
 
-      const occupiedSet = new Set(bookedSpots.map((b) => b.spot_number));
+      // Filter spots berdasarkan overlap waktu jika hour diberikan
+      let occupiedSet = new Set();
+      const requestedHour = hour ? parseInt(hour) : null;
+      const requestedDuration = duration ? parseInt(duration) : 2;
+
+      if (requestedHour !== null) {
+        // Hitung range waktu yang diminta
+        const requestedStart = requestedHour;
+        const requestedEnd = requestedHour + requestedDuration;
+
+        bookedSpots.forEach((b) => {
+          // Ambil jam mulai dari booking_start
+          const bookingStartHour = new Date(b.booking_start).getHours();
+          const bookingEndHour = bookingStartHour + (b.booking_duration || 2);
+
+          // Cek overlap: (StartA < EndB) && (EndA > StartB)
+          const hasOverlap = (requestedStart < bookingEndHour) && (requestedEnd > bookingStartHour);
+
+          if (hasOverlap) {
+            occupiedSet.add(b.spot_number);
+          }
+        });
+      } else {
+        // Jika tidak ada hour, anggap semua booking di tanggal itu occupied
+        bookedSpots.forEach(b => occupiedSet.add(b.spot_number));
+      }
 
       // FIX: Gabungkan spot dari master table DAN spot yang sudah dibooking
-      // Ini penting jika nama spot di frontend (A1) beda dengan di DB (T1),
-      // atau jika master table belum lengkap.
       const combinedSpotNames = new Set(allSpots.map(s => s.spot_name));
-      
+
       // Masukkan juga spot yang ada di booking tapi tidak ada di master
       bookedSpots.forEach(b => combinedSpotNames.add(b.spot_number));
 
       let finalSpots = [];
-      
+
       // Jika total spot (master + booked) masih kosong, kita generate default
       if (combinedSpotNames.size === 0) {
-         // Generate A1-A5, B1-B8, C1-C8, D1-D5
-         const generated = [];
-         for(let i=1; i<=5; i++) generated.push(`A${i}`);
-         for(let i=1; i<=8; i++) generated.push(`B${i}`);
-         for(let i=1; i<=8; i++) generated.push(`C${i}`);
-         for(let i=1; i<=5; i++) generated.push(`D${i}`);
-         
-         finalSpots = generated.map(name => ({
-             number: name,
-             status: occupiedSet.has(name) ? "booked" : "available"
-         }));
+        // Generate A1-A5, B1-B8, C1-C8, D1-D5
+        const generated = [];
+        for (let i = 1; i <= 5; i++) generated.push(`A${i}`);
+        for (let i = 1; i <= 8; i++) generated.push(`B${i}`);
+        for (let i = 1; i <= 8; i++) generated.push(`C${i}`);
+        for (let i = 1; i <= 5; i++) generated.push(`D${i}`);
+
+        finalSpots = generated.map(name => ({
+          number: name,
+          status: occupiedSet.has(name) ? "booked" : "available"
+        }));
       } else {
-          // Return semua spot yang diketahui (baik dari master maupun history booking)
-          finalSpots = Array.from(combinedSpotNames).map((name) => ({
-            number: name,
-            status: occupiedSet.has(name) ? "booked" : "available",
-          }));
+        // Return semua spot yang diketahui (baik dari master maupun history booking)
+        finalSpots = Array.from(combinedSpotNames).map((name) => ({
+          number: name,
+          status: occupiedSet.has(name) ? "booked" : "available",
+        }));
       }
 
       return finalSpots;

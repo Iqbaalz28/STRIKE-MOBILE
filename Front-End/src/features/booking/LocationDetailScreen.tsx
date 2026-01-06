@@ -47,7 +47,9 @@ const LocationDetailScreen = () => {
 	};
 
 	const handleIncreaseDuration = () => {
-		setDuration(duration + 1);
+		if (duration < 9) { // Max 9 jam
+			setDuration(duration + 1);
+		}
 	};
 
 	const handleDecreaseDuration = () => {
@@ -179,7 +181,7 @@ const LocationDetailScreen = () => {
 
 						{/* Date Picker */}
 						<Text className="text-white/80 text-sm mb-2">Pilih Tanggal</Text>
-						<TouchableOpacity 
+						<TouchableOpacity
 							onPress={() => setShowDatePicker(true)}
 							className="bg-blue-500 rounded-xl px-4 py-3 mb-4 flex-row items-center"
 						>

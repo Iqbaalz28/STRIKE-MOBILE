@@ -6,6 +6,8 @@ import {
 	Image,
 	TouchableOpacity,
 	ActivityIndicator,
+	Linking,
+	Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Calendar, MapPin, ArrowLeft } from "lucide-react-native";
@@ -32,53 +34,34 @@ const EventListScreen = () => {
 		}
 	};
 
+	const handlePressEvent = async (link_url: string) => {
+		if (link_url) {
+			try {
+				const supported = await Linking.canOpenURL(link_url);
+				if (supported) {
+					await Linking.openURL(link_url);
+				} else {
+					Alert.alert("Error", "Tidak dapat membuka link event ini.");
+				}
+			} catch (error) {
+				Alert.alert("Error", "Terjadi kesalahan saat membuka link.");
+			}
+		} else {
+			Alert.alert("Info", "Link event belum tersedia.");
+		}
+	};
+
 	const renderItem = ({ item }: { item: any }) => (
-		<View className="bg-white rounded-2xl mb-6 border border-gray-100 shadow-sm overflow-hidden">
+		<TouchableOpacity
+			onPress={() => handlePressEvent(item.link_url)}
+			className="bg-white rounded-2xl mb-6 shadow-sm overflow-hidden active:opacity-90"
+		>
 			<Image
 				source={{ uri: getImageUrl(item.image || item.img) }}
-				className="w-full h-48 bg-gray-200"
+				className="w-full h-[500px] bg-gray-200"
 				resizeMode="cover"
 			/>
-			<View className="p-4">
-				<View className="absolute -top-8 right-4 bg-white px-3 py-1 rounded-lg shadow-sm items-center">
-					<Text className="text-xs font-bold text-red-500 uppercase">
-						{new Date(item.date).toLocaleString("default", {
-							month: "short",
-						})}
-					</Text>
-					<Text className="text-xl font-bold text-gray-900">
-						{new Date(item.date).getDate()}
-					</Text>
-				</View>
-
-				<Text className="text-blue-600 text-xs font-bold uppercase mb-1">
-					{item.status || "Open Registration"}
-				</Text>
-				<Text className="text-xl font-bold text-gray-900 mb-2 font-[Outfit_700Bold]">
-					{item.name}
-				</Text>
-
-				<View className="flex-row items-center mb-2">
-					<MapPin size={16} color="#6B7280" />
-					<Text className="text-gray-500 ml-2 text-sm">
-						{item.location || "Kolam Utama"}
-					</Text>
-				</View>
-
-				<Text
-					className="text-gray-600 text-sm leading-relaxed mb-4"
-					numberOfLines={2}
-				>
-					{item.description}
-				</Text>
-
-				<TouchableOpacity className="w-full py-3 bg-blue-600 rounded-xl items-center">
-					<Text className="text-white font-bold">
-						Daftar Sekarang
-					</Text>
-				</TouchableOpacity>
-			</View>
-		</View>
+		</TouchableOpacity>
 	);
 
 	return (

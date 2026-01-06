@@ -27,6 +27,12 @@ const ShopScreen = () => {
 	const [products, setProducts] = useState<any[]>([]);
 	const [loading, setLoading] = useState(true);
 
+	// State Pagination
+	const [page, setPage] = useState(1);
+	const [hasMore, setHasMore] = useState(true);
+	const [refreshing, setRefreshing] = useState(false);
+	const [loadingMore, setLoadingMore] = useState(false);
+
 	// State Filter Dasar
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedCategory, setSelectedCategory] = useState("all");
@@ -36,77 +42,86 @@ const ShopScreen = () => {
 	const [priceFilter, setPriceFilter] = useState({ min: 0, max: 999999999 });
 
 	useEffect(() => {
-		fetchProducts();
+		fetchProducts(1, true); // Initial Load
 	}, []);
 
-	const fetchProducts = async () => {
-		setLoading(true);
-		try {
-			const res = await api.getProducts({});
+	// Reset page ketika filter berubah
+	useEffect(() => {
+		fetchProducts(1, true);
+	}, [searchQuery, selectedCategory, priceFilter]);
 
-			// LOGIKA ADAPTIF (Menangani format response backend)
-			let productData: any[] = [];
-			if (Array.isArray(res.data)) {
-				productData = res.data;
-			} else if (res.data && Array.isArray(res.data.data)) {
-				productData = res.data.data;
-			} else if (res.data?.products && Array.isArray(res.data.products)) {
-				productData = res.data.products;
+	const fetchProducts = async (pageToLoad: number, isRefresh: boolean = false) => {
+		if (pageToLoad === 1) setLoading(true);
+
+		try {
+			// Construct Params
+			const params: any = {
+				page: pageToLoad,
+				limit: 10,
+				search: searchQuery,
+			};
+
+			// Add Category Filter
+			// (Note: logic mapping category ada di local filter sebelumnya, 
+			// skr kita pindah ke query param jika backend support, 
+			// TAPI: Backend products.js hanya support filter nama kategori string.
+			// Jadi kita kirim nama kategori jika != all)
+			if (selectedCategory !== "all") {
+				// Mapping ID -> Name untuk backend
+				const cat = categories.find(c => c.id === selectedCategory);
+				if (cat) params.category = cat.name.toLowerCase();
 			}
 
-			console.log(`✅ Produk dimuat: ${productData.length} item`);
-			setProducts(productData);
+			// Add Price Filter
+			if (priceFilter.min > 0) params.minPrice = priceFilter.min;
+			if (priceFilter.max < 999999999) params.maxPrice = priceFilter.max;
+
+			const res = await api.getProducts(params);
+
+			// LOGIKA ADAPTIF (Menangani format response backend)
+			let newProducts: any[] = [];
+
+			// Backend Pagination return { data: [], page: 1, limit: 10 }
+			if (res.data?.data) {
+				newProducts = res.data.data;
+			} else if (Array.isArray(res.data)) {
+				// Fallback jika backend belum restart / format lama
+				newProducts = res.data;
+			}
+
+			if (isRefresh) {
+				setProducts(newProducts);
+			} else {
+				setProducts(prev => [...prev, ...newProducts]);
+			}
+
+			// Cek apakah masih ada data
+			setHasMore(newProducts.length >= 10);
+			setPage(pageToLoad);
+
 		} catch (error) {
 			console.error("❌ Gagal memuat produk:", error);
 		} finally {
 			setLoading(false);
+			setLoadingMore(false);
+			setRefreshing(false);
 		}
 	};
 
-	// --- LOGIC FILTER UTAMA ---
-	const filteredProducts = products.filter((p: any) => {
-		// 1. Mapping Kategori (String Frontend -> ID Backend)
-		// Berdasarkan Log: 1=Joran, 2=Reel, 3=Umpan, 4=Kail, 5=Senar
-		const categoryMap: Record<string, number> = {
-			joran: 1,
-			reel: 2,
-			umpan: 3,
-			kail: 4,
-			// "senar": 5 // Jika ingin menambahkan filter senar nanti
-		};
+	const handleLoadMore = () => {
+		if (!hasMore || loadingMore || loading) return;
+		setLoadingMore(true);
+		fetchProducts(page + 1, false);
+	};
 
-		// 2. Normalisasi Data
-		const pName = (p.name || p.product_name || "").toLowerCase();
+	const handleRefresh = () => {
+		setRefreshing(true);
+		fetchProducts(1, true);
+	};
 
-		// Cek harga (convert ke number)
-		const rawPrice = p.price || p.price_sale || p.price_rent || 0;
-		const pPrice = Number(rawPrice);
-
-		// 3. Filter Pencarian Nama
-		const matchSearch = pName.includes(searchQuery.toLowerCase());
-
-		// 4. Filter Kategori (Gunakan Mapping ID)
-		let matchCategory = true;
-		if (selectedCategory !== "all") {
-			// Ambil target ID dari map (misal "joran" -> 1)
-			const targetId = categoryMap[selectedCategory];
-
-			// Bandingkan dengan id_category dari database
-			if (targetId) {
-				matchCategory = p.id_category === targetId;
-			} else {
-				// Fallback jika mapping tidak ada, coba cocokkan string manual (jaga-jaga)
-				const pCatName = (p.category || "").toLowerCase();
-				matchCategory = pCatName === selectedCategory;
-			}
-		}
-
-		// 5. Filter Harga
-		const matchPrice =
-			pPrice >= priceFilter.min && pPrice <= priceFilter.max;
-
-		return matchSearch && matchCategory && matchPrice;
-	});
+	// Logic Filter dihapus karena sudah handled di backend via params
+	// Kita gunakan products langsung dari state
+	const filteredProducts = products;
 
 	const handleApplyFilter = (filters: any) => {
 		setPriceFilter({ min: filters.minPrice, max: filters.maxPrice });
@@ -162,18 +177,16 @@ const ShopScreen = () => {
 					renderItem={({ item }) => (
 						<TouchableOpacity
 							onPress={() => setSelectedCategory(item.id)}
-							className={`px-5 py-2 rounded-full border ${
-								selectedCategory === item.id
-									? "bg-blue-600 border-blue-600"
-									: "bg-white border-gray-300"
-							}`}
+							className={`px-5 py-2 rounded-full border ${selectedCategory === item.id
+								? "bg-blue-600 border-blue-600"
+								: "bg-white border-gray-300"
+								}`}
 						>
 							<Text
-								className={`font-medium ${
-									selectedCategory === item.id
-										? "text-white"
-										: "text-gray-600"
-								}`}
+								className={`font-medium ${selectedCategory === item.id
+									? "text-white"
+									: "text-gray-600"
+									}`}
 							>
 								{item.name}
 							</Text>
@@ -207,6 +220,17 @@ const ShopScreen = () => {
 							}
 						/>
 					)}
+					onEndReached={handleLoadMore}
+					onEndReachedThreshold={0.5}
+					refreshing={refreshing}
+					onRefresh={handleRefresh}
+					ListFooterComponent={
+						loadingMore ? (
+							<View className="py-4">
+								<ActivityIndicator size="small" color="#2563EB" />
+							</View>
+						) : null
+					}
 					ListEmptyComponent={
 						<View className="items-center py-20">
 							<Text className="text-gray-400">

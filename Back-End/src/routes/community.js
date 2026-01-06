@@ -7,7 +7,7 @@ export default async function (fastify, options) {
       // Join dengan users untuk dapat nama & avatar author
       const [rows] = await fastify.db.query(`
                 SELECT 
-                    p.id, p.title, p.body, p.category, p.created_at,
+                    p.id, p.title, p.body, p.category, p.created_at, p.img,
                     p.views_count, p.likes_count, p.reply_count,
                     u.name as author_name, u.avatar_img as author_avatar
                 FROM community_posts p
@@ -35,7 +35,7 @@ export default async function (fastify, options) {
       const [rows] = await fastify.db.query(
         `
                 SELECT 
-                    p.id, p.title, p.body, p.category, p.created_at,
+                    p.id, p.title, p.body, p.category, p.created_at, p.img,
                     p.views_count, p.likes_count, p.reply_count,
                     u.name as author_name, u.avatar_img as author_avatar
                 FROM community_posts p
@@ -61,7 +61,7 @@ export default async function (fastify, options) {
     async (request, reply) => {
       try {
         const userId = request.user.id;
-        const { title, body, category } = request.body;
+        const { title, body, category, img } = request.body;
 
         if (!title || !body || !category) {
           return reply.code(400).send({ message: "Semua field wajib diisi" });
@@ -69,10 +69,10 @@ export default async function (fastify, options) {
 
         await fastify.db.query(
           `
-                INSERT INTO community_posts (id_user, title, body, category, created_at)
-                VALUES (?, ?, ?, ?, NOW())
+                INSERT INTO community_posts (id_user, title, body, category, img, created_at)
+                VALUES (?, ?, ?, ?, ?, NOW())
             `,
-          [userId, title, body, category],
+          [userId, title, body, category, img || null],
         );
 
         return { message: "Postingan berhasil dibuat" };
@@ -187,4 +187,18 @@ export default async function (fastify, options) {
       }
     },
   );
+
+  // --- MIGRATION ROUTE (TEMPORARY) ---
+  // Gunakan ini untuk menambah kolom img jika belum ada
+  fastify.get("/migrate-add-image", async (req, reply) => {
+    try {
+      await fastify.db.query(
+        "ALTER TABLE community_posts ADD COLUMN img VARCHAR(255) DEFAULT NULL"
+      );
+      return { message: "Kolom img berhasil ditambahkan ke community_posts" };
+    } catch (error) {
+      // Ignore error jika kolom sudah ada
+      return { message: "Kolom img mungkin sudah ada", error: error.message };
+    }
+  });
 }
