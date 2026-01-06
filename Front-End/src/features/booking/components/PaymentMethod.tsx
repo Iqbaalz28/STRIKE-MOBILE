@@ -122,10 +122,48 @@ const PaymentMethod = ({
 				)}
 
 				{activeTab === "card" && (
-					<View className="py-4">
-						<Text className="text-gray-500">
-							Form Kartu Kredit Tersedia di Web.
-						</Text>
+					<View className="space-y-4">
+						{/* Nomor Kartu */}
+						<View>
+							<Text className="text-gray-700 mb-2 font-outfit-medium">Nomor Kartu</Text>
+							<View className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+								<Text className="text-gray-400">1234 5678 9012 3456</Text>
+							</View>
+						</View>
+
+						{/* Nama Pemegang Kartu */}
+						<View>
+							<Text className="text-gray-700 mb-2 font-outfit-medium">Nama Pemegang Kartu</Text>
+							<View className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+								<Text className="text-gray-400">Nama sesuai kartu</Text>
+							</View>
+						</View>
+
+						{/* Row: Expiry Date & CVV */}
+						<View className="flex-row gap-3">
+							<View className="flex-1">
+								<Text className="text-gray-700 mb-2 font-outfit-medium">Tanggal Kadaluarsa</Text>
+								<View className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+									<Text className="text-gray-400">MM/YY</Text>
+								</View>
+							</View>
+							<View className="flex-1">
+								<Text className="text-gray-700 mb-2 font-outfit-medium">CVV</Text>
+								<View className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+									<Text className="text-gray-400">123</Text>
+								</View>
+							</View>
+						</View>
+
+						{/* Info keamanan */}
+						<View className="bg-blue-50 rounded-xl p-3 flex-row items-center">
+							<View className="w-8 h-8 bg-blue-100 rounded-full items-center justify-center mr-3">
+								<Text className="text-blue-600 font-outfit-bold">🔒</Text>
+							</View>
+							<Text className="text-blue-700 text-xs flex-1">
+								Data kartu Anda aman & terenkripsi
+							</Text>
+						</View>
 					</View>
 				)}
 				{activeTab === "cod" && (

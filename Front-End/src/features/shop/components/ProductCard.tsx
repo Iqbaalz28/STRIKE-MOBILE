@@ -1,8 +1,11 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import { View, Text, Image, TouchableOpacity, Dimensions } from "react-native";
 import { ShoppingCart } from "lucide-react-native";
 import { getImageUrl } from "@/utils/imageHelper";
 import { formatRupiah } from "@/utils/format";
+
+const { width: screenWidth } = Dimensions.get("window");
+const cardWidth = (screenWidth - 24 - 8) / 2; // paddingHorizontal 12*2 = 24, gap 8
 
 // Definisikan Interface Props
 interface ProductCardProps {
@@ -28,7 +31,8 @@ const ProductCard = ({ product, onPress }: ProductCardProps) => {
 	return (
 		<TouchableOpacity
 			onPress={onPress}
-			className="flex-1 bg-white rounded-xl shadow-sm border border-gray-100 m-1 overflow-hidden mb-4"
+			className="bg-white rounded-xl shadow-sm border border-gray-100 m-1 overflow-hidden mb-4"
+			style={{ width: cardWidth }}
 			activeOpacity={0.7}
 		>
 			{/* --- GAMBAR PRODUK --- */}
@@ -51,7 +55,7 @@ const ProductCard = ({ product, onPress }: ProductCardProps) => {
 							</Text>
 						</View>
 					) : (
-						<>
+						<View className="flex-row gap-1">
 							{isRent && (
 								<View className="bg-blue-600 px-2 py-1 rounded-md shadow-sm">
 									<Text className="text-[10px] text-white font-outfit-bold font-outfit-bold">
@@ -66,7 +70,7 @@ const ProductCard = ({ product, onPress }: ProductCardProps) => {
 									</Text>
 								</View>
 							)}
-						</>
+						</View>
 					)}
 				</View>
 			</View>

@@ -212,7 +212,6 @@ const ShopScreen = () => {
 						paddingHorizontal: 12,
 						paddingBottom: 100,
 					}}
-					columnWrapperStyle={{ justifyContent: "space-between" }}
 					renderItem={({ item }) => (
 						<ProductCard
 							product={item}

@@ -156,10 +156,10 @@ const MembershipScreen = () => {
 							{cancelling ? (
 								<ActivityIndicator size="small" color="white" />
 							) : (
-								<>
+								<View className="flex-row items-center">
 									<XCircle size={18} color="white" />
 									<Text className="text-white font-outfit-medium ml-2">Batalkan Langganan</Text>
-								</>
+								</View>
 							)}
 						</TouchableOpacity>
 					)}

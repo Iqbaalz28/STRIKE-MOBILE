@@ -8,7 +8,7 @@ import {
 	Alert,
 	ActivityIndicator,
 } from "react-native";
-import { Minus, Plus, Trash2, ArrowLeft } from "lucide-react-native";
+import { Minus, Plus, Trash2, ArrowLeft, Check } from "lucide-react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import api from "@/services/api";
 import { getImageUrl } from "@/utils/imageHelper";
@@ -27,6 +27,7 @@ const CartScreen = () => {
 	const navigation = useNavigation<any>();
 	const [cartItems, setCartItems] = useState<any[]>([]);
 	const [loading, setLoading] = useState(true);
+	const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
 
 	useFocusEffect(
 		useCallback(() => {
@@ -43,6 +44,8 @@ const CartScreen = () => {
 				? res.data
 				: res.data.data || [];
 			setCartItems(rawData);
+			// Default: select all items
+			setSelectedItems(new Set(rawData.map((item: any) => item.id)));
 		} catch (error) {
 			console.log("Gagal load keranjang:", error);
 		} finally {
@@ -77,6 +80,12 @@ const CartScreen = () => {
 						setCartItems((prev) =>
 							prev.filter((item) => item.id !== id),
 						);
+						// Remove from selected items too
+						setSelectedItems((prev) => {
+							const newSet = new Set(prev);
+							newSet.delete(id);
+							return newSet;
+						});
 					} catch (error) {
 						Alert.alert("Gagal", "Tidak bisa menghapus item.");
 					}
@@ -85,8 +94,37 @@ const CartScreen = () => {
 		]);
 	};
 
-	// Hitung Total Harga
-	const totalPrice = cartItems.reduce((sum, item) => {
+	// Toggle individual item selection
+	const toggleItemSelection = (id: number) => {
+		setSelectedItems((prev) => {
+			const newSet = new Set(prev);
+			if (newSet.has(id)) {
+				newSet.delete(id);
+			} else {
+				newSet.add(id);
+			}
+			return newSet;
+		});
+	};
+
+	// Toggle select all
+	const toggleSelectAll = () => {
+		if (selectedItems.size === cartItems.length) {
+			// Deselect all
+			setSelectedItems(new Set());
+		} else {
+			// Select all
+			setSelectedItems(new Set(cartItems.map((item) => item.id)));
+		}
+	};
+
+	const isAllSelected = cartItems.length > 0 && selectedItems.size === cartItems.length;
+
+	// Get selected cart items
+	const selectedCartItems = cartItems.filter((item) => selectedItems.has(item.id));
+
+	// Hitung Total Harga (only selected items)
+	const totalPrice = selectedCartItems.reduce((sum, item) => {
 		// 1. Ambil harga (Priority: root price -> product price)
 		const rawPrice = item.price || item.product?.price_sale || "0";
 
@@ -120,11 +158,26 @@ const CartScreen = () => {
 				</Text>
 			</View>
 
+			{/* Select All Header */}
+			{cartItems.length > 0 && (
+				<TouchableOpacity
+					onPress={toggleSelectAll}
+					className="flex-row items-center px-5 py-3 bg-gray-50 border-b border-gray-100"
+				>
+					<View className={`w-5 h-5 rounded border-2 mr-3 items-center justify-center ${isAllSelected ? 'border-blue-600 bg-white' : 'border-gray-300 bg-white'}`}>
+						{isAllSelected && <Check size={14} color="#2563EB" strokeWidth={3} />}
+					</View>
+					<Text className="text-gray-700 font-outfit-medium">
+						Pilih Semua ({selectedItems.size}/{cartItems.length})
+					</Text>
+				</TouchableOpacity>
+			)}
+
 			{/* Cart List */}
 			<FlatList
 				data={cartItems}
 				keyExtractor={(item) => item.id.toString()}
-				contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
+				contentContainerStyle={{ padding: 20, paddingBottom: 180 }}
 				ListEmptyComponent={
 					<View className="items-center justify-center mt-20">
 						<Text className="text-center text-gray-400 font-outfit-medium">
@@ -155,11 +208,23 @@ const CartScreen = () => {
 					const displayQty =
 						item.qty !== undefined ? item.qty : item.quantity;
 
+					const isSelected = selectedItems.has(item.id);
+
 					return (
-						<View className="flex-row bg-white mb-4 p-3 rounded-xl border border-gray-100 shadow-sm">
+						<View className={`flex-row bg-white mb-4 p-3 rounded-xl border ${isSelected ? 'border-blue-500' : 'border-gray-100'} shadow-sm`}>
+							{/* Checkbox */}
+							<TouchableOpacity
+								onPress={() => toggleItemSelection(item.id)}
+								className="justify-center mr-3"
+							>
+								<View className={`w-5 h-5 rounded border-2 items-center justify-center ${isSelected ? 'border-blue-600 bg-white' : 'border-gray-300 bg-white'}`}>
+									{isSelected && <Check size={14} color="#2563EB" strokeWidth={3} />}
+								</View>
+							</TouchableOpacity>
+
 							<Image
 								source={{ uri: finalImageUrl }}
-								className="w-24 h-24 rounded-lg bg-gray-50"
+								className="w-20 h-20 rounded-lg bg-gray-50"
 								resizeMode="cover"
 							/>
 							<View className="flex-1 ml-3 justify-between py-1">
@@ -213,9 +278,14 @@ const CartScreen = () => {
 			{/* Bottom Bar */}
 			<View className="absolute bottom-0 w-full p-5 border-t border-gray-100 bg-white shadow-2xl pb-8">
 				<View className="flex-row justify-between mb-4">
-					<Text className="text-gray-500 font-outfit-medium">
-						Total Pembayaran
-					</Text>
+					<View>
+						<Text className="text-gray-500 font-outfit-medium text-sm">
+							Total Pembayaran
+						</Text>
+						<Text className="text-gray-400 text-xs">
+							{selectedItems.size} item dipilih
+						</Text>
+					</View>
 					<Text className="text-xl font-outfit-bold text-blue-600 font-outfit-bold">
 						{formatRupiah(totalPrice)}
 					</Text>
@@ -223,12 +293,12 @@ const CartScreen = () => {
 				<TouchableOpacity
 					onPress={() =>
 						navigation.navigate("Checkout", {
-							items: cartItems,
+							items: selectedCartItems,
 							total: totalPrice,
 						})
 					}
-					disabled={cartItems.length === 0 || totalPrice === 0}
-					className={`py-4 rounded-xl items-center ${cartItems.length === 0
+					disabled={selectedItems.size === 0 || totalPrice === 0}
+					className={`py-4 rounded-xl items-center ${selectedItems.size === 0
 						? "bg-gray-300"
 						: "bg-blue-600 shadow-lg shadow-blue-200"
 						}`}

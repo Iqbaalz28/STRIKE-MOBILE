@@ -49,19 +49,27 @@ export default async function (fastify, options) {
           }
         }
 
-        // 1. Ambil semua item di keranjang user
-        const [cartItems] = await connection.query(
-          `
-                SELECT sc.*, p.price_sale, p.price_rent 
-                FROM shopping_cart sc
-                JOIN products p ON sc.id_product = p.id
-                WHERE sc.id_user = ?
-            `,
-          [userId],
-        );
+        // 1. Ambil item di keranjang user (hanya yang dipilih jika cart_item_ids disediakan)
+        const cart_item_ids = request.body.cart_item_ids; // Array of cart item IDs
+        
+        let cartQuery = `
+              SELECT sc.*, p.price_sale, p.price_rent 
+              FROM shopping_cart sc
+              JOIN products p ON sc.id_product = p.id
+              WHERE sc.id_user = ?
+          `;
+        let cartParams = [userId];
+        
+        // Jika cart_item_ids disediakan, filter hanya item yang dipilih
+        if (cart_item_ids && Array.isArray(cart_item_ids) && cart_item_ids.length > 0) {
+          cartQuery += ` AND sc.id IN (${cart_item_ids.map(() => '?').join(',')})`;
+          cartParams = [...cartParams, ...cart_item_ids];
+        }
+        
+        const [cartItems] = await connection.query(cartQuery, cartParams);
 
         if (cartItems.length === 0) {
-          throw new Error("Keranjang kosong");
+          throw new Error("Keranjang kosong atau tidak ada item yang dipilih");
         }
 
         // 2. Hitung Total Item
@@ -142,10 +150,17 @@ export default async function (fastify, options) {
           );
         }
 
-        // 5. Kosongkan Keranjang
-        await connection.query("DELETE FROM shopping_cart WHERE id_user = ?", [
-          userId,
-        ]);
+        // 5. Hapus hanya item yang dipilih dari Keranjang
+        if (cart_item_ids && Array.isArray(cart_item_ids) && cart_item_ids.length > 0) {
+          // Hapus hanya item yang dipilih
+          await connection.query(
+            `DELETE FROM shopping_cart WHERE id_user = ? AND id IN (${cart_item_ids.map(() => '?').join(',')})`,
+            [userId, ...cart_item_ids]
+          );
+        } else {
+          // Fallback: hapus semua (backward compatibility)
+          await connection.query("DELETE FROM shopping_cart WHERE id_user = ?", [userId]);
+        }
 
         await connection.commit();
         connection.release();
@@ -222,5 +237,64 @@ export default async function (fastify, options) {
           .send({ message: "Gagal mengambil riwayat pesanan" });
       }
     },
+  );
+
+  // GET /orders/:id (Detail Order)
+  fastify.get(
+    "/:id",
+    { onRequest: [fastify.authenticate] },
+    async (request, reply) => {
+      try {
+        const userId = request.user.id;
+        const orderId = request.params.id;
+
+        // Get order header
+        const [orders] = await fastify.db.query(
+          `
+          SELECT 
+            o.*,
+            pm.name as payment_method_name
+          FROM orders o
+          LEFT JOIN payment_methods pm ON o.payment_method = pm.id
+          WHERE o.id = ? AND o.id_user = ?
+          `,
+          [orderId, userId]
+        );
+
+        if (orders.length === 0) {
+          return reply.code(404).send({ message: "Pesanan tidak ditemukan" });
+        }
+
+        const order = orders[0];
+
+        // Get order items with product details
+        const [items] = await fastify.db.query(
+          `
+          SELECT 
+            oi.id,
+            oi.quantity,
+            oi.unit_price,
+            oi.subtotal,
+            oi.transaction_type,
+            p.name,
+            p.img
+          FROM order_items oi
+          JOIN products p ON oi.id_product = p.id
+          WHERE oi.id_order = ?
+          `,
+          [orderId]
+        );
+
+        return {
+          ...order,
+          items: items,
+        };
+      } catch (error) {
+        request.log.error(error);
+        return reply
+          .code(500)
+          .send({ message: "Gagal mengambil detail pesanan" });
+      }
+    }
   );
 }

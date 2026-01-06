@@ -72,8 +72,11 @@ const EditProfileScreen = () => {
 		setShowDatePicker(false);
 		if (selectedDate) {
 			setDatePickerValue(selectedDate);
-			// Format YYYY-MM-DD
-			const dateStr = selectedDate.toISOString().split("T")[0];
+			// Format YYYY-MM-DD using local timezone to prevent date shift
+			const year = selectedDate.getFullYear();
+			const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
+			const day = String(selectedDate.getDate()).padStart(2, "0");
+			const dateStr = `${year}-${month}-${day}`;
 			setForm({ ...form, date_birth: dateStr });
 		}
 	};
@@ -293,12 +296,12 @@ const EditProfileScreen = () => {
 					{saving ? (
 						<ActivityIndicator color="white" />
 					) : (
-						<>
+						<View className="flex-row items-center">
 							<Save size={20} color="white" className="mr-2" />
 							<Text className="text-white font-outfit-bold text-lg">
 								Simpan Perubahan
 							</Text>
-						</>
+						</View>
 					)}
 				</TouchableOpacity>
 			</View>

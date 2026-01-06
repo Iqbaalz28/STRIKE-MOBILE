@@ -41,6 +41,7 @@ const HomeScreen = () => {
 	// State untuk stats
 	const [stats, setStats] = useState({
 		totalBookings: 0,
+		totalOrders: 0, // jumlah transaksi belanja
 		totalShopping: 0, // dalam Rupiah
 	});
 
@@ -66,12 +67,31 @@ const HomeScreen = () => {
 			// 1. Total Booking: count length
 			const totalBook = bookings.length;
 
-			// 2. Total Shopping: sum total_price from orders
-			// Asumsi order punya field `total_price`
-			const totalShop = orders.reduce((acc: number, curr: any) => acc + (curr.total_price || 0), 0);
+			// 2. Total Shopping: sum from orders (total_amount) + bookings (total_price) yang sudah paid
+			const orderTotal = orders.reduce((acc: number, curr: any) => {
+				// Hanya hitung yang sudah dibayar
+				if (curr.payment_status === 'paid') {
+					return acc + Number(curr.total_amount || curr.total_price || 0);
+				}
+				return acc;
+			}, 0);
+
+			const bookingTotal = bookings.reduce((acc: number, curr: any) => {
+				// Hanya hitung booking yang sudah dibayar
+				if (curr.payment_status === 'paid') {
+					return acc + Number(curr.total_price || 0);
+				}
+				return acc;
+			}, 0);
+
+			const totalShop = orderTotal + bookingTotal;
+
+			// 3. Total Orders: count orders yang sudah dibayar
+			const totalOrderCount = orders.filter((o: any) => o.payment_status === 'paid').length;
 
 			setStats({
 				totalBookings: totalBook,
+				totalOrders: totalOrderCount,
 				totalShopping: totalShop,
 			});
 
@@ -98,6 +118,10 @@ const HomeScreen = () => {
 	const getAvatarUrl = () => {
 		if (!userData.avatar_img) return null;
 		if (userData.avatar_img.startsWith("http")) return userData.avatar_img;
+		// Cek apakah path sudah mengandung 'uploads/' atau tidak
+		if (userData.avatar_img.startsWith("uploads/")) {
+			return `${BASE_URL}/${userData.avatar_img}`;
+		}
 		return `${BASE_URL}/uploads/${userData.avatar_img}`;
 	};
 
@@ -165,33 +189,37 @@ const HomeScreen = () => {
 				<View className="px-6 mb-6">
 					<TouchableOpacity
 						onPress={() => navigation.navigate("Membership")}
-						className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-3xl p-6 overflow-hidden"
+						className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-3xl p-5 overflow-hidden"
 						style={{ backgroundColor: "#2563EB" }}
 					>
 						<View className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-white/10" />
 						<View className="absolute -right-4 -bottom-4 w-24 h-24 rounded-full bg-white/5" />
 
-						<View className="flex-row justify-between items-start">
+						{/* Header: Membership & Total Spent */}
+						<View className="flex-row justify-between items-start mb-4">
 							<View>
-								<Text className="text-blue-100 text-sm">Membership</Text>
-								<Text className="text-white text-2xl font-outfit-bold mt-1">
+								<Text className="text-blue-200 text-xs mb-1">Membership</Text>
+								<Text className="text-white text-xl font-outfit-bold">
 									{userData.membership_name || "Standard"}
+								</Text>
+							</View>
+							<View className="items-end">
+								<Text className="text-blue-200 text-xs mb-1">Total Spent</Text>
+								<Text className="text-white text-lg font-outfit-bold">
+									Rp {stats.totalShopping.toLocaleString("id-ID")}
 								</Text>
 							</View>
 						</View>
 
-						<View className="flex-row mt-6 gap-6">
-							<View>
-								<Text className="text-blue-200 text-xs">Total Booking</Text>
-								<Text className="text-white text-xl font-outfit-bold">
-									{stats.totalBookings}
-								</Text>
+						{/* Stats Row - Compact Pills */}
+						<View className="flex-row gap-3 mt-2">
+							<View className="bg-white/15 px-4 py-2 rounded-xl flex-row items-center">
+								<Text className="text-white text-base font-outfit-bold mr-1">{stats.totalBookings}</Text>
+								<Text className="text-blue-200 text-xs">Booking</Text>
 							</View>
-							<View>
-								<Text className="text-blue-200 text-xs">Total Shopping</Text>
-								<Text className="text-white text-xl font-outfit-bold">
-									{formatShortCurrency(stats.totalShopping)}
-								</Text>
+							<View className="bg-white/15 px-4 py-2 rounded-xl flex-row items-center">
+								<Text className="text-white text-base font-outfit-bold mr-1">{stats.totalOrders}</Text>
+								<Text className="text-blue-200 text-xs">Belanja</Text>
 							</View>
 						</View>
 					</TouchableOpacity>

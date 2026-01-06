@@ -21,6 +21,9 @@ import EditProfileScreen from "@/features/profile/EditProfileScreen";
 import AboutScreen from "@/features/profile/AboutScreen";
 import HistoryScreen from "@/features/profile/HistoryScreen";
 import MembershipScreen from "@/features/profile/MembershipScreen";
+import OrderDetailScreen from "@/features/profile/OrderDetailScreen";
+import SavedAddressesScreen from "@/features/profile/SavedAddressesScreen";
+import AddEditAddressScreen from "@/features/profile/AddEditAddressScreen";
 
 // 4. Community
 import CreatePostScreen from "@/features/community/CreatePostScreen";
@@ -116,7 +119,10 @@ const RootNavigator = () => {
 					/>
 					<Stack.Screen name="About" component={AboutScreen} />
 					<Stack.Screen name="History" component={HistoryScreen} />
+					<Stack.Screen name="OrderDetail" component={OrderDetailScreen} />
 					<Stack.Screen name="Membership" component={MembershipScreen} />
+					<Stack.Screen name="SavedAddresses" component={SavedAddressesScreen} />
+					<Stack.Screen name="AddEditAddress" component={AddEditAddressScreen} />
 
 					{/* Community */}
 					<Stack.Screen

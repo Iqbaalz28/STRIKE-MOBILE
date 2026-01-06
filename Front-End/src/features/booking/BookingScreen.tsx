@@ -9,6 +9,7 @@ import {
 	TextInput,
 	Image,
 	Platform,
+	KeyboardAvoidingView,
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -19,6 +20,8 @@ import {
 	CreditCard,
 	Store,
 	Calendar,
+	Building,
+	MapPin,
 } from "lucide-react-native";
 import api from "@/services/api";
 import { getImageUrl } from "@/utils/imageHelper";
@@ -61,7 +64,7 @@ const BookingScreen = () => {
 	const [loadingSpots, setLoadingSpots] = useState(false);
 
 	// Step 3: Pembayaran
-	const [selectedPayment, setSelectedPayment] = useState<"card" | "qris">("card");
+	const [selectedPayment, setSelectedPayment] = useState<"card" | "qris" | "transfer" | "cod">("card");
 	const [cardNumber, setCardNumber] = useState("");
 	const [cardName, setCardName] = useState("");
 	const [expiryDate, setExpiryDate] = useState("");
@@ -105,6 +108,15 @@ const BookingScreen = () => {
 		});
 	};
 
+	// Helper function to format date as YYYY-MM-DD using local timezone
+	// This prevents the date from shifting due to UTC conversion
+	const formatDateString = (date: Date) => {
+		const year = date.getFullYear();
+		const month = String(date.getMonth() + 1).padStart(2, "0");
+		const day = String(date.getDate()).padStart(2, "0");
+		return `${year}-${month}-${day}`;
+	};
+
 	const onDateChange = (event: any, date?: Date) => {
 		if (Platform.OS === "android") {
 			setShowDatePicker(false);
@@ -127,7 +139,7 @@ const BookingScreen = () => {
 	const fetchHourAvailability = async (date: Date) => {
 		setLoadingHours(true);
 		try {
-			const dateString = date.toISOString().split("T")[0];
+			const dateString = formatDateString(date);
 			const res = await api.getHourAvailability(locationId, dateString);
 			// The availability endpoint returns hourly data
 			if (Array.isArray(res.data) && res.data.length > 0 && res.data[0].time) {
@@ -192,7 +204,7 @@ const BookingScreen = () => {
 			// 2. Try to fetch real data with hour filtering
 			try {
 				// Use the selected date and hour for checking availability
-				const dateString = selectedDate.toISOString().split("T")[0];
+				const dateString = formatDateString(selectedDate);
 				// Pass selected hour and duration to get accurate spot availability
 				const res = await api.getLocationSpots(
 					locationId,
@@ -308,14 +320,28 @@ const BookingScreen = () => {
 			const firstName = names[0];
 			const lastName = names.slice(1).join(" ") || names[0]; // Fallback if no last name
 
-			const dateString = selectedDate.toISOString().split("T")[0];
+			const dateString = formatDateString(selectedDate);
 			// Use selected hour for booking start time
 			const hourStr = selectedHour !== null ? selectedHour.toString().padStart(2, "0") : "08";
 			const bookingStart = `${dateString} ${hourStr}:00:00`;
 
 			// Map payment method string to ID
-			// 1: Debit Card, 3: QRIS (based on payment_methods table)
-			const paymentMethodId = selectedPayment === "card" ? 1 : 3;
+			// 1: Debit Card, 2: Bank Transfer, 3: QRIS, 4: COD
+			let paymentMethodId = 1;
+			switch (selectedPayment) {
+				case "card":
+					paymentMethodId = 1;
+					break;
+				case "transfer":
+					paymentMethodId = 2;
+					break;
+				case "qris":
+					paymentMethodId = 3;
+					break;
+				case "cod":
+					paymentMethodId = 4;
+					break;
+			}
 
 			const payload = {
 				id_location: locationId, // Backend expects id_location
@@ -755,7 +781,7 @@ const BookingScreen = () => {
 				{/* QRIS Payment */}
 				<TouchableOpacity
 					onPress={() => setSelectedPayment("qris")}
-					className={`border-2 rounded-xl p-4 flex-row items-center ${selectedPayment === "qris" ? "border-blue-600 bg-blue-50" : "border-gray-200"
+					className={`border-2 rounded-xl p-4 mb-3 flex-row items-center ${selectedPayment === "qris" ? "border-blue-600 bg-blue-50" : "border-gray-200"
 						}`}
 				>
 					<View
@@ -772,6 +798,60 @@ const BookingScreen = () => {
 							}`}
 					>
 						QRIS (Scan & Pay)
+					</Text>
+				</TouchableOpacity>
+
+				{/* Bank Transfer */}
+				<TouchableOpacity
+					onPress={() => setSelectedPayment("transfer")}
+					className={`border-2 rounded-xl p-4 mb-3 flex-row items-center ${selectedPayment === "transfer" ? "border-blue-600 bg-blue-50" : "border-gray-200"
+						}`}
+				>
+					<View
+						className={`w-5 h-5 rounded-full border-2 mr-3 items-center justify-center ${selectedPayment === "transfer" ? "border-blue-600" : "border-gray-300"
+							}`}
+					>
+						{selectedPayment === "transfer" && (
+							<View className="w-3 h-3 rounded-full bg-blue-600" />
+						)}
+					</View>
+					<Building size={24} color={selectedPayment === "transfer" ? "#2563EB" : "#6B7280"} />
+					<Text
+						className={`ml-3 font-outfit-medium ${selectedPayment === "transfer" ? "text-blue-600" : "text-gray-700"
+							}`}
+					>
+						Bank Transfer (VA)
+					</Text>
+					<View className="ml-auto flex-row gap-1">
+						<View className="bg-gray-200 px-2 py-1 rounded">
+							<Text className="text-xs font-outfit-bold">BCA</Text>
+						</View>
+						<View className="bg-gray-200 px-2 py-1 rounded">
+							<Text className="text-xs font-outfit-bold">BRI</Text>
+						</View>
+					</View>
+				</TouchableOpacity>
+
+				{/* COD - Bayar di Lokasi */}
+				<TouchableOpacity
+					onPress={() => setSelectedPayment("cod")}
+					className={`border-2 rounded-xl p-4 flex-row items-center ${selectedPayment === "cod" ? "border-blue-600 bg-blue-50" : "border-gray-200"
+						}`}
+				>
+					<View
+						className={`w-5 h-5 rounded-full border-2 mr-3 items-center justify-center ${selectedPayment === "cod" ? "border-blue-600" : "border-gray-300"
+							}`}
+					>
+						{selectedPayment === "cod" && (
+							<View className="w-3 h-3 rounded-full bg-blue-600" />
+						)}
+					</View>
+					<MapPin size={24} color={selectedPayment === "cod" ? "#2563EB" : "#6B7280"} />
+					<Text
+						className={`ml-3 font-outfit-medium ${selectedPayment === "cod" ? "text-blue-600" : "text-gray-700"
+							}`}
+					>
+						Bayar di Lokasi
 					</Text>
 				</TouchableOpacity>
 			</View>
@@ -823,6 +903,39 @@ const BookingScreen = () => {
 								secureTextEntry
 								className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900"
 							/>
+						</View>
+					</View>
+				</View>
+			)}
+
+			{/* QRIS QR Code - Only show if QRIS selected */}
+			{selectedPayment === "qris" && (
+				<View className="mb-6 bg-white rounded-2xl p-6 border border-gray-100 items-center">
+					<Text className="text-gray-900 font-outfit-bold text-lg mb-4">
+						Scan QR Code untuk Membayar
+					</Text>
+					<Image
+						source={{
+							uri: "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=StrikeItBookingPayment",
+						}}
+						className="w-48 h-48 mb-4"
+						resizeMode="contain"
+					/>
+					<Text className="text-gray-500 text-sm text-center">
+						Gunakan aplikasi e-wallet atau mobile banking{"\n"}untuk scan kode QR di atas
+					</Text>
+					<View className="flex-row gap-2 mt-4">
+						<View className="bg-gray-100 px-3 py-1 rounded-full">
+							<Text className="text-xs text-gray-600">GoPay</Text>
+						</View>
+						<View className="bg-gray-100 px-3 py-1 rounded-full">
+							<Text className="text-xs text-gray-600">OVO</Text>
+						</View>
+						<View className="bg-gray-100 px-3 py-1 rounded-full">
+							<Text className="text-xs text-gray-600">DANA</Text>
+						</View>
+						<View className="bg-gray-100 px-3 py-1 rounded-full">
+							<Text className="text-xs text-gray-600">ShopeePay</Text>
 						</View>
 					</View>
 				</View>
@@ -894,7 +1007,10 @@ const BookingScreen = () => {
 	);
 
 	return (
-		<View className="flex-1 bg-gray-50">
+		<KeyboardAvoidingView
+			behavior={Platform.OS === "ios" ? "padding" : "height"}
+			className="flex-1 bg-gray-50"
+		>
 			{/* Header */}
 			<View className="bg-white pt-12 pb-4 px-5 border-b border-gray-100">
 				<View className="flex-row items-center mb-4">
@@ -983,7 +1099,7 @@ const BookingScreen = () => {
 					</TouchableOpacity>
 				)}
 			</View>
-		</View>
+		</KeyboardAvoidingView>
 	);
 };
 

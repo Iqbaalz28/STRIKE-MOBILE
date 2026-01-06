@@ -242,7 +242,7 @@ const ProfileScreen = () => {
 							icon={MapPin}
 							color="#F59E0B"
 							label="Alamat Tersimpan"
-							onPress={() => { }} // Placeholder
+							onPress={() => navigation.navigate("SavedAddresses")}
 						/>
 					</View>
 

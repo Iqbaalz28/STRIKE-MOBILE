@@ -90,7 +90,7 @@ export default async function (fastify, options) {
       const [rows] = await fastify.db.query(
         `
                 SELECT 
-                    c.id, c.content, c.created_at,
+                    c.id, c.content, c.created_at, c.parent_id,
                     u.name as author_name, u.avatar_img as author_avatar
                 FROM post_comments c
                 JOIN users u ON c.id_user = u.id
@@ -113,7 +113,7 @@ export default async function (fastify, options) {
       try {
         const userId = request.user.id;
         const postId = request.params.id;
-        const { content } = request.body;
+        const { content, parent_id } = request.body;
 
         if (!content)
           return reply
@@ -123,10 +123,10 @@ export default async function (fastify, options) {
         // Insert Comment
         await fastify.db.query(
           `
-                INSERT INTO post_comments (id_post, id_user, content, created_at)
-                VALUES (?, ?, ?, NOW())
+                INSERT INTO post_comments (id_post, id_user, content, created_at, parent_id)
+                VALUES (?, ?, ?, NOW(), ?)
             `,
-          [postId, userId, content],
+          [postId, userId, content, parent_id || null],
         );
 
         // Update Reply Count di tabel Post
@@ -144,6 +144,18 @@ export default async function (fastify, options) {
       }
     },
   );
+
+  // --- MIGRATION ROUTE (TEMPORARY) ---
+  fastify.get("/migrate-add-parent-id", async (req, reply) => {
+    try {
+      await fastify.db.query(
+        "ALTER TABLE post_comments ADD COLUMN parent_id INT DEFAULT NULL"
+      );
+      return { message: "Kolom parent_id berhasil ditambahkan ke post_comments" };
+    } catch (error) {
+      return { message: "Kolom parent_id mungkin sudah ada", error: error.message };
+    }
+  });
   fastify.post(
     "/posts/:id/like",
     { onRequest: [fastify.authenticate] },

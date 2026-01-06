@@ -262,4 +262,12 @@ export default {
 	updatePaymentMethod(id_payment_method: number | string) {
 		return api.put("/users/me", { id_payment_method });
 	},
+
+	// --- ORDER & BOOKING DETAILS ---
+	getOrderDetail(orderId: number | string) {
+		return api.get(`/orders/${orderId}`);
+	},
+	getBookingDetail(bookingId: number | string) {
+		return api.get(`/bookings/${bookingId}`);
+	},
 };

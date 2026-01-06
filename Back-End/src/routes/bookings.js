@@ -181,4 +181,46 @@ export default async function (fastify, options) {
       }
     },
   );
+
+  // 3. GET Booking Detail by ID
+  // URL: GET /bookings/:id
+  fastify.get(
+    "/:id",
+    { onRequest: [fastify.authenticate] },
+    async (request, reply) => {
+      try {
+        const userId = request.user.id;
+        const bookingId = request.params.id;
+
+        const [rows] = await fastify.db.query(
+          `
+          SELECT 
+            b.*,
+            l.name as location_name,
+            l.city,
+            l.address,
+            l.img as location_img,
+            l.price_per_hour,
+            pm.name as payment_method_name
+          FROM bookings b
+          JOIN locations l ON b.id_location = l.id
+          LEFT JOIN payment_methods pm ON b.payment_method = pm.id
+          WHERE b.id = ? AND b.id_user = ?
+          `,
+          [bookingId, userId]
+        );
+
+        if (rows.length === 0) {
+          return reply.code(404).send({ message: "Booking tidak ditemukan" });
+        }
+
+        return rows[0];
+      } catch (error) {
+        request.log.error(error);
+        return reply
+          .code(500)
+          .send({ message: "Gagal mengambil detail booking" });
+      }
+    }
+  );
 }

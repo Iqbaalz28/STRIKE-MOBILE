@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, TextInput, Alert } from "react-native";
-import { Calendar, ShoppingBag, MapPin, Star, MessageSquare, ChevronDown, ChevronUp } from "lucide-react-native";
+import { Calendar, ShoppingBag, MapPin, Star, MessageSquare, ChevronDown, ChevronUp, ChevronRight } from "lucide-react-native";
+import { useNavigation } from "@react-navigation/native";
 import api from "@/services/api";
 
 interface HistoryItem {
@@ -21,6 +22,7 @@ interface HistoryCardProps {
 }
 
 const HistoryCard = ({ item, onReviewSubmitted }: HistoryCardProps) => {
+	const navigation = useNavigation<any>();
 	const [showReviewForm, setShowReviewForm] = useState(false);
 	const [rating, setRating] = useState(0);
 	const [reviewText, setReviewText] = useState("");
@@ -76,6 +78,13 @@ const HistoryCard = ({ item, onReviewSubmitted }: HistoryCardProps) => {
 	const statusStyle = getStatusStyle(item.status);
 	const canShowReview = statusStyle.canReview && !item.hasReviewed;
 
+	const handleCardPress = () => {
+		navigation.navigate("OrderDetail", {
+			orderId: item.originalId || item.id,
+			type: item.type,
+		});
+	};
+
 	const handleSubmitReview = async () => {
 		if (rating === 0) {
 			Alert.alert("Rating Diperlukan", "Silakan pilih rating bintang terlebih dahulu.");
@@ -113,7 +122,11 @@ const HistoryCard = ({ item, onReviewSubmitted }: HistoryCardProps) => {
 	};
 
 	return (
-		<View className="bg-white rounded-xl p-4 mb-4 border border-gray-100 shadow-sm">
+		<TouchableOpacity
+			onPress={handleCardPress}
+			activeOpacity={0.7}
+			className="bg-white rounded-xl p-4 mb-4 border border-gray-100 shadow-sm"
+		>
 			<View className="flex-row justify-between items-start mb-2">
 				<View className="flex-row items-center gap-2 flex-1">
 					<View
@@ -240,7 +253,7 @@ const HistoryCard = ({ item, onReviewSubmitted }: HistoryCardProps) => {
 					</TouchableOpacity>
 				</View>
 			)}
-		</View>
+		</TouchableOpacity>
 	);
 };
 
