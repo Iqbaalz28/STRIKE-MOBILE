@@ -28,8 +28,6 @@ export default async function (fastify, options) {
                     u.name, 
                     u.email, 
                     u.bio, 
-                    u.address,
-                    u.phone,
                     u.avatar_img, 
                     u.date_birth,
                     u.id_payment_method,
@@ -54,15 +52,15 @@ export default async function (fastify, options) {
 
         // --- CALCULATION FOR GAMIFICATION ---
         const [bookingStats] = await fastify.db.query(
-            `SELECT COUNT(*) as booking_count, SUM(total_price) as total_spent 
+          `SELECT COUNT(*) as booking_count, SUM(total_price) as total_spent 
              FROM bookings 
              WHERE id_user = ? AND status = 'completed'`,
-            [userId]
+          [userId]
         );
 
         const bookingCount = bookingStats[0].booking_count || 0;
         const totalSpent = Number(bookingStats[0].total_spent) || 0;
-        
+
         // Logic Points: misal 1 point per 10.000 rupiah
         const points = Math.floor(totalSpent / 10000);
 
@@ -76,11 +74,11 @@ export default async function (fastify, options) {
         if (mName.includes("jawara")) level = 3;
 
         return {
-            ...user,
-            // Return calculated stats
-            booking_count: bookingCount,
-            points: points,
-            level: level
+          ...user,
+          // Return calculated stats
+          booking_count: bookingCount,
+          points: points,
+          level: level
         };
       } catch (error) {
         request.log.error(error);
@@ -98,7 +96,7 @@ export default async function (fastify, options) {
       try {
         const userId = request.user.id;
         // Ambil semua kemungkinan field yang dikirim frontend
-        const { name, bio, date_birth, avatar_img, id_payment_method, phone, address } =
+        const { name, bio, date_birth, avatar_img, id_payment_method } =
           request.body;
 
         // Validasi tanggal kosong jadi null
@@ -113,12 +111,10 @@ export default async function (fastify, options) {
                     bio = COALESCE(?, bio), 
                     date_birth = COALESCE(?, date_birth),
                     avatar_img = COALESCE(?, avatar_img),
-                    id_payment_method = COALESCE(?, id_payment_method),
-                    phone = COALESCE(?, phone),
-                    address = COALESCE(?, address)
+                    id_payment_method = COALESCE(?, id_payment_method)
                 WHERE id = ?
             `,
-          [name, bio, validDate, avatar_img, id_payment_method, phone, address, userId],
+          [name, bio, validDate, avatar_img, id_payment_method, userId],
         );
 
         return { message: "Profil berhasil diperbarui" };

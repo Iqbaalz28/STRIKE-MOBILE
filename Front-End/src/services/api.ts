@@ -17,13 +17,13 @@ import { resetToLogin } from "@/navigation/navigationRef";
 const getDeviceIP = () => {
   const debuggerHost = Constants.expoConfig?.hostUri;
   if (debuggerHost) {
-    const host = debuggerHost.split(":")[0];
-    return `http://${host}:3000`;
+	const host = debuggerHost.split(":")[0];
+	return `http://${host}:3000`;
   }
   // Fallback: Android Emulator pakai 10.0.2.2, iOS/Web pakai localhost
   return Platform.OS === "android"
-    ? "http://10.0.2.2:3000"
-    : "http://localhost:3000";
+	? "http://10.0.2.2:3000"
+	: "http://localhost:3000";
 };
 export const BASE_URL = getDeviceIP();
 */
@@ -42,6 +42,7 @@ const api = axios.create({
 	baseURL: BASE_URL,
 	headers: {
 		"Content-Type": "application/json",
+		"ngrok-skip-browser-warning": "true", // Skip ngrok interstitial page
 	},
 	timeout: 60000, // Timeout 60 detik
 });
