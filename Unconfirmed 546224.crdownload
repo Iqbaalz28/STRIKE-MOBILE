@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 06, 2026 at 10:37 PM
+-- Generation Time: Jan 07, 2026 at 10:39 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -127,7 +127,7 @@ CREATE TABLE `community_posts` (
 
 INSERT INTO `community_posts` (`id`, `id_user`, `title`, `body`, `category`, `img`, `likes_count`, `reply_count`, `views_count`, `created_at`) VALUES
 (3, 12, 'Mancing Keributan', 'Kenapa zombie kalo nyerang suka rame-rame? karena kalo sendiri zomblo xixixixi\r\n', 'general', 'uploads/avatar-1767722523852.jpg', 1, 3, 20, '2026-01-06 18:02:04'),
-(4, 14, 'Dark Joke', 'mie-mie apa yang banjir? mie aceh awokawok', 'general', 'uploads/avatar-1767728934649.jpg', 0, 0, 5, '2026-01-06 19:48:54');
+(4, 14, 'Dark Joke', 'mie-mie apa yang banjir? mie aceh awokawok', 'general', 'uploads/avatar-1767728934649.jpg', 0, 4, 12, '2026-01-06 19:48:54');
 
 -- --------------------------------------------------------
 
@@ -551,7 +551,11 @@ CREATE TABLE `post_comments` (
 INSERT INTO `post_comments` (`id`, `id_post`, `id_user`, `content`, `likes_count`, `created_at`) VALUES
 (3, 3, 14, 'mang eak?', 0, '2026-01-06 19:46:36'),
 (4, 3, 15, '@Bintang Fajar Putra Pamungkas brisik lu', 0, '2026-01-06 21:24:02'),
-(5, 3, 15, 'iya aseli', 0, '2026-01-06 21:33:59');
+(5, 3, 15, 'iya aseli', 0, '2026-01-06 21:33:59'),
+(6, 4, 15, 'tragedi mie aceh', 0, '2026-01-07 05:29:45'),
+(7, 4, 12, 'ga respect', 0, '2026-01-07 05:30:25'),
+(8, 4, 12, 'parah sih', 0, '2026-01-07 05:30:40'),
+(9, 4, 16, 'awowkwokaokw', 0, '2026-01-07 05:33:46');
 
 -- --------------------------------------------------------
 
@@ -758,7 +762,8 @@ INSERT INTO `users` (`id`, `name`, `email`, `google_id`, `password`, `bio`, `ava
 (10, 'Andi Pratama', 'andi.review@test.com', NULL, '12345', 'Casting lover', 'https://randomuser.me/api/portraits/men/11.jpg', NULL, 1, 1, '2025-11-25 06:44:27'),
 (12, 'Iqbal Rizky Maulana', 'bale@gmail.com', NULL, '$2b$10$U21fBhZ9JqbCX1A7Q7xz7O0XFbJthmR2qyDd4K9n5jNVSpZbrVBSm', 'Jago Mancing', 'uploads/avatar-1767594259487.jpg', '2005-01-27', NULL, 2, '2026-01-04 21:31:51'),
 (14, 'Bintang Fajar Putra Pamungkas', 'bintang@gmail.com', NULL, '$2b$10$w3sL48xKEPCpvsq5/PCEGOMjJ4h6FybGY6VcPH..VN6.2N2c1B.NS', '\n', 'uploads/avatar-1767728784277.jpg', NULL, NULL, 2, '2026-01-06 19:45:39'),
-(15, 'Dzaka ', 'jokow@gmail.com', NULL, '$2b$10$1beEUZgihx3ktbnXSH4Jtu8P2rQYecsw7FHcrs2EUpm6HA5VtF1Uq', '', 'uploads/avatar-1767729342414.jpg', NULL, NULL, 2, '2026-01-06 19:54:33');
+(15, 'Dzaka ', 'jokow@gmail.com', NULL, '$2b$10$1beEUZgihx3ktbnXSH4Jtu8P2rQYecsw7FHcrs2EUpm6HA5VtF1Uq', '', 'uploads/avatar-1767729342414.jpg', NULL, NULL, 2, '2026-01-06 19:54:33'),
+(16, 'Azka Pengocok Handal', 'azka@gmail.com', NULL, '$2b$10$wPQSNpM1MwXsIyDD0F/OMOu9IpST7/fiUEkoYVr7RjeTnyuF/F/cS', '', 'uploads/avatar-1767763976866.jpg', NULL, NULL, 2, '2026-01-07 05:32:24');
 
 --
 -- Indexes for dumped tables
@@ -1017,7 +1022,7 @@ ALTER TABLE `payment_methods`
 -- AUTO_INCREMENT for table `post_comments`
 --
 ALTER TABLE `post_comments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `post_likes`
@@ -1053,7 +1058,7 @@ ALTER TABLE `shopping_cart`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- Constraints for dumped tables
