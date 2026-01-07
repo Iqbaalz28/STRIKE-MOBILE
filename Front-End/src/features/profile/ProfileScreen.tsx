@@ -235,7 +235,7 @@ const ProfileScreen = () => {
 							color="#10B981"
 							label="Metode Pembayaran"
 							value={user?.payment_method_name}
-							onPress={() => { }} // Placeholder functionality
+							onPress={() => navigation.navigate("PaymentMethods")}
 						/>
 						<Divider />
 						<MenuItem

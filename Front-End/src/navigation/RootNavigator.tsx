@@ -24,6 +24,8 @@ import MembershipScreen from "@/features/profile/MembershipScreen";
 import OrderDetailScreen from "@/features/profile/OrderDetailScreen";
 import SavedAddressesScreen from "@/features/profile/SavedAddressesScreen";
 import AddEditAddressScreen from "@/features/profile/AddEditAddressScreen";
+import PaymentMethodsScreen from "@/features/profile/PaymentMethodsScreen";
+import AddPaymentMethodScreen from "@/features/profile/AddPaymentMethodScreen";
 
 // 4. Community
 import CreatePostScreen from "@/features/community/CreatePostScreen";
@@ -126,6 +128,8 @@ const RootNavigator = () => {
 					<Stack.Screen name="Membership" component={MembershipScreen} />
 					<Stack.Screen name="SavedAddresses" component={SavedAddressesScreen} />
 					<Stack.Screen name="AddEditAddress" component={AddEditAddressScreen} />
+					<Stack.Screen name="PaymentMethods" component={PaymentMethodsScreen} />
+					<Stack.Screen name="AddPaymentMethod" component={AddPaymentMethodScreen} />
 
 					{/* Community */}
 					<Stack.Screen

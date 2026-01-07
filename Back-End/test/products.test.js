@@ -26,7 +26,8 @@ describe("Products Route — GET /products", () => {
     const res = await request(fastify.server).get("/products");
 
     expect(res.statusCode).toBe(200);
-    expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body[0].name).toBe("Joran Shimano FX");
+    expect(res.body).toHaveProperty("data");
+    expect(Array.isArray(res.body.data)).toBe(true);
+    expect(res.body.data[0].name).toBe("Joran Shimano FX");
   });
 });

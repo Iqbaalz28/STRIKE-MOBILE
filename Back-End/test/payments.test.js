@@ -27,7 +27,7 @@ describe("Payments Route — GET /payment-methods", () => {
       [], // <--- fields (dummy)
     ]);
 
-    const res = await request(fastify.server).get("/payment-methods");
+    const res = await request(fastify.server).get("/references/payment-methods");
 
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);

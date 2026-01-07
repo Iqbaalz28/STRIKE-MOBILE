@@ -474,7 +474,36 @@ const BookingScreen = () => {
 								<TouchableOpacity
 									key={hour}
 									disabled={isFull}
-									onPress={() => setSelectedHour(hour)}
+									onPress={() => {
+										// Validate: check if all hours in duration exist and are available
+										for (let i = 0; i < duration; i++) {
+											const checkHour = hour + i;
+											const checkSlot = hourAvailability.find(h => {
+												const hTime = h.hour !== undefined ? h.hour : parseInt(h.time.split(":")[0]);
+												return hTime === checkHour;
+											});
+
+											// If slot doesn't exist (shop closed at that hour)
+											if (!checkSlot) {
+												Alert.alert(
+													"Jam Tidak Tersedia",
+													`Booking ${duration} jam mulai pukul ${hour.toString().padStart(2, "0")}:00 tidak bisa karena lokasi tutup jam ${checkHour.toString().padStart(2, "0")}:00. Silakan pilih jam yang lebih awal atau kurangi durasi.`
+												);
+												return;
+											}
+
+											// If slot is full
+											if (checkSlot.is_full) {
+												Alert.alert(
+													"Jadwal Konflik",
+													`Jam ${checkHour.toString().padStart(2, "0")}:00 sudah penuh. Silakan pilih jam lain.`
+												);
+												return;
+											}
+										}
+
+										setSelectedHour(hour);
+									}}
 									className={`px-4 py-3 rounded-xl border-2 min-w-[70px] items-center ${isFull
 										? "bg-red-100 border-red-200 opacity-50"
 										: isInRange
