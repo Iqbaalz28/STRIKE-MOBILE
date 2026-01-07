@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 05, 2026 at 11:08 AM
+-- Generation Time: Jan 06, 2026 at 10:37 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -60,7 +60,12 @@ INSERT INTO `bookings` (`id`, `id_user`, `id_location`, `first_name`, `last_name
 (4, 7, 2, NULL, NULL, NULL, NULL, 'B5', '2025-11-20', '2025-11-25 13:44:27', '2025-11-25 13:44:27', 4, 80000.00, 'completed', 'paid', 1, '2025-11-25 06:44:27', 'INV-REV-002', 0.00),
 (5, 8, 3, NULL, NULL, NULL, NULL, 'L2', '2025-11-23', '2025-11-25 13:44:27', '2025-11-25 13:44:27', 2, 50000.00, 'completed', 'paid', 1, '2025-11-25 06:44:27', 'INV-REV-003', 0.00),
 (6, 9, 4, NULL, NULL, NULL, NULL, 'R1', '2025-11-24', '2025-11-25 13:44:27', '2025-11-25 13:44:27', 5, 150000.00, 'completed', 'paid', 1, '2025-11-25 06:44:27', 'INV-REV-004', 0.00),
-(7, 10, 5, NULL, NULL, NULL, NULL, 'T5', '2025-11-05', '2025-11-25 13:44:27', '2025-11-25 13:44:27', 2, 36000.00, 'completed', 'paid', 1, '2025-11-25 06:44:27', 'INV-REV-005', 0.00);
+(7, 10, 5, NULL, NULL, NULL, NULL, 'T5', '2025-11-05', '2025-11-25 13:44:27', '2025-11-25 13:44:27', 2, 36000.00, 'completed', 'paid', 1, '2025-11-25 06:44:27', 'INV-REV-005', 0.00),
+(8, 12, 2, 'Iqbal', 'Rizky Maulana', NULL, '088808101315', 'C5', '2026-01-06', '2026-01-06 08:00:00', '2026-01-06 03:00:00', 2, 38000.00, 'completed', 'paid', 3, '2026-01-06 17:32:47', 'INV-1767720767678', 4000.00),
+(9, 14, 1, 'Bintang', 'Fajar Putra Pamungkas', NULL, '088899997777', 'B4', '2026-01-07', '2026-01-07 13:00:00', '2026-01-07 08:00:00', 2, 33000.00, 'completed', 'paid', 3, '2026-01-06 19:50:11', 'INV-1767729011415', 3000.00),
+(10, 15, 2, 'Dzaka', 'Dzaka', NULL, '088855552222', 'A5', '2026-01-05', '2026-01-05 08:00:00', '2026-01-05 03:00:00', 2, 44000.00, 'completed', 'paid', 1, '2026-01-06 19:57:22', 'INV-1767729442796', 4000.00),
+(12, 15, 2, 'Dzaka', 'Dzaka', NULL, '088855552222', 'C3', '2026-01-07', '2026-01-07 08:00:00', '2026-01-07 03:00:00', 2, 38000.00, 'completed', 'paid', 3, '2026-01-06 20:21:55', 'INV-1767730915315', 4000.00),
+(13, 15, 1, 'Dzaka', 'Dzaka', NULL, '088855552222', 'B3', '2026-01-07', '2026-01-07 09:00:00', '2026-01-07 06:00:00', 4, 57000.00, 'completed', 'paid', 3, '2026-01-06 20:39:15', 'INV-1767731955838', 6000.00);
 
 -- --------------------------------------------------------
 
@@ -109,6 +114,7 @@ CREATE TABLE `community_posts` (
   `title` varchar(100) DEFAULT NULL,
   `body` text DEFAULT NULL,
   `category` enum('general','review','event','discussion','umpan','piranti','laporan mancing','tips & trik') DEFAULT NULL,
+  `img` varchar(255) DEFAULT NULL,
   `likes_count` int(11) DEFAULT 0,
   `reply_count` int(11) DEFAULT 0,
   `views_count` int(11) DEFAULT 0,
@@ -119,9 +125,9 @@ CREATE TABLE `community_posts` (
 -- Dumping data for table `community_posts`
 --
 
-INSERT INTO `community_posts` (`id`, `id_user`, `title`, `body`, `category`, `likes_count`, `reply_count`, `views_count`, `created_at`) VALUES
-(1, 1, 'Umpan putih andalan?', 'Mohon pencerahannya suhu...', 'umpan', 0, 0, 1, '2025-11-25 06:44:27'),
-(2, 2, 'Laporan mancing di Situ Rawa Indah', 'Hasil tangkapan lumayan...', 'laporan mancing', 0, 0, 0, '2025-11-25 06:44:27');
+INSERT INTO `community_posts` (`id`, `id_user`, `title`, `body`, `category`, `img`, `likes_count`, `reply_count`, `views_count`, `created_at`) VALUES
+(3, 12, 'Mancing Keributan', 'Kenapa zombie kalo nyerang suka rame-rame? karena kalo sendiri zomblo xixixixi\r\n', 'general', 'uploads/avatar-1767722523852.jpg', 1, 3, 20, '2026-01-06 18:02:04'),
+(4, 14, 'Dark Joke', 'mie-mie apa yang banjir? mie aceh awokawok', 'general', 'uploads/avatar-1767728934649.jpg', 0, 0, 5, '2026-01-06 19:48:54');
 
 -- --------------------------------------------------------
 
@@ -143,8 +149,8 @@ CREATE TABLE `discounts` (
 
 INSERT INTO `discounts` (`id`, `discount_value`, `code`, `used_count`, `max_usage`) VALUES
 (1, '15%', 'AASNAAD998', 122, 130),
-(2, '15%', 'ASD12229SDA', 122, 130),
-(3, '15%', 'ADAD9988', 122, 130);
+(2, '15%', 'ASD12229SDA', 126, 130),
+(3, '15%', 'ADAD9988', 125, 130);
 
 -- --------------------------------------------------------
 
@@ -269,7 +275,9 @@ INSERT INTO `location_reviews` (`id`, `id_user`, `id_location`, `id_booking`, `c
 (4, 7, 2, 4, 'Suasananya sejuk banget. Ikannya besar-besar (babon), tarikannya mantap! Cuma parkiran mobil agak sempit kalau weekend.', 4, NULL, '2025-11-25 06:44:27'),
 (5, 8, 3, 5, 'Pelayanan ramah, saungnya nyaman buat ngopi sambil nunggu strike. Cocok buat yang mau mancing santai.', 5, NULL, '2025-11-25 06:44:27'),
 (6, 9, 4, 6, 'Tempatnya benar-benar alami dan tenang. Jauh dari kebisingan kota. Akses jalan masuk agak berbatu tapi terbayar dengan suasananya.', 5, NULL, '2025-11-25 06:44:27'),
-(7, 10, 5, 7, 'Harga tiket masuk terjangkau. Kolamnya luas, lapaknya juga berjarak jadi nggak sempit-sempitan. Sayang kantinnya tutup pas saya datang.', 4, NULL, '2025-11-25 06:44:27');
+(7, 10, 5, 7, 'Harga tiket masuk terjangkau. Kolamnya luas, lapaknya juga berjarak jadi nggak sempit-sempitan. Sayang kantinnya tutup pas saya datang.', 4, NULL, '2025-11-25 06:44:27'),
+(8, 12, 2, 8, '', 4, NULL, '2026-01-06 18:06:39'),
+(9, 15, 2, 10, 'Tempatnya enak dan sejuk\n', 4, NULL, '2026-01-06 20:15:43');
 
 -- --------------------------------------------------------
 
@@ -462,7 +470,11 @@ CREATE TABLE `orders` (
 --
 
 INSERT INTO `orders` (`id`, `id_user`, `order_number`, `total_amount`, `shipping_cost`, `shipping_address`, `status`, `payment_status`, `created_at`, `tax_amount`, `discount_amount`, `notes`, `payment_method`) VALUES
-(1, 12, 'ORD-1767601531395', 1954000.00, 0.00, 'Jl. Setiabudi No. 193, Gegerkalong, Sukasari, Kota Bandung, Jawa Barat 40153', 'pending', 'unpaid', '2026-01-05 08:25:31', 0.00, 0.00, NULL, NULL);
+(1, 12, 'ORD-1767601531395', 1954000.00, 0.00, 'Jl. Setiabudi No. 193, Gegerkalong, Sukasari, Kota Bandung, Jawa Barat 40153', 'delivered', 'paid', '2026-01-05 08:25:31', 0.00, 0.00, NULL, NULL),
+(3, 12, 'ORD-1767727448707', 37000.00, 20000.00, 'Jl. Setiabudi , Bandung, Jawa Barat, 40175', 'delivered', 'paid', '2026-01-06 19:24:08', 0.00, 3000.00, '', 2),
+(4, 12, 'ORD-1767727557899', 41250.00, 20000.00, 'Jl. Setiabudi, Bandung, Jawa Barat, 40175', 'delivered', 'paid', '2026-01-06 19:25:57', 0.00, 3750.00, '', 3),
+(5, 15, 'ORD-1767730523101', 1422500.00, 20000.00, 'Jl. Dr. Setiabudi, Bandung, Jawa Barat, 40175', 'delivered', 'paid', '2026-01-06 20:15:23', 0.00, 247500.00, '', 2),
+(6, 15, 'ORD-1767734091570', 40000.00, 20000.00, 'Jl. Dr Setiabudi, Bandung, Jawa Barat, 40175', 'pending', 'unpaid', '2026-01-06 21:14:51', 0.00, 0.00, '', 2);
 
 -- --------------------------------------------------------
 
@@ -487,7 +499,14 @@ CREATE TABLE `order_items` (
 INSERT INTO `order_items` (`id`, `id_order`, `id_product`, `quantity`, `unit_price`, `subtotal`, `transaction_type`) VALUES
 (1, 1, 1, 1, 489000.00, 489000.00, 'beli'),
 (2, 1, 21, 1, 1450000.00, 1450000.00, 'beli'),
-(3, 1, 36, 1, 15000.00, 15000.00, 'beli');
+(3, 1, 36, 1, 15000.00, 15000.00, 'beli'),
+(8, 3, 41, 1, 20000.00, 20000.00, 'beli'),
+(9, 4, 37, 1, 25000.00, 25000.00, 'beli'),
+(10, 5, 5, 1, 675000.00, 675000.00, 'beli'),
+(11, 5, 18, 1, 950000.00, 950000.00, 'beli'),
+(12, 5, 41, 1, 20000.00, 20000.00, 'beli'),
+(13, 5, 31, 1, 5000.00, 5000.00, 'beli'),
+(14, 6, 41, 1, 20000.00, 20000.00, 'beli');
 
 -- --------------------------------------------------------
 
@@ -525,6 +544,15 @@ CREATE TABLE `post_comments` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `post_comments`
+--
+
+INSERT INTO `post_comments` (`id`, `id_post`, `id_user`, `content`, `likes_count`, `created_at`) VALUES
+(3, 3, 14, 'mang eak?', 0, '2026-01-06 19:46:36'),
+(4, 3, 15, '@Bintang Fajar Putra Pamungkas brisik lu', 0, '2026-01-06 21:24:02'),
+(5, 3, 15, 'iya aseli', 0, '2026-01-06 21:33:59');
+
 -- --------------------------------------------------------
 
 --
@@ -537,6 +565,13 @@ CREATE TABLE `post_likes` (
   `id_user` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `post_likes`
+--
+
+INSERT INTO `post_likes` (`id`, `id_post`, `id_user`, `created_at`) VALUES
+(2, 3, 14, '2026-01-06 19:48:58');
 
 -- --------------------------------------------------------
 
@@ -652,6 +687,14 @@ CREATE TABLE `product_reviews` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `product_reviews`
+--
+
+INSERT INTO `product_reviews` (`id`, `id_user`, `id_product`, `id_order_item`, `comment`, `rating`, `img`, `created_at`) VALUES
+(1, 12, 1, 1, 'Barangnya oke bgt\n', 4, NULL, '2026-01-06 17:27:54'),
+(2, 15, 5, 10, 'Barang bagus, kualitas ga main main\n', 5, NULL, '2026-01-06 20:17:04');
+
 -- --------------------------------------------------------
 
 --
@@ -672,10 +715,11 @@ CREATE TABLE `shopping_cart` (
 --
 
 INSERT INTO `shopping_cart` (`id`, `id_user`, `id_product`, `quantity`, `transaction_type`, `created_at`) VALUES
-(4, 12, 5, 1, 'beli', '2026-01-05 08:25:50'),
-(5, 12, 27, 1, 'beli', '2026-01-05 08:26:03'),
-(6, 12, 41, 1, 'beli', '2026-01-05 08:26:08'),
-(7, 12, 34, 1, 'beli', '2026-01-05 08:26:15');
+(9, 12, 8, 1, 'beli', '2026-01-06 19:22:51'),
+(10, 12, 17, 1, 'beli', '2026-01-06 19:22:58'),
+(18, 15, 6, 1, 'beli', '2026-01-06 21:21:31'),
+(19, 15, 17, 1, 'beli', '2026-01-06 21:21:42'),
+(20, 15, 41, 1, 'beli', '2026-01-06 21:21:49');
 
 -- --------------------------------------------------------
 
@@ -712,9 +756,9 @@ INSERT INTO `users` (`id`, `name`, `email`, `google_id`, `password`, `bio`, `ava
 (8, 'Rudi Hermawan', 'rudi.review@test.com', NULL, '12345', 'Mancing mania mantap', 'https://randomuser.me/api/portraits/men/85.jpg', NULL, 1, 2, '2025-11-25 06:44:27'),
 (9, 'Dewi Sartika', 'dewi.review@test.com', NULL, '12345', 'Healing fishing', 'https://randomuser.me/api/portraits/women/68.jpg', NULL, 1, 1, '2025-11-25 06:44:27'),
 (10, 'Andi Pratama', 'andi.review@test.com', NULL, '12345', 'Casting lover', 'https://randomuser.me/api/portraits/men/11.jpg', NULL, 1, 1, '2025-11-25 06:44:27'),
-(11, 'DZAKA MUSYAFFA', 'dzokodolog@upi.edu', '117108749320151513373', NULL, NULL, NULL, NULL, NULL, 2, '2025-11-25 06:44:45'),
-(12, 'Iqbal Rizky Maulana', 'bale@gmail.com', NULL, '$2b$10$U21fBhZ9JqbCX1A7Q7xz7O0XFbJthmR2qyDd4K9n5jNVSpZbrVBSm', 'Jago Mancing', 'uploads/avatar-1767594259487.jpg', NULL, NULL, 2, '2026-01-04 21:31:51'),
-(13, 'IQBAL RIZKY MAULANA', 'iqbalrizkymaulana@upi.edu', '113348129377849906836', NULL, NULL, NULL, NULL, NULL, 2, '2026-01-05 05:05:33');
+(12, 'Iqbal Rizky Maulana', 'bale@gmail.com', NULL, '$2b$10$U21fBhZ9JqbCX1A7Q7xz7O0XFbJthmR2qyDd4K9n5jNVSpZbrVBSm', 'Jago Mancing', 'uploads/avatar-1767594259487.jpg', '2005-01-27', NULL, 2, '2026-01-04 21:31:51'),
+(14, 'Bintang Fajar Putra Pamungkas', 'bintang@gmail.com', NULL, '$2b$10$w3sL48xKEPCpvsq5/PCEGOMjJ4h6FybGY6VcPH..VN6.2N2c1B.NS', '\n', 'uploads/avatar-1767728784277.jpg', NULL, NULL, 2, '2026-01-06 19:45:39'),
+(15, 'Dzaka ', 'jokow@gmail.com', NULL, '$2b$10$1beEUZgihx3ktbnXSH4Jtu8P2rQYecsw7FHcrs2EUpm6HA5VtF1Uq', '', 'uploads/avatar-1767729342414.jpg', NULL, NULL, 2, '2026-01-06 19:54:33');
 
 --
 -- Indexes for dumped tables
@@ -889,7 +933,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `category_products`
@@ -907,7 +951,7 @@ ALTER TABLE `comment_likes`
 -- AUTO_INCREMENT for table `community_posts`
 --
 ALTER TABLE `community_posts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `discounts`
@@ -937,7 +981,7 @@ ALTER TABLE `location_images`
 -- AUTO_INCREMENT for table `location_reviews`
 --
 ALTER TABLE `location_reviews`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `location_spots`
@@ -955,13 +999,13 @@ ALTER TABLE `memberships`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `payment_methods`
@@ -973,13 +1017,13 @@ ALTER TABLE `payment_methods`
 -- AUTO_INCREMENT for table `post_comments`
 --
 ALTER TABLE `post_comments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `post_likes`
 --
 ALTER TABLE `post_likes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `products`
@@ -997,19 +1041,19 @@ ALTER TABLE `product_images`
 -- AUTO_INCREMENT for table `product_reviews`
 --
 ALTER TABLE `product_reviews`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `shopping_cart`
 --
 ALTER TABLE `shopping_cart`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- Constraints for dumped tables

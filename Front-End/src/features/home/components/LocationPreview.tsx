@@ -74,7 +74,7 @@ const LocationPreview = () => {
 		<View className="mb-8">
 			{/* Header Text */}
 			<View className="px-5 mb-4 flex-row items-center justify-between">
-				<Text className="text-xl font-bold text-gray-900 font-[Outfit_700Bold]">
+				<Text className="text-xl font-outfit-bold text-gray-900 font-outfit-bold">
 					Rekomendasi Spot
 				</Text>
 				<TouchableOpacity
@@ -84,7 +84,7 @@ const LocationPreview = () => {
 						})
 					}
 				>
-					<Text className="text-blue-600 text-sm font-bold">
+					<Text className="text-blue-600 text-sm font-outfit-bold">
 						Lihat Semua &gt;
 					</Text>
 				</TouchableOpacity>
@@ -122,7 +122,7 @@ const LocationPreview = () => {
 									<View>
 										{/* Judul: Nama Lokasi (Diperbaiki urutannya) */}
 										<Text
-											className="font-bold text-gray-900 text-sm mb-1 font-[Outfit_700Bold]"
+											className="font-outfit-bold text-gray-900 text-sm mb-1 font-outfit-bold"
 											numberOfLines={1}
 										>
 											{location?.name}
@@ -140,8 +140,19 @@ const LocationPreview = () => {
 										</View>
 									</View>
 
-									{/* Harga (Opsional, agar user langsung tahu range harga) */}
-									<Text className="text-blue-600 font-bold text-xs mt-2">
+									{/* Rating dan Ulasan */}
+									<View className="flex-row items-center mt-1">
+										<Star size={12} fill="#FBBF24" color="#FBBF24" />
+										<Text className="text-yellow-700 font-outfit-bold text-xs ml-1">
+											{Number(location?.rating_average || 0).toFixed(1)}
+										</Text>
+										<Text className="text-gray-400 text-xs ml-1">
+											({location?.total_reviews || 0})
+										</Text>
+									</View>
+
+									{/* Harga */}
+									<Text className="text-blue-600 font-outfit-bold text-xs mt-1">
 										{formatRupiah(location?.price_per_hour || 0)}
 										<Text className="text-gray-400 font-normal">
 											{" "}

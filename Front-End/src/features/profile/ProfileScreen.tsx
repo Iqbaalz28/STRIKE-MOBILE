@@ -137,7 +137,7 @@ const ProfileScreen = () => {
 				<View className="w-24 h-24 bg-blue-50 rounded-full items-center justify-center mb-6">
 					<User size={40} color="#2563EB" />
 				</View>
-				<Text className="text-2xl font-bold text-gray-900 mb-2">Belum Login</Text>
+				<Text className="text-2xl font-outfit-bold text-gray-900 mb-2">Belum Login</Text>
 				<Text className="text-gray-500 text-center mb-8 px-4">
 					Silakan masuk untuk mengakses profil Anda dan melihat riwayat pemesanan.
 				</Text>
@@ -145,7 +145,7 @@ const ProfileScreen = () => {
 					onPress={() => navigation.navigate("Login")}
 					className="w-full bg-blue-600 py-4 rounded-xl shadow-lg shadow-blue-200"
 				>
-					<Text className="text-white text-center font-bold text-lg">Masuk / Daftar</Text>
+					<Text className="text-white text-center font-outfit-bold text-lg">Masuk / Daftar</Text>
 				</TouchableOpacity>
 			</View>
 		);
@@ -172,13 +172,13 @@ const ProfileScreen = () => {
 							</TouchableOpacity>
 						</View>
 
-						<Text className="text-xl font-bold text-gray-900 mb-1">{user?.name}</Text>
+						<Text className="text-xl font-outfit-bold text-gray-900 mb-1">{user?.name}</Text>
 						<Text className="text-gray-500 text-sm mb-4">{user?.email}</Text>
 
 						{/* Membership Badge */}
 						<View className="bg-blue-50 px-4 py-2 rounded-full flex-row items-center border border-blue-100">
 							<Crown size={14} color="#2563EB" fill="#2563EB" />
-							<Text className="text-blue-700 font-bold text-xs ml-2 uppercase tracking-wider">
+							<Text className="text-blue-700 font-outfit-bold text-xs ml-2 uppercase tracking-wider">
 								{user?.membership_name || "Free Member"}
 							</Text>
 						</View>
@@ -187,15 +187,15 @@ const ProfileScreen = () => {
 					{/* Stats Row */}
 					{/* <View className="flex-row justify-center mt-6 divide-x divide-gray-100">
 						<View className="items-center px-6">
-							<Text className="text-gray-900 font-bold text-lg">{stats.active}</Text>
+							<Text className="text-gray-900 font-outfit-bold text-lg">{stats.active}</Text>
 							<Text className="text-gray-400 text-xs mt-1">Booking Aktif</Text>
 						</View>
 						<View className="items-center px-6">
-							<Text className="text-gray-900 font-bold text-lg">0</Text>
+							<Text className="text-gray-900 font-outfit-bold text-lg">0</Text>
 							<Text className="text-gray-400 text-xs mt-1">Voucher</Text>
 						</View>
 						<View className="items-center px-6">
-							<Text className="text-gray-900 font-bold text-lg">0</Text>
+							<Text className="text-gray-900 font-outfit-bold text-lg">0</Text>
 							<Text className="text-gray-400 text-xs mt-1">Poin</Text>
 						</View>
 					</View> */}
@@ -209,7 +209,7 @@ const ProfileScreen = () => {
 					>
 						<View className="flex-row items-center">
 							<Shield size={20} color="#DC2626" />
-							<Text className="text-red-700 font-medium ml-3">
+							<Text className="text-red-700 font-outfit-medium ml-3">
 								Ada {stats.unpaid} tagihan belum dibayar
 							</Text>
 						</View>
@@ -221,7 +221,7 @@ const ProfileScreen = () => {
 				<View className="px-6">
 
 					{/* Account Group */}
-					<Text className="text-gray-900 font-bold text-base mb-3 ml-1">Akun</Text>
+					<Text className="text-gray-900 font-outfit-bold text-base mb-3 ml-1">Akun</Text>
 					<View className="bg-white rounded-2xl overflow-hidden shadow-sm mb-6">
 						<MenuItem
 							icon={User}
@@ -242,12 +242,12 @@ const ProfileScreen = () => {
 							icon={MapPin}
 							color="#F59E0B"
 							label="Alamat Tersimpan"
-							onPress={() => { }} // Placeholder
+							onPress={() => navigation.navigate("SavedAddresses")}
 						/>
 					</View>
 
 					{/* Activity Group */}
-					<Text className="text-gray-900 font-bold text-base mb-3 ml-1">Aktivitas</Text>
+					<Text className="text-gray-900 font-outfit-bold text-base mb-3 ml-1">Aktivitas</Text>
 					<View className="bg-white rounded-2xl overflow-hidden shadow-sm mb-6">
 						<MenuItem
 							icon={History}
@@ -266,13 +266,13 @@ const ProfileScreen = () => {
 					</View>
 
 					{/* General Group */}
-					<Text className="text-gray-900 font-bold text-base mb-3 ml-1">Lainnya</Text>
+					<Text className="text-gray-900 font-outfit-bold text-base mb-3 ml-1">Lainnya</Text>
 					<View className="bg-white rounded-2xl overflow-hidden shadow-sm mb-8">
 						<MenuItem
 							icon={Bell}
-							color="#6B7280"
+							color="#3B82F6"
 							label="Notifikasi"
-							rightElement={<Switch value={true} trackColor={{ false: "#d1d5db", true: "#3b82f6" }} />}
+							onPress={() => navigation.navigate("Notifications")}
 						/>
 						<Divider />
 						<MenuItem
@@ -313,7 +313,7 @@ const MenuItem = ({ icon: Icon, color, label, value, onPress, isDestructive, rig
 			<Icon size={18} color={color} />
 		</View>
 
-		<Text className={`flex-1 text-base font-medium ${isDestructive ? 'text-red-600' : 'text-gray-900'}`}>
+		<Text className={`flex-1 text-base font-outfit-medium ${isDestructive ? 'text-red-600' : 'text-gray-900'}`}>
 			{label}
 		</Text>
 

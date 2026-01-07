@@ -39,14 +39,14 @@ const EventSection = () => {
 	return (
 		<View className="py-8 bg-white">
 			<View className="px-4 mb-6 flex-row items-center justify-between">
-				<Text className="text-xl font-bold text-gray-900 font-[Outfit_700Bold]">
+				<Text className="text-xl font-outfit-bold text-gray-900 font-outfit-bold">
 					Event Komunitas
 				</Text>
 				<TouchableOpacity
 					onPress={goToEventTab}
 					className="flex-row items-center"
 				>
-					<Text className="text-blue-600 text-sm font-bold mr-1">
+					<Text className="text-blue-600 text-sm font-outfit-bold mr-1">
 						Lihat Semua
 					</Text>
 					<ArrowRight size={16} color="#2563EB" />
@@ -77,18 +77,18 @@ const EventSection = () => {
 
 							<View className="p-4">
 								<View className="absolute top-[-20px] right-4 bg-white shadow-sm p-2 rounded-xl items-center min-w-[50px]">
-									<Text className="text-xs text-gray-500 font-bold uppercase">
+									<Text className="text-xs text-gray-500 font-outfit-bold uppercase">
 										{eventDate.toLocaleDateString("id-ID", {
 											month: "short",
 										})}
 									</Text>
-									<Text className="text-lg font-bold text-blue-600">
+									<Text className="text-lg font-outfit-bold text-blue-600">
 										{eventDate.getDate()}
 									</Text>
 								</View>
 
 								<Text
-									className="text-lg font-bold text-gray-900 mb-1 mt-1 font-[Outfit_700Bold]"
+									className="text-lg font-outfit-bold text-gray-900 mb-1 mt-1 font-outfit-bold"
 									numberOfLines={1}
 								>
 									{event.name || event.title}
@@ -106,13 +106,13 @@ const EventSection = () => {
 								</View>
 
 								<View className="flex-row items-center justify-between mt-2">
-									<Text className="text-green-600 font-bold text-sm">
+									<Text className="text-green-600 font-outfit-bold text-sm">
 										{price === 0
 											? "GRATIS"
 											: `Rp ${price.toLocaleString("id-ID")}`}
 									</Text>
 									<View className="bg-blue-50 px-3 py-1 rounded-full">
-										<Text className="text-blue-600 text-xs font-bold">
+										<Text className="text-blue-600 text-xs font-outfit-bold">
 											Gabung
 										</Text>
 									</View>

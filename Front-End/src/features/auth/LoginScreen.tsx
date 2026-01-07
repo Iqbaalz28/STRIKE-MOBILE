@@ -22,6 +22,7 @@ import {
 } from "lucide-react-native";
 import * as Linking from "expo-linking";
 import api, { BASE_URL } from "@/services/api";
+import { initializePushNotifications } from "@/services/notifications";
 
 const LoginScreen = () => {
 	const navigation = useNavigation<any>();
@@ -54,7 +55,16 @@ const LoginScreen = () => {
 						await AsyncStorage.setItem("user", userString); // Backend sudah encode user jadi string JSON
 					}
 
-					// 3. Pindah ke Halaman Utama
+					// 3. Initialize Push Notifications
+					try {
+						console.log("🔔 Initializing push notifications after Google login...");
+						await initializePushNotifications();
+						console.log("✅ Push notifications initialized");
+					} catch (pushErr) {
+						console.log("Push notification setup failed:", pushErr);
+					}
+
+					// 4. Pindah ke Halaman Utama
 					navigation.dispatch(
 						CommonActions.reset({
 							index: 0,
@@ -126,7 +136,15 @@ const LoginScreen = () => {
 				await AsyncStorage.setItem("user", JSON.stringify(user));
 			}
 
-			// 6. Redirect ke MainTab (Reset Stack)
+			// 6. Initialize Push Notifications & Register Token
+			try {
+				await initializePushNotifications();
+				console.log("Push notifications initialized");
+			} catch (pushErr) {
+				console.log("Push notification setup failed (non-critical):", pushErr);
+			}
+
+			// 7. Redirect ke MainTab (Reset Stack)
 			navigation.dispatch(
 				CommonActions.reset({
 					index: 0,
@@ -192,10 +210,10 @@ const LoginScreen = () => {
 					<View className="w-full max-w-sm bg-white rounded-3xl shadow-xl p-8 relative">
 						{/* Header Text */}
 						<View className="mb-8 mt-4">
-							<Text className="text-3xl font-bold text-gray-800 mb-2 font-[Outfit_700Bold]">
+							<Text className="text-3xl font-outfit-bold text-gray-800 mb-2 font-outfit-bold">
 								Selamat Datang
 							</Text>
-							<Text className="text-gray-500 font-[Outfit_400Regular]">
+							<Text className="text-gray-500 font-outfit">
 								Masuk ke akun Strike It Anda
 							</Text>
 						</View>
@@ -204,7 +222,7 @@ const LoginScreen = () => {
 						{errorMessage ? (
 							<View className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex-row items-center space-x-2">
 								<AlertCircle size={20} color="#DC2626" />
-								<Text className="text-red-600 text-sm flex-1 font-medium">
+								<Text className="text-red-600 text-sm flex-1 font-outfit-medium">
 									{errorMessage}
 								</Text>
 							</View>
@@ -214,7 +232,7 @@ const LoginScreen = () => {
 						<View className="space-y-5">
 							{/* Email */}
 							<View>
-								<Text className="mb-1 text-sm font-medium text-gray-700">
+								<Text className="mb-1 text-sm font-outfit-medium text-gray-700">
 									Email
 								</Text>
 								<View className="relative">
@@ -234,7 +252,7 @@ const LoginScreen = () => {
 
 							{/* Password */}
 							<View>
-								<Text className="mb-1 text-sm font-medium text-gray-700">
+								<Text className="mb-1 text-sm font-outfit-medium text-gray-700">
 									Password
 								</Text>
 								<View className="relative">
@@ -267,9 +285,8 @@ const LoginScreen = () => {
 							<TouchableOpacity
 								onPress={handleLogin}
 								disabled={isLoading}
-								className={`w-full rounded-xl px-4 py-3 flex-row justify-center items-center space-x-2 ${
-									isLoading ? "bg-blue-400" : "bg-blue-600"
-								}`}
+								className={`w-full rounded-xl px-4 py-3 flex-row justify-center items-center space-x-2 ${isLoading ? "bg-blue-400" : "bg-blue-600"
+									}`}
 							>
 								{isLoading && (
 									<ActivityIndicator
@@ -277,7 +294,7 @@ const LoginScreen = () => {
 										color="white"
 									/>
 								)}
-								<Text className="text-base font-bold text-white font-[Outfit_700Bold]">
+								<Text className="text-base font-outfit-bold text-white font-outfit-bold">
 									{isLoading ? "Memproses..." : "Masuk"}
 								</Text>
 							</TouchableOpacity>
@@ -296,7 +313,7 @@ const LoginScreen = () => {
 									style={{ width: 20, height: 20 }}
 									resizeMode="contain"
 								/>
-								<Text className="font-medium text-gray-700">
+								<Text className="font-outfit-medium text-gray-700">
 									Masuk dengan Google
 								</Text>
 							</TouchableOpacity>
@@ -310,7 +327,7 @@ const LoginScreen = () => {
 							<TouchableOpacity
 								onPress={() => navigation.navigate("Register")}
 							>
-								<Text className="text-sm font-bold text-blue-600">
+								<Text className="text-sm font-outfit-bold text-blue-600">
 									Daftar Sekarang
 								</Text>
 							</TouchableOpacity>
@@ -322,7 +339,7 @@ const LoginScreen = () => {
 								onPress={handleGuestLogin}
 								className="flex-row items-center py-2 px-4 rounded-full bg-gray-50"
 							>
-								<Text className="text-gray-500 font-medium mr-2">
+								<Text className="text-gray-500 font-outfit-medium mr-2">
 									Lewati login dulu
 								</Text>
 								<ArrowLeft

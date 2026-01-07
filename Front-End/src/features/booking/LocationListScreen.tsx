@@ -69,13 +69,16 @@ const LocationListScreen = () => {
 				/>
 				<View className="p-4">
 					<View className="flex-row justify-between items-start mb-1">
-						<Text className="text-lg font-bold text-gray-900 flex-1 mr-2 font-[Outfit_700Bold]">
+						<Text className="text-lg font-outfit-bold text-gray-900 flex-1 mr-2 font-outfit-bold">
 							{item.name}
 						</Text>
 						<View className="flex-row items-center bg-yellow-50 px-2 py-1 rounded-lg">
 							<Star size={14} fill="#FBBF24" color="#FBBF24" />
-							<Text className="ml-1 text-xs font-bold text-yellow-700">
-								4.8
+							<Text className="ml-1 text-xs font-outfit-bold text-yellow-700">
+								{Number(item.rating_average || 0).toFixed(1)}
+							</Text>
+							<Text className="ml-1 text-xs text-gray-500">
+								({item.total_reviews || 0})
 							</Text>
 						</View>
 					</View>
@@ -96,7 +99,7 @@ const LocationListScreen = () => {
 						<Text className="text-gray-400 text-xs">
 							Mulai dari
 						</Text>
-						<Text className="text-blue-600 font-bold text-base">
+						<Text className="text-blue-600 font-outfit-bold text-base">
 							Rp{" "}
 							{Number(item.price_per_hour || 0).toLocaleString(
 								"id-ID",
@@ -115,7 +118,7 @@ const LocationListScreen = () => {
 	return (
 		<View className="flex-1 bg-gray-50 pt-12 px-5">
 			{/* Header */}
-			<Text className="text-2xl font-bold text-gray-900 mb-4 font-[Outfit_700Bold]">
+			<Text className="text-2xl font-outfit-bold text-gray-900 mb-4 font-outfit-bold">
 				Cari Spot Mancing
 			</Text>
 

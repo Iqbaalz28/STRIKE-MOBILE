@@ -21,10 +21,12 @@ const PostDetailScreen = () => {
 	const { id } = route.params;
 
 	const [post, setPost] = useState<any>(null);
-	const [comments, setComments] = useState([]);
+	const [comments, setComments] = useState<any[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [newComment, setNewComment] = useState("");
 	const [submitting, setSubmitting] = useState(false);
+
+	const [replyingTo, setReplyingTo] = useState<any>(null);
 
 	useEffect(() => {
 		fetchData();
@@ -38,15 +40,33 @@ const PostDetailScreen = () => {
 			]);
 			setPost(postRes.data);
 
-			// Map flat comments to nested structure
-			const formattedComments = commentRes.data.map((c: any) => ({
+			// Format and group comments
+			const rawComments = commentRes.data.map((c: any) => ({
 				...c,
 				author: {
 					name: c.author_name,
 					avatar: c.author_avatar
-				}
+				},
+				children: [] // Init children
 			}));
-			setComments(formattedComments);
+
+			// Grouping logic
+			const commentMap: any = {};
+			const roots: any[] = [];
+
+			rawComments.forEach((c: any) => {
+				commentMap[c.id] = c;
+			});
+
+			rawComments.forEach((c: any) => {
+				if (c.parent_id && commentMap[c.parent_id]) {
+					commentMap[c.parent_id].children.push(c);
+				} else {
+					roots.push(c);
+				}
+			});
+
+			setComments(roots);
 		} catch (error) {
 			console.log("Error load detail:", error);
 		} finally {
@@ -58,18 +78,15 @@ const PostDetailScreen = () => {
 		if (!newComment.trim()) return;
 		setSubmitting(true);
 		try {
-			await api.createComment(id, { content: newComment });
+			await api.createComment(id, {
+				content: newComment,
+				parent_id: replyingTo?.id
+			});
 			setNewComment("");
+			setReplyingTo(null); // Reset reply state
+
 			// Refresh comments
-			const res = await api.getPostComments(id);
-			const formattedComments = res.data.map((c: any) => ({
-				...c,
-				author: {
-					name: c.author_name,
-					avatar: c.author_avatar
-				}
-			}));
-			setComments(formattedComments);
+			fetchData(); // Re-use fetchData to get fresh groups
 		} catch (error) {
 			console.log("Gagal komen:", error);
 		} finally {
@@ -82,9 +99,17 @@ const PostDetailScreen = () => {
 		if (!path)
 			return `https://ui-avatars.com/api/?name=${name || "User"
 				}&background=random`;
-		return path.startsWith("http")
-			? path
-			: `http://10.0.2.2:3000/uploads/${path}`;
+		if (path.startsWith("http")) return path;
+		// Check if path already contains 'uploads/'
+		if (path.startsWith("uploads/")) {
+			return `${BASE_URL}/${path}`;
+		}
+		return `${BASE_URL}/uploads/${path}`;
+	};
+
+	const handleReply = (comment: any) => {
+		setReplyingTo(comment);
+		// Focus input logic could go here if using ref
 	};
 
 	if (loading)
@@ -103,7 +128,7 @@ const PostDetailScreen = () => {
 				<TouchableOpacity onPress={() => navigation.goBack()}>
 					<ArrowLeft size={24} color="black" />
 				</TouchableOpacity>
-				<Text className="text-lg font-bold">Detail Postingan</Text>
+				<Text className="text-lg font-outfit-bold">Detail Postingan</Text>
 			</View>
 
 			<ScrollView className="flex-1">
@@ -120,7 +145,7 @@ const PostDetailScreen = () => {
 							className="w-12 h-12 rounded-full bg-gray-200"
 						/>
 						<View className="ml-3">
-							<Text className="font-bold text-lg">
+							<Text className="font-outfit-bold text-lg">
 								{post?.author_name}
 							</Text>
 							<Text className="text-gray-500">
@@ -131,7 +156,7 @@ const PostDetailScreen = () => {
 						</View>
 					</View>
 
-					<Text className="text-xl font-bold text-gray-900 mb-2 font-[Outfit_700Bold]">
+					<Text className="text-xl font-outfit-bold text-gray-900 mb-2 font-outfit-bold">
 						{post?.title}
 					</Text>
 					<Text className="text-gray-700 leading-relaxed text-base">
@@ -154,13 +179,13 @@ const PostDetailScreen = () => {
 
 				{/* Comments Section */}
 				<View className="p-5 bg-gray-50 min-h-screen">
-					<Text className="font-bold text-gray-600 mb-4">
+					<Text className="font-outfit-bold text-gray-600 mb-4">
 						Komentar ({comments.length})
 					</Text>
 
 					{/* --- BAGIAN YANG DIPERBARUI --- */}
 					{comments.map((c: any, index) => (
-						<CommentCard key={index} comment={c} />
+						<CommentCard key={index} comment={c} onReply={handleReply} />
 					))}
 					{/* ---------------------------- */}
 
@@ -169,24 +194,36 @@ const PostDetailScreen = () => {
 			</ScrollView>
 
 			{/* Input Komentar */}
-			<View className="p-4 bg-white border-t border-gray-100 flex-row items-center gap-2">
-				<TextInput
-					className="flex-1 bg-gray-100 rounded-full px-4 py-3 text-gray-800"
-					placeholder="Tulis komentar..."
-					value={newComment}
-					onChangeText={setNewComment}
-				/>
-				<TouchableOpacity
-					onPress={handleSendComment}
-					disabled={submitting}
-					className="bg-blue-600 p-3 rounded-full"
-				>
-					{submitting ? (
-						<ActivityIndicator size="small" color="white" />
-					) : (
-						<Send size={20} color="white" />
-					)}
-				</TouchableOpacity>
+			<View className="bg-white border-t border-gray-100">
+				{replyingTo && (
+					<View className="flex-row items-center justify-between px-4 py-2 bg-gray-50 border-b border-gray-200">
+						<Text className="text-gray-500 text-sm">
+							Membalas <Text className="font-bold">{replyingTo.author?.name || replyingTo.username}</Text>
+						</Text>
+						<TouchableOpacity onPress={() => setReplyingTo(null)}>
+							<Text className="text-red-500 text-xs font-bold">Batal</Text>
+						</TouchableOpacity>
+					</View>
+				)}
+				<View className="p-4 flex-row items-center gap-2">
+					<TextInput
+						className="flex-1 bg-gray-100 rounded-full px-4 py-3 text-gray-800"
+						placeholder={replyingTo ? "Tulis balasan..." : "Tulis komentar..."}
+						value={newComment}
+						onChangeText={setNewComment}
+					/>
+					<TouchableOpacity
+						onPress={handleSendComment}
+						disabled={submitting}
+						className="bg-blue-600 p-3 rounded-full"
+					>
+						{submitting ? (
+							<ActivityIndicator size="small" color="white" />
+						) : (
+							<Send size={20} color="white" />
+						)}
+					</TouchableOpacity>
+				</View>
 			</View>
 		</KeyboardAvoidingView>
 	);

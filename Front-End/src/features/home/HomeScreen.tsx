@@ -38,22 +38,65 @@ const HomeScreen = () => {
 	const [discounts, setDiscounts] = useState<any[]>([]);
 	const [activities, setActivities] = useState<any[]>([]);
 
+	// State untuk stats
+	const [stats, setStats] = useState({
+		totalBookings: 0,
+		totalOrders: 0, // jumlah transaksi belanja
+		totalShopping: 0, // dalam Rupiah
+	});
+
 	const fetchData = async () => {
 		try {
-			const [userRes, locRes, discRes, bookingRes] = await Promise.all([
+			// Tambahkan getMyOrders ke Promise.all
+			const [userRes, locRes, discRes, bookingRes, orderRes] = await Promise.all([
 				api.getMyProfile().catch(() => ({ data: {} })),
 				api.getLocations().catch(() => ({ data: [] })),
 				api.getDiscounts().catch((e) => { console.log("Discount fetch error:", e); return { data: [] }; }),
 				api.getMyBookings().catch(() => ({ data: [] })),
+				api.getMyOrders().catch(() => ({ data: [] })),
 			]);
+
 			setUserData(userRes.data);
 			setLocations(Array.isArray(locRes.data) ? locRes.data.slice(0, 3) : []);
 			setDiscounts(Array.isArray(discRes.data) ? discRes.data.slice(0, 2) : []);
 
+			// Hitung Stats
+			const bookings = Array.isArray(bookingRes.data) ? bookingRes.data : [];
+			const orders = Array.isArray(orderRes.data) ? orderRes.data : [];
+
+			// 1. Total Booking: count length
+			const totalBook = bookings.length;
+
+			// 2. Total Shopping: sum from orders (total_amount) + bookings (total_price) yang sudah paid
+			const orderTotal = orders.reduce((acc: number, curr: any) => {
+				// Hanya hitung yang sudah dibayar
+				if (curr.payment_status === 'paid') {
+					return acc + Number(curr.total_amount || curr.total_price || 0);
+				}
+				return acc;
+			}, 0);
+
+			const bookingTotal = bookings.reduce((acc: number, curr: any) => {
+				// Hanya hitung booking yang sudah dibayar
+				if (curr.payment_status === 'paid') {
+					return acc + Number(curr.total_price || 0);
+				}
+				return acc;
+			}, 0);
+
+			const totalShop = orderTotal + bookingTotal;
+
+			// 3. Total Orders: count orders yang sudah dibayar
+			const totalOrderCount = orders.filter((o: any) => o.payment_status === 'paid').length;
+
+			setStats({
+				totalBookings: totalBook,
+				totalOrders: totalOrderCount,
+				totalShopping: totalShop,
+			});
+
 			// Ambil 3 booking terbaru sebagai aktivitas
-			const recentBookings = Array.isArray(bookingRes.data)
-				? bookingRes.data.slice(0, 3)
-				: [];
+			const recentBookings = bookings.slice(0, 3);
 			setActivities(recentBookings);
 
 		} catch (error) {
@@ -75,6 +118,10 @@ const HomeScreen = () => {
 	const getAvatarUrl = () => {
 		if (!userData.avatar_img) return null;
 		if (userData.avatar_img.startsWith("http")) return userData.avatar_img;
+		// Cek apakah path sudah mengandung 'uploads/' atau tidak
+		if (userData.avatar_img.startsWith("uploads/")) {
+			return `${BASE_URL}/${userData.avatar_img}`;
+		}
 		return `${BASE_URL}/uploads/${userData.avatar_img}`;
 	};
 
@@ -82,6 +129,17 @@ const HomeScreen = () => {
 		if (!path) return "https://placehold.co/400x300";
 		if (path.startsWith("http")) return path;
 		return `${BASE_URL}/${path}`;
+	};
+
+	// Helper format formatShortCurrency (1.2jt, 500rb)
+	const formatShortCurrency = (amount: number) => {
+		if (amount >= 1_000_000) {
+			return `Rp ${(amount / 1_000_000).toFixed(1).replace(/\.0$/, "")}jt`;
+		}
+		if (amount >= 1_000) {
+			return `Rp ${(amount / 1_000).toFixed(0)}rb`;
+		}
+		return `Rp ${amount.toLocaleString("id-ID")}`;
 	};
 
 	// Quick Actions Menu
@@ -108,7 +166,7 @@ const HomeScreen = () => {
 					<View className="flex-row justify-between items-center">
 						<View className="flex-1">
 							<Text className="text-slate-400 text-sm">Selamat datang,</Text>
-							<Text className="text-slate-900 text-2xl font-bold mt-0.5">
+							<Text className="text-slate-900 text-2xl font-outfit-bold mt-0.5">
 								{userData.name || "Pengguna"}
 							</Text>
 						</View>
@@ -131,33 +189,37 @@ const HomeScreen = () => {
 				<View className="px-6 mb-6">
 					<TouchableOpacity
 						onPress={() => navigation.navigate("Membership")}
-						className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-3xl p-6 overflow-hidden"
+						className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-3xl p-5 overflow-hidden"
 						style={{ backgroundColor: "#2563EB" }}
 					>
 						<View className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-white/10" />
 						<View className="absolute -right-4 -bottom-4 w-24 h-24 rounded-full bg-white/5" />
 
-						<View className="flex-row justify-between items-start">
+						{/* Header: Membership & Total Spent */}
+						<View className="flex-row justify-between items-start mb-4">
 							<View>
-								<Text className="text-blue-100 text-sm">Membership</Text>
-								<Text className="text-white text-2xl font-bold mt-1">
+								<Text className="text-blue-200 text-xs mb-1">Membership</Text>
+								<Text className="text-white text-xl font-outfit-bold">
 									{userData.membership_name || "Standard"}
 								</Text>
 							</View>
-							<View className="bg-white/20 px-4 py-2 rounded-full flex-row items-center">
-								<Star size={14} color="#FCD34D" fill="#FCD34D" />
-								<Text className="text-white font-bold ml-1.5">Premium</Text>
+							<View className="items-end">
+								<Text className="text-blue-200 text-xs mb-1">Total Spent</Text>
+								<Text className="text-white text-lg font-outfit-bold">
+									Rp {stats.totalShopping.toLocaleString("id-ID")}
+								</Text>
 							</View>
 						</View>
 
-						<View className="flex-row mt-6 gap-6">
-							<View>
-								<Text className="text-blue-200 text-xs">Total Booking</Text>
-								<Text className="text-white text-xl font-bold">12</Text>
+						{/* Stats Row - Compact Pills */}
+						<View className="flex-row gap-3 mt-2">
+							<View className="bg-white/15 px-4 py-2 rounded-xl flex-row items-center">
+								<Text className="text-white text-base font-outfit-bold mr-1">{stats.totalBookings}</Text>
+								<Text className="text-blue-200 text-xs">Booking</Text>
 							</View>
-							<View>
-								<Text className="text-blue-200 text-xs">Total Shopping</Text>
-								<Text className="text-white text-xl font-bold">Rp 1.2jt</Text>
+							<View className="bg-white/15 px-4 py-2 rounded-xl flex-row items-center">
+								<Text className="text-white text-base font-outfit-bold mr-1">{stats.totalOrders}</Text>
+								<Text className="text-blue-200 text-xs">Belanja</Text>
 							</View>
 						</View>
 					</TouchableOpacity>
@@ -179,7 +241,7 @@ const HomeScreen = () => {
 								>
 									<action.icon size={24} color={action.color} />
 								</View>
-								<Text className="text-slate-600 text-xs font-medium">{action.label}</Text>
+								<Text className="text-slate-600 text-xs font-outfit-medium">{action.label}</Text>
 							</TouchableOpacity>
 						))}
 					</View>
@@ -195,7 +257,7 @@ const HomeScreen = () => {
 							<Ticket size={24} color="#FFFFFF" />
 						</View>
 						<View className="flex-1 ml-4">
-							<Text className="text-amber-800 font-bold text-base">
+							<Text className="text-amber-800 font-outfit-bold text-base">
 								{discounts[0]?.discount_value || "10%"} OFF
 							</Text>
 							<Text className="text-amber-600 text-sm">
@@ -211,9 +273,9 @@ const HomeScreen = () => {
 				{/* Popular Spots */}
 				<View className="mb-8">
 					<View className="flex-row justify-between items-center px-6 mb-4">
-						<Text className="text-slate-900 text-lg font-bold">Lokasi Populer</Text>
+						<Text className="text-slate-900 text-lg font-outfit-bold">Lokasi Populer</Text>
 						<TouchableOpacity onPress={() => navigation.navigate("BookingStack", { screen: "LocationList" })}>
-							<Text className="text-blue-600 text-sm font-medium">Lihat Semua</Text>
+							<Text className="text-blue-600 text-sm font-outfit-medium">Lihat Semua</Text>
 						</TouchableOpacity>
 					</View>
 
@@ -244,7 +306,7 @@ const HomeScreen = () => {
 									resizeMode="cover"
 								/>
 								<View className="p-3">
-									<Text className="text-slate-900 font-bold text-sm" numberOfLines={1}>
+									<Text className="text-slate-900 font-outfit-bold text-sm" numberOfLines={1}>
 										{loc.name}
 									</Text>
 									<Text className="text-slate-400 text-xs mt-0.5" numberOfLines={1}>
@@ -252,8 +314,9 @@ const HomeScreen = () => {
 									</Text>
 									<View className="flex-row items-center mt-2">
 										<Star size={12} color="#F59E0B" fill="#F59E0B" />
-										<Text className="text-slate-600 text-xs ml-1">4.8</Text>
-										<Text className="text-blue-600 font-bold text-sm ml-auto">
+										<Text className="text-slate-600 text-xs ml-1">{Number(loc.rating_average || 0).toFixed(1)}</Text>
+										<Text className="text-slate-400 text-xs ml-1">({loc.total_reviews || 0})</Text>
+										<Text className="text-blue-600 font-outfit-bold text-sm ml-auto">
 											Rp {Number(loc.price_per_hour || 0).toLocaleString("id-ID")}/jam
 										</Text>
 									</View>
@@ -266,9 +329,9 @@ const HomeScreen = () => {
 				{/* Activity Section */}
 				<View className="px-6">
 					<View className="flex-row justify-between items-center mb-4">
-						<Text className="text-slate-900 text-lg font-bold">Aktivitas Terbaru</Text>
+						<Text className="text-slate-900 text-lg font-outfit-bold">Aktivitas Terbaru</Text>
 						<TouchableOpacity onPress={() => navigation.navigate("History")}>
-							<Text className="text-blue-600 text-sm font-medium">Lihat Semua</Text>
+							<Text className="text-blue-600 text-sm font-outfit-medium">Lihat Semua</Text>
 						</TouchableOpacity>
 					</View>
 
@@ -280,7 +343,7 @@ const HomeScreen = () => {
 										<MapPin size={24} color="#10B981" />
 									</View>
 									<View className="flex-1 ml-4">
-										<Text className="text-slate-900 font-medium">Booking {item.status === 'completed' ? 'Selesai' : 'Berhasil'}</Text>
+										<Text className="text-slate-900 font-outfit-medium">Booking {item.status === 'completed' ? 'Selesai' : 'Berhasil'}</Text>
 										<Text className="text-slate-400 text-sm" numberOfLines={1}>
 											{item.location_name || "Lokasi"} • Spot {item.spot_number}
 										</Text>

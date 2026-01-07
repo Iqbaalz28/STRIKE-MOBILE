@@ -81,7 +81,7 @@ const RegisterScreen = () => {
 			if (error.response && error.response.data) {
 				setErrorMessage(
 					error.response.data.message ||
-						"Gagal mendaftar. Silakan coba lagi.",
+					"Gagal mendaftar. Silakan coba lagi.",
 				);
 			} else {
 				setErrorMessage(
@@ -112,10 +112,10 @@ const RegisterScreen = () => {
 					<View className="w-full max-w-md bg-white rounded-3xl shadow-xl p-6 md:p-10 relative">
 						{/* Header */}
 						<View className="items-center mb-8">
-							<Text className="text-3xl font-bold text-[#1e2f42] text-center mb-2 font-[Outfit_700Bold]">
+							<Text className="text-3xl font-outfit-bold text-[#1e2f42] text-center mb-2 font-outfit-bold">
 								Buat Akun Baru
 							</Text>
-							<Text className="text-gray-600 text-center font-[Outfit_400Regular]">
+							<Text className="text-gray-600 text-center font-outfit">
 								Daftar untuk mulai memancing!
 							</Text>
 						</View>
@@ -124,7 +124,7 @@ const RegisterScreen = () => {
 						{errorMessage ? (
 							<View className="mb-6 p-3 bg-red-50 border border-red-200 rounded-xl flex-row items-center space-x-2">
 								<AlertCircle size={20} color="#DC2626" />
-								<Text className="text-red-600 text-sm flex-1 font-medium font-[Outfit_500Medium]">
+								<Text className="text-red-600 text-sm flex-1 font-outfit-medium font-outfit-medium">
 									{errorMessage}
 								</Text>
 							</View>
@@ -133,7 +133,7 @@ const RegisterScreen = () => {
 						{successMessage ? (
 							<View className="mb-6 p-3 bg-green-50 border border-green-200 rounded-xl flex-row items-center space-x-2">
 								<CheckCircle size={20} color="#16A34A" />
-								<Text className="text-green-600 text-sm flex-1 font-medium font-[Outfit_500Medium]">
+								<Text className="text-green-600 text-sm flex-1 font-outfit-medium font-outfit-medium">
 									{successMessage}
 								</Text>
 							</View>
@@ -143,7 +143,7 @@ const RegisterScreen = () => {
 						<View className="space-y-5">
 							{/* Nama Lengkap */}
 							<View>
-								<Text className="mb-1 text-sm font-medium text-gray-700 font-[Outfit_500Medium]">
+								<Text className="mb-1 text-sm font-outfit-medium text-gray-700 font-outfit-medium">
 									Nama Lengkap
 								</Text>
 								<View className="relative">
@@ -151,7 +151,7 @@ const RegisterScreen = () => {
 										value={name}
 										onChangeText={setName}
 										placeholder="Nama Lengkap Anda"
-										className="w-full rounded-xl border border-gray-300 p-3 pl-10 text-gray-900 bg-white font-[Outfit_400Regular]"
+										className="w-full rounded-xl border border-gray-300 p-3 pl-10 text-gray-900 bg-white font-outfit"
 									/>
 									<View className="absolute left-3 top-3.5">
 										<User size={20} color="#9CA3AF" />
@@ -161,7 +161,7 @@ const RegisterScreen = () => {
 
 							{/* Email */}
 							<View>
-								<Text className="mb-1 text-sm font-medium text-gray-700 font-[Outfit_500Medium]">
+								<Text className="mb-1 text-sm font-outfit-medium text-gray-700 font-outfit-medium">
 									Email
 								</Text>
 								<View className="relative">
@@ -171,7 +171,7 @@ const RegisterScreen = () => {
 										placeholder="email@anda.com"
 										keyboardType="email-address"
 										autoCapitalize="none"
-										className="w-full rounded-xl border border-gray-300 p-3 pl-10 text-gray-900 bg-white font-[Outfit_400Regular]"
+										className="w-full rounded-xl border border-gray-300 p-3 pl-10 text-gray-900 bg-white font-outfit"
 									/>
 									<View className="absolute left-3 top-3.5">
 										<Mail size={20} color="#9CA3AF" />
@@ -181,7 +181,7 @@ const RegisterScreen = () => {
 
 							{/* Password */}
 							<View>
-								<Text className="mb-1 text-sm font-medium text-gray-700 font-[Outfit_500Medium]">
+								<Text className="mb-1 text-sm font-outfit-medium text-gray-700 font-outfit-medium">
 									Password
 								</Text>
 								<View className="relative">
@@ -190,7 +190,7 @@ const RegisterScreen = () => {
 										onChangeText={setPassword}
 										placeholder="Buat Password"
 										secureTextEntry={!showPassword}
-										className="w-full rounded-xl border border-gray-300 p-3 pl-10 pr-10 text-gray-900 bg-white font-[Outfit_400Regular]"
+										className="w-full rounded-xl border border-gray-300 p-3 pl-10 pr-10 text-gray-900 bg-white font-outfit"
 									/>
 									<View className="absolute left-3 top-3.5">
 										<Lock size={20} color="#9CA3AF" />
@@ -212,7 +212,7 @@ const RegisterScreen = () => {
 
 							{/* Confirm Password */}
 							<View>
-								<Text className="mb-1 text-sm font-medium text-gray-700 font-[Outfit_500Medium]">
+								<Text className="mb-1 text-sm font-outfit-medium text-gray-700 font-outfit-medium">
 									Konfirmasi Password
 								</Text>
 								<View className="relative">
@@ -221,7 +221,7 @@ const RegisterScreen = () => {
 										onChangeText={setConfirmPassword}
 										placeholder="Ulangi Password"
 										secureTextEntry={!showConfirmPassword}
-										className="w-full rounded-xl border border-gray-300 p-3 pl-10 pr-10 text-gray-900 bg-white font-[Outfit_400Regular]"
+										className="w-full rounded-xl border border-gray-300 p-3 pl-10 pr-10 text-gray-900 bg-white font-outfit"
 									/>
 									<View className="absolute left-3 top-3.5">
 										<Lock size={20} color="#9CA3AF" />
@@ -247,11 +247,10 @@ const RegisterScreen = () => {
 							<TouchableOpacity
 								onPress={handleRegister}
 								disabled={isLoading}
-								className={`w-full rounded-xl px-4 py-3 flex-row justify-center items-center shadow-lg ${
-									isLoading
-										? "bg-blue-400"
-										: "bg-blue-600 shadow-blue-200"
-								}`}
+								className={`w-full rounded-xl px-4 py-3 flex-row justify-center items-center shadow-lg ${isLoading
+									? "bg-blue-400"
+									: "bg-blue-600 shadow-blue-200"
+									}`}
 							>
 								{isLoading && (
 									<ActivityIndicator
@@ -260,7 +259,7 @@ const RegisterScreen = () => {
 										className="mr-2"
 									/>
 								)}
-								<Text className="text-base font-bold text-white font-[Outfit_700Bold]">
+								<Text className="text-base font-outfit-bold text-white font-outfit-bold">
 									{isLoading ? "Memproses..." : "Daftar"}
 								</Text>
 							</TouchableOpacity>
@@ -268,13 +267,13 @@ const RegisterScreen = () => {
 
 						{/* Link ke Login */}
 						<View className="mt-8 flex-row justify-center">
-							<Text className="text-sm text-gray-600 font-[Outfit_400Regular]">
+							<Text className="text-sm text-gray-600 font-outfit">
 								Sudah punya akun?{" "}
 							</Text>
 							<TouchableOpacity
 								onPress={() => navigation.navigate("Login")}
 							>
-								<Text className="text-sm font-bold text-blue-600 font-[Outfit_700Bold]">
+								<Text className="text-sm font-outfit-bold text-blue-600 font-outfit-bold">
 									Masuk di sini
 								</Text>
 							</TouchableOpacity>

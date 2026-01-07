@@ -70,7 +70,7 @@ const EventListScreen = () => {
 				<TouchableOpacity onPress={() => navigation.goBack()}>
 					<ArrowLeft size={24} color="black" />
 				</TouchableOpacity>
-				<Text className="text-xl font-bold text-gray-900 font-[Outfit_700Bold]">
+				<Text className="text-xl font-outfit-bold text-gray-900 font-outfit-bold">
 					Event Kompetisi
 				</Text>
 			</View>

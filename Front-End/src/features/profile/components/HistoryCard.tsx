@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, TextInput, Alert } from "react-native";
-import { Calendar, ShoppingBag, MapPin, Star, MessageSquare, ChevronDown, ChevronUp } from "lucide-react-native";
+import { Calendar, ShoppingBag, MapPin, Star, MessageSquare, ChevronDown, ChevronUp, ChevronRight } from "lucide-react-native";
+import { useNavigation } from "@react-navigation/native";
 import api from "@/services/api";
 
 interface HistoryItem {
@@ -21,6 +22,7 @@ interface HistoryCardProps {
 }
 
 const HistoryCard = ({ item, onReviewSubmitted }: HistoryCardProps) => {
+	const navigation = useNavigation<any>();
 	const [showReviewForm, setShowReviewForm] = useState(false);
 	const [rating, setRating] = useState(0);
 	const [reviewText, setReviewText] = useState("");
@@ -76,6 +78,13 @@ const HistoryCard = ({ item, onReviewSubmitted }: HistoryCardProps) => {
 	const statusStyle = getStatusStyle(item.status);
 	const canShowReview = statusStyle.canReview && !item.hasReviewed;
 
+	const handleCardPress = () => {
+		navigation.navigate("OrderDetail", {
+			orderId: item.originalId || item.id,
+			type: item.type,
+		});
+	};
+
 	const handleSubmitReview = async () => {
 		if (rating === 0) {
 			Alert.alert("Rating Diperlukan", "Silakan pilih rating bintang terlebih dahulu.");
@@ -113,13 +122,17 @@ const HistoryCard = ({ item, onReviewSubmitted }: HistoryCardProps) => {
 	};
 
 	return (
-		<View className="bg-white rounded-xl p-4 mb-4 border border-gray-100 shadow-sm">
+		<TouchableOpacity
+			onPress={handleCardPress}
+			activeOpacity={0.7}
+			className="bg-white rounded-xl p-4 mb-4 border border-gray-100 shadow-sm"
+		>
 			<View className="flex-row justify-between items-start mb-2">
 				<View className="flex-row items-center gap-2 flex-1">
 					<View
 						className={`p-2 rounded-full ${item.type === "booking"
-								? "bg-blue-50"
-								: "bg-orange-50"
+							? "bg-blue-50"
+							: "bg-orange-50"
 							}`}
 					>
 						{item.type === "booking" ? (
@@ -130,7 +143,7 @@ const HistoryCard = ({ item, onReviewSubmitted }: HistoryCardProps) => {
 					</View>
 					<View className="flex-1">
 						<Text
-							className="font-bold text-gray-800 text-base"
+							className="font-outfit-bold text-gray-800 text-base"
 							numberOfLines={1}
 						>
 							{item.title}
@@ -146,7 +159,7 @@ const HistoryCard = ({ item, onReviewSubmitted }: HistoryCardProps) => {
 				{/* Badge Status */}
 				<View className={`px-2 py-1 rounded-md ${statusStyle.bg}`}>
 					<Text
-						className={`text-[10px] font-bold ${statusStyle.text} uppercase`}
+						className={`text-[10px] font-outfit-bold ${statusStyle.text} uppercase`}
 					>
 						{statusStyle.label}
 					</Text>
@@ -162,7 +175,7 @@ const HistoryCard = ({ item, onReviewSubmitted }: HistoryCardProps) => {
 						{item.date}
 					</Text>
 				</View>
-				<Text className="font-bold text-blue-600 text-base">
+				<Text className="font-outfit-bold text-blue-600 text-base">
 					Rp {item.price?.toLocaleString("id-ID") || "0"}
 				</Text>
 			</View>
@@ -174,7 +187,7 @@ const HistoryCard = ({ item, onReviewSubmitted }: HistoryCardProps) => {
 					className="mt-3 flex-row items-center justify-center py-2 bg-blue-50 rounded-lg border border-blue-200"
 				>
 					<MessageSquare size={16} color="#2563EB" />
-					<Text className="text-blue-600 font-medium ml-2 text-sm">
+					<Text className="text-blue-600 font-outfit-medium ml-2 text-sm">
 						{showReviewForm ? "Tutup Form" : "Beri Ulasan"}
 					</Text>
 					{showReviewForm ? (
@@ -189,7 +202,7 @@ const HistoryCard = ({ item, onReviewSubmitted }: HistoryCardProps) => {
 			{item.hasReviewed && statusStyle.canReview && (
 				<View className="mt-3 flex-row items-center justify-center py-2 bg-green-50 rounded-lg">
 					<Star size={16} color="#16A34A" fill="#16A34A" />
-					<Text className="text-green-600 font-medium ml-2 text-sm">
+					<Text className="text-green-600 font-outfit-medium ml-2 text-sm">
 						Sudah Diulas
 					</Text>
 				</View>
@@ -198,7 +211,7 @@ const HistoryCard = ({ item, onReviewSubmitted }: HistoryCardProps) => {
 			{/* Inline Review Form */}
 			{showReviewForm && (
 				<View className="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
-					<Text className="font-bold text-gray-800 mb-3">Rating Anda</Text>
+					<Text className="font-outfit-bold text-gray-800 mb-3">Rating Anda</Text>
 
 					{/* Star Rating */}
 					<View className="flex-row gap-2 mb-4">
@@ -234,13 +247,13 @@ const HistoryCard = ({ item, onReviewSubmitted }: HistoryCardProps) => {
 						className={`py-3 rounded-xl items-center ${submitting ? "bg-gray-400" : "bg-blue-600"
 							}`}
 					>
-						<Text className="text-white font-bold">
+						<Text className="text-white font-outfit-bold">
 							{submitting ? "Mengirim..." : "Kirim Ulasan"}
 						</Text>
 					</TouchableOpacity>
 				</View>
 			)}
-		</View>
+		</TouchableOpacity>
 	);
 };
 

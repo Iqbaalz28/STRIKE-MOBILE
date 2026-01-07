@@ -78,7 +78,7 @@ const PostCard = ({ post }: { post: PostData }) => {
 					className="w-10 h-10 rounded-full bg-gray-200"
 				/>
 				<View className="ml-3 flex-1">
-					<Text className="font-bold text-gray-900" numberOfLines={1}>
+					<Text className="font-outfit-bold text-gray-900" numberOfLines={1}>
 						{post.author?.name || "Anonymous"}
 					</Text>
 					<Text className="text-xs text-gray-500">
@@ -88,14 +88,14 @@ const PostCard = ({ post }: { post: PostData }) => {
 
 				{/* Category Badge */}
 				<View className="bg-blue-50 px-3 py-1 rounded-full ml-2">
-					<Text className="text-blue-600 text-[10px] font-bold uppercase tracking-wider">
+					<Text className="text-blue-600 text-[10px] font-outfit-bold uppercase tracking-wider">
 						{post.category}
 					</Text>
 				</View>
 			</View>
 
 			{/* Content */}
-			<Text className="text-lg font-bold text-gray-900 mb-1 font-[Outfit_700Bold]">
+			<Text className="text-lg font-outfit-bold text-gray-900 mb-1 font-outfit-bold">
 				{post.title}
 			</Text>
 			<Text
@@ -122,7 +122,7 @@ const PostCard = ({ post }: { post: PostData }) => {
 					{/* Views */}
 					<View className="flex-row items-center gap-1.5">
 						<Eye size={14} color="#9CA3AF" />
-						<Text className="text-gray-500 text-xs font-medium">
+						<Text className="text-gray-500 text-xs font-outfit-medium">
 							{post.stats?.views || 0}
 						</Text>
 					</View>
@@ -130,7 +130,7 @@ const PostCard = ({ post }: { post: PostData }) => {
 					{/* Comments */}
 					<View className="flex-row items-center gap-1.5">
 						<MessageSquare size={14} color="#9CA3AF" />
-						<Text className="text-gray-500 text-xs font-medium">
+						<Text className="text-gray-500 text-xs font-outfit-medium">
 							{post.stats?.comments || 0}
 						</Text>
 					</View>
@@ -150,7 +150,7 @@ const PostCard = ({ post }: { post: PostData }) => {
 						fill={isLiked ? "#2563EB" : "transparent"}
 					/>
 					<Text
-						className={`text-xs font-bold ${isLiked ? "text-blue-600" : "text-gray-500"
+						className={`text-xs font-outfit-bold ${isLiked ? "text-blue-600" : "text-gray-500"
 							}`}
 					>
 						{likes}

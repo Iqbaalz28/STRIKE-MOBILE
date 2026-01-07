@@ -83,29 +83,50 @@ export default async function (fastify, options) {
     },
   );
 
-  // 4. GET COMMENTS
+  // 4. GET COMMENTS (with nested reply support)
+  // NOTE: parent_id requires migration. Run GET /community/migrate-add-parent-id first
   fastify.get("/posts/:id/comments", async (request, reply) => {
     try {
       const { id } = request.params;
-      const [rows] = await fastify.db.query(
-        `
-                SELECT 
-                    c.id, c.content, c.created_at,
-                    u.name as author_name, u.avatar_img as author_avatar
-                FROM post_comments c
-                JOIN users u ON c.id_user = u.id
-                WHERE c.id_post = ?
-                ORDER BY c.created_at ASC
-            `,
-        [id],
-      );
+      let rows;
+
+      // Try with parent_id first
+      try {
+        [rows] = await fastify.db.query(
+          `SELECT 
+              c.id, c.content, c.created_at, c.parent_id,
+              u.name as author_name, u.avatar_img as author_avatar
+          FROM post_comments c
+          JOIN users u ON c.id_user = u.id
+          WHERE c.id_post = ?
+          ORDER BY c.created_at ASC`,
+          [id],
+        );
+      } catch (colErr) {
+        // Fallback if parent_id column doesn't exist
+        if (colErr.code === 'ER_BAD_FIELD_ERROR') {
+          [rows] = await fastify.db.query(
+            `SELECT 
+                c.id, c.content, c.created_at,
+                u.name as author_name, u.avatar_img as author_avatar
+            FROM post_comments c
+            JOIN users u ON c.id_user = u.id
+            WHERE c.id_post = ?
+            ORDER BY c.created_at ASC`,
+            [id],
+          );
+        } else {
+          throw colErr;
+        }
+      }
       return rows;
     } catch (error) {
+      request.log.error(error);
       return reply.code(500).send({ message: "Gagal memuat komentar" });
     }
   });
 
-  // 5. CREATE COMMENT
+  // 5. CREATE COMMENT (with optional reply support)
   fastify.post(
     "/posts/:id/comments",
     { onRequest: [fastify.authenticate] },
@@ -113,29 +134,72 @@ export default async function (fastify, options) {
       try {
         const userId = request.user.id;
         const postId = request.params.id;
-        const { content } = request.body;
+        const { content, parent_id } = request.body;
 
         if (!content)
           return reply
             .code(400)
             .send({ message: "Komentar tidak boleh kosong" });
 
-        // Insert Comment
-        await fastify.db.query(
-          `
-                INSERT INTO post_comments (id_post, id_user, content, created_at)
-                VALUES (?, ?, ?, NOW())
-            `,
-          [postId, userId, content],
+        // Get commenter name for notification
+        const [userData] = await fastify.db.query(
+          `SELECT name FROM users WHERE id = ?`,
+          [userId]
         );
+        const commenterName = userData[0]?.name || "Seseorang";
+
+        // Try with parent_id first, fallback to without if column doesn't exist
+        try {
+          await fastify.db.query(
+            `INSERT INTO post_comments (id_post, id_user, content, created_at, parent_id)
+             VALUES (?, ?, ?, NOW(), ?)`,
+            [postId, userId, content, parent_id || null],
+          );
+        } catch (colErr) {
+          // Fallback: insert without parent_id if column doesn't exist
+          if (colErr.code === 'ER_BAD_FIELD_ERROR') {
+            await fastify.db.query(
+              `INSERT INTO post_comments (id_post, id_user, content, created_at)
+               VALUES (?, ?, ?, NOW())`,
+              [postId, userId, content],
+            );
+          } else {
+            throw colErr;
+          }
+        }
 
         // Update Reply Count di tabel Post
         await fastify.db.query(
-          `
-                UPDATE community_posts SET reply_count = reply_count + 1 WHERE id = ?
-            `,
+          `UPDATE community_posts SET reply_count = reply_count + 1 WHERE id = ?`,
           [postId],
         );
+
+        // --- SEND NOTIFICATION ---
+        try {
+          // Get post owner
+          const [postData] = await fastify.db.query(
+            `SELECT id_user, title FROM community_posts WHERE id = ?`,
+            [postId]
+          );
+
+          if (postData.length > 0) {
+            const postOwnerId = postData[0].id_user;
+            const postTitle = postData[0].title?.substring(0, 30) || "postingan";
+
+            // Don't notify if commenting on own post
+            if (postOwnerId !== userId && fastify.sendNotification) {
+              await fastify.sendNotification(postOwnerId, {
+                title: "Komentar Baru 💬",
+                body: `${commenterName} mengomentari "${postTitle}..."`,
+                type: "community",
+                refId: postId,
+              });
+            }
+          }
+        } catch (notifErr) {
+          // Don't fail the request if notification fails
+          request.log.error("Failed to send notification:", notifErr);
+        }
 
         return { message: "Komentar terkirim" };
       } catch (error) {
@@ -144,6 +208,19 @@ export default async function (fastify, options) {
       }
     },
   );
+
+  // --- MIGRATION ROUTE (TEMPORARY) ---
+  // Call this once: GET /community/migrate-add-parent-id
+  fastify.get("/migrate-add-parent-id", async (req, reply) => {
+    try {
+      await fastify.db.query(
+        "ALTER TABLE post_comments ADD COLUMN parent_id INT DEFAULT NULL"
+      );
+      return { message: "Kolom parent_id berhasil ditambahkan ke post_comments" };
+    } catch (error) {
+      return { message: "Kolom parent_id mungkin sudah ada", error: error.message };
+    }
+  });
   fastify.post(
     "/posts/:id/like",
     { onRequest: [fastify.authenticate] },

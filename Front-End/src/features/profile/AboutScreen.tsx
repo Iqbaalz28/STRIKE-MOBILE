@@ -13,7 +13,7 @@ const AboutScreen = () => {
 				<TouchableOpacity onPress={() => navigation.goBack()}>
 					<ArrowLeft size={24} color="black" />
 				</TouchableOpacity>
-				<Text className="text-xl font-bold font-[Outfit_700Bold]">
+				<Text className="text-xl font-outfit-bold font-outfit-bold">
 					Tentang Kami
 				</Text>
 			</View>
@@ -25,7 +25,7 @@ const AboutScreen = () => {
 					style={{ width: 120, height: 120, alignSelf: "center" }}
 					resizeMode="contain"
 				/>
-				<Text className="text-2xl font-bold text-blue-600 font-[Outfit_700Bold] mb-2">
+				<Text className="text-2xl font-outfit-bold text-blue-600 font-outfit-bold mb-2">
 					Strike It
 				</Text>
 				<Text className="text-gray-500 text-center leading-relaxed">
@@ -38,7 +38,7 @@ const AboutScreen = () => {
 					<Text className="text-gray-400 text-sm">
 						Versi Aplikasi
 					</Text>
-					<Text className="text-gray-800 font-bold">
+					<Text className="text-gray-800 font-outfit-bold">
 						v1.0.0 (Beta)
 					</Text>
 				</View>

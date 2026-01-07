@@ -21,6 +21,9 @@ import EditProfileScreen from "@/features/profile/EditProfileScreen";
 import AboutScreen from "@/features/profile/AboutScreen";
 import HistoryScreen from "@/features/profile/HistoryScreen";
 import MembershipScreen from "@/features/profile/MembershipScreen";
+import OrderDetailScreen from "@/features/profile/OrderDetailScreen";
+import SavedAddressesScreen from "@/features/profile/SavedAddressesScreen";
+import AddEditAddressScreen from "@/features/profile/AddEditAddressScreen";
 
 // 4. Community
 import CreatePostScreen from "@/features/community/CreatePostScreen";
@@ -29,6 +32,9 @@ import PostDetailScreen from "@/features/community/PostDetailScreen";
 // 5. Shop (Tambahan penting agar Toko jalan)
 import ProductDetailScreen from "@/features/shop/ProductDetailScreen";
 // import CartScreen from "@/features/cart/CartScreen"; // Uncomment jika sudah ada filenya
+
+// 6. Notifications
+import NotificationScreen from "@/features/notifications/NotificationScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -55,7 +61,7 @@ const SplashScreen = ({
 
 	return (
 		<View className="flex-1 justify-center items-center bg-blue-600">
-			<Text className="text-4xl font-bold text-white mb-4 font-[Outfit_700Bold]">
+			<Text className="text-4xl font-outfit-bold text-white mb-4 font-outfit-bold">
 				Strike It
 			</Text>
 			<ActivityIndicator size="large" color="white" />
@@ -116,7 +122,10 @@ const RootNavigator = () => {
 					/>
 					<Stack.Screen name="About" component={AboutScreen} />
 					<Stack.Screen name="History" component={HistoryScreen} />
+					<Stack.Screen name="OrderDetail" component={OrderDetailScreen} />
 					<Stack.Screen name="Membership" component={MembershipScreen} />
+					<Stack.Screen name="SavedAddresses" component={SavedAddressesScreen} />
+					<Stack.Screen name="AddEditAddress" component={AddEditAddressScreen} />
 
 					{/* Community */}
 					<Stack.Screen
@@ -134,6 +143,12 @@ const RootNavigator = () => {
 						component={ProductDetailScreen}
 					/>
 					{/* <Stack.Screen name="Cart" component={CartScreen} /> */}
+
+					{/* Notifications */}
+					<Stack.Screen
+						name="Notifications"
+						component={NotificationScreen}
+					/>
 				</Stack.Group>
 			</Stack.Navigator>
 		</NavigationContainer>

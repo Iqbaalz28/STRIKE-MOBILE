@@ -4,9 +4,9 @@ module.exports = {
 	theme: {
 		extend: {
 			fontFamily: {
-				sans: ["Outfit_400Regular"],
-				bold: ["Outfit_700Bold"],
-				medium: ["Outfit_500Medium"],
+				outfit: ["Outfit_400Regular"],
+				"outfit-medium": ["Outfit_500Medium"],
+				"outfit-bold": ["Outfit_700Bold"],
 			},
 		},
 	},

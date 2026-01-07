@@ -262,4 +262,29 @@ export default {
 	updatePaymentMethod(id_payment_method: number | string) {
 		return api.put("/users/me", { id_payment_method });
 	},
+
+	// --- ORDER & BOOKING DETAILS ---
+	getOrderDetail(orderId: number | string) {
+		return api.get(`/orders/${orderId}`);
+	},
+	getBookingDetail(bookingId: number | string) {
+		return api.get(`/bookings/${bookingId}`);
+	},
+
+	// --- NOTIFICATIONS ---
+	registerPushToken(push_token: string, device_type: string = 'android') {
+		return api.post('/notifications/register-token', { push_token, device_type });
+	},
+	getNotifications() {
+		return api.get('/notifications');
+	},
+	markNotificationRead(notifId: number | string) {
+		return api.put(`/notifications/${notifId}/read`);
+	},
+	markAllNotificationsRead() {
+		return api.put('/notifications/read-all');
+	},
+	getUnreadNotificationCount() {
+		return api.get('/notifications/unread-count');
+	},
 };

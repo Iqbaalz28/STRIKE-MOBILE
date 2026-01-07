@@ -42,7 +42,7 @@ const ReviewSection = () => {
 	return (
 		<View className="mb-8">
 			<View className="px-5 mb-4">
-				<Text className="text-xl font-bold text-gray-900 font-[Outfit_700Bold]">
+				<Text className="text-xl font-outfit-bold text-gray-900 font-outfit-bold">
 					Kata Mereka
 				</Text>
 				<Text className="text-gray-500 text-sm">
@@ -77,7 +77,7 @@ const ReviewSection = () => {
 								className="w-10 h-10 rounded-full bg-gray-200"
 							/>
 							<View className="ml-3">
-								<Text className="font-bold text-gray-900">
+								<Text className="font-outfit-bold text-gray-900">
 									{item.name}
 								</Text>
 								<View className="flex-row">

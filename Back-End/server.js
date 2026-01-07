@@ -106,6 +106,7 @@ import paymentsRoutes from "./src/routes/payments.js";
 import uploadRoutes from "./src/routes/upload.js";
 import eventsRoutes from "./src/routes/events.js";
 import authRoutes from "./src/routes/auth.js";
+import notificationsRoutes from "./src/routes/notifications.js";
 
 fastify.register(usersRoutes);
 fastify.register(productsRoutes, { prefix: "/products" });
@@ -120,6 +121,7 @@ fastify.register(paymentsRoutes, { prefix: "/payments" });
 fastify.register(uploadRoutes);
 fastify.register(eventsRoutes);
 fastify.register(authRoutes);
+fastify.register(notificationsRoutes, { prefix: "/notifications" });
 
 // --- 5. START SERVER ---
 export { fastify };
