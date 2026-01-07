@@ -616,12 +616,10 @@ const BookingScreen = () => {
 
 									{/* Center Area */}
 									{/* Center Area */}
-									<View className="rounded-lg justify-center items-center w-48 h-32 mx-2 bg-white overflow-hidden">
-										<Image
-											source={require('../../../assets/maps.png')}
-											className="w-full h-full"
-											resizeMode="contain"
-										/>
+									<View className="border border-gray-300 rounded-lg justify-center items-center w-48 mx-2 bg-white">
+										<Text className="text-gray-900 text-center font-outfit-medium">
+											Area Pemancingan
+										</Text>
 									</View>
 
 									{/* Right Column */}
