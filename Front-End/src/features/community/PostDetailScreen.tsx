@@ -78,13 +78,13 @@ const PostDetailScreen = () => {
 		if (!newComment.trim()) return;
 		setSubmitting(true);
 		try {
-			await api.createComment(id, { 
+			await api.createComment(id, {
 				content: newComment,
-				parent_id: replyingTo?.id 
+				parent_id: replyingTo?.id
 			});
 			setNewComment("");
 			setReplyingTo(null); // Reset reply state
-			
+
 			// Refresh comments
 			fetchData(); // Re-use fetchData to get fresh groups
 		} catch (error) {
@@ -99,12 +99,15 @@ const PostDetailScreen = () => {
 		if (!path)
 			return `https://ui-avatars.com/api/?name=${name || "User"
 				}&background=random`;
-		return path.startsWith("http")
-			? path
-			: `${BASE_URL}/uploads/${path}`;
+		if (path.startsWith("http")) return path;
+		// Check if path already contains 'uploads/'
+		if (path.startsWith("uploads/")) {
+			return `${BASE_URL}/${path}`;
+		}
+		return `${BASE_URL}/uploads/${path}`;
 	};
-    
-    	const handleReply = (comment: any) => {
+
+	const handleReply = (comment: any) => {
 		setReplyingTo(comment);
 		// Focus input logic could go here if using ref
 	};

@@ -22,6 +22,7 @@ import {
 } from "lucide-react-native";
 import * as Linking from "expo-linking";
 import api, { BASE_URL } from "@/services/api";
+import { initializePushNotifications } from "@/services/notifications";
 
 const LoginScreen = () => {
 	const navigation = useNavigation<any>();
@@ -54,7 +55,16 @@ const LoginScreen = () => {
 						await AsyncStorage.setItem("user", userString); // Backend sudah encode user jadi string JSON
 					}
 
-					// 3. Pindah ke Halaman Utama
+					// 3. Initialize Push Notifications
+					try {
+						console.log("🔔 Initializing push notifications after Google login...");
+						await initializePushNotifications();
+						console.log("✅ Push notifications initialized");
+					} catch (pushErr) {
+						console.log("Push notification setup failed:", pushErr);
+					}
+
+					// 4. Pindah ke Halaman Utama
 					navigation.dispatch(
 						CommonActions.reset({
 							index: 0,
@@ -126,7 +136,15 @@ const LoginScreen = () => {
 				await AsyncStorage.setItem("user", JSON.stringify(user));
 			}
 
-			// 6. Redirect ke MainTab (Reset Stack)
+			// 6. Initialize Push Notifications & Register Token
+			try {
+				await initializePushNotifications();
+				console.log("Push notifications initialized");
+			} catch (pushErr) {
+				console.log("Push notification setup failed (non-critical):", pushErr);
+			}
+
+			// 7. Redirect ke MainTab (Reset Stack)
 			navigation.dispatch(
 				CommonActions.reset({
 					index: 0,

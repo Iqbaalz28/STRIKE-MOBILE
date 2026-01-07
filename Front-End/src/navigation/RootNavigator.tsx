@@ -33,6 +33,9 @@ import PostDetailScreen from "@/features/community/PostDetailScreen";
 import ProductDetailScreen from "@/features/shop/ProductDetailScreen";
 // import CartScreen from "@/features/cart/CartScreen"; // Uncomment jika sudah ada filenya
 
+// 6. Notifications
+import NotificationScreen from "@/features/notifications/NotificationScreen";
+
 const Stack = createNativeStackNavigator();
 
 // --- SPLASH SCREEN COMPONENT ---
@@ -140,6 +143,12 @@ const RootNavigator = () => {
 						component={ProductDetailScreen}
 					/>
 					{/* <Stack.Screen name="Cart" component={CartScreen} /> */}
+
+					{/* Notifications */}
+					<Stack.Screen
+						name="Notifications"
+						component={NotificationScreen}
+					/>
 				</Stack.Group>
 			</Stack.Navigator>
 		</NavigationContainer>

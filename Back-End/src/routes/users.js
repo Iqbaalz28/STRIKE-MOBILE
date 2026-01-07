@@ -50,9 +50,20 @@ export default async function (fastify, options) {
 
         const user = rows[0];
 
-        // --- CALCULATION FOR GAMIFICATION ---
+        // Monthly reset ini, only count bookings from current month
         const [bookingStats] = await fastify.db.query(
           `SELECT COUNT(*) as booking_count, SUM(total_price) as total_spent 
+             FROM bookings 
+             WHERE id_user = ? 
+               AND status = 'completed'
+               AND YEAR(created_at) = YEAR(CURDATE())
+               AND MONTH(created_at) = MONTH(CURDATE())`,
+          [userId]
+        );
+
+        // All-time stats untuk display di profile
+        const [allTimeStats] = await fastify.db.query(
+          `SELECT COUNT(*) as total_bookings, SUM(total_price) as all_time_spent 
              FROM bookings 
              WHERE id_user = ? AND status = 'completed'`,
           [userId]
@@ -60,8 +71,10 @@ export default async function (fastify, options) {
 
         const bookingCount = bookingStats[0].booking_count || 0;
         const totalSpent = Number(bookingStats[0].total_spent) || 0;
+        const allTimeBookings = allTimeStats[0].total_bookings || 0;
+        const allTimeSpent = Number(allTimeStats[0].all_time_spent) || 0;
 
-        // Logic Points: misal 1 point per 10.000 rupiah
+        // Logic Points: misal 1 point per 10.000 rupiah (monthly)
         const points = Math.floor(totalSpent / 10000);
 
         // Logic Level:
@@ -75,9 +88,14 @@ export default async function (fastify, options) {
 
         return {
           ...user,
-          // Return calculated stats
-          booking_count: bookingCount,
-          points: points,
+          // Monthly stats (reset setiap bulan)
+          booking_count: bookingCount,       // Booking bulan ini
+          total_spent: totalSpent,           // Total spent bulan ini
+          points: points,                    // Points bulan ini
+          // All-time stats
+          all_time_bookings: allTimeBookings,
+          all_time_spent: allTimeSpent,
+          // Level
           level: level
         };
       } catch (error) {

@@ -270,9 +270,9 @@ const ProfileScreen = () => {
 					<View className="bg-white rounded-2xl overflow-hidden shadow-sm mb-8">
 						<MenuItem
 							icon={Bell}
-							color="#6B7280"
+							color="#3B82F6"
 							label="Notifikasi"
-							rightElement={<Switch value={true} trackColor={{ false: "#d1d5db", true: "#3b82f6" }} />}
+							onPress={() => navigation.navigate("Notifications")}
 						/>
 						<Divider />
 						<MenuItem

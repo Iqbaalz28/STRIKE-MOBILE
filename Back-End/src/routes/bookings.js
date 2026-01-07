@@ -1,4 +1,7 @@
+import { sendNotificationToUser, NotificationType } from '../services/pushService.js';
+
 export default async function (fastify, options) {
+  // ... (rest of the file)
   // 1. GET Booking Saya (Riwayat Pesanan)
   // URL: GET /bookings/my-bookings
   fastify.get(
@@ -134,7 +137,9 @@ export default async function (fastify, options) {
 
         // E. Simpan Booking ke Database
         // FIX: Tambahkan payment_method ke query INSERT
-        await connection.query(
+        // E. Simpan Booking ke Database
+        // FIX: Tambahkan payment_method ke query INSERT
+        const [bookingResult] = await connection.query(
           `
                 INSERT INTO bookings 
                 (id_user, id_location, spot_number, first_name, last_name, phone, booking_date, booking_start, booking_end, duration, total_price, tax_amount, invoice_number, status, payment_status, payment_method)
@@ -158,11 +163,44 @@ export default async function (fastify, options) {
           ],
         );
 
+        const bookingId = bookingResult.insertId;
+
         // Commit Transaksi (Simpan Perubahan)
         await connection.commit();
 
         // Lepaskan koneksi kembali ke pool
         connection.release();
+
+        // --- SEND BOOKING CONFIRMATION NOTIFICATION ---
+        console.log("🔔 [BOOKING] Attempting to send confirmation notification...");
+        try {
+          // Get location name
+          const [locData] = await fastify.db.query(
+            `SELECT name FROM locations WHERE id = ?`,
+            [id_location]
+          );
+          const locName = locData[0]?.name || "lokasi pilihan Anda";
+
+          // Format booking time
+          const bookingTime = new Date(booking_start).toLocaleDateString('id-ID', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+
+          // Send Notification (Direct Import)
+          await sendNotificationToUser(fastify.db, userId, {
+            title: "Booking Berhasil! 🎣",
+            body: `Reservasi di ${locName} pada ${bookingTime}. Jangan lupa datang tepat waktu!`,
+            type: NotificationType.BOOKING_REMINDER,
+            refId: bookingId,
+          });
+
+        } catch (notifErr) {
+          req.log.error("Failed to send booking notification:", notifErr);
+        }
 
         return {
           message: "Booking berhasil dibuat",

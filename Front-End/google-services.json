@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "799768736058",
+    "project_id": "strikeit-2a6b5",
+    "storage_bucket": "strikeit-2a6b5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:799768736058:android:4c85470074fd7ad9fe2003",
+        "android_client_info": {
+          "package_name": "com.strikeit.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB50GZSSJ6FTmZYjKbl7uhAKS0sFdTLRfI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
