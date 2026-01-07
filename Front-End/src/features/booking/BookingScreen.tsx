@@ -616,9 +616,9 @@ const BookingScreen = () => {
 
 									{/* Center Area */}
 									{/* Center Area */}
-									<View className="rounded-lg justify-center items-center w-48 mx-2 bg-white overflow-hidden">
+									<View className="rounded-lg justify-center items-center w-48 h-32 mx-2 bg-white overflow-hidden">
 										<Image
-											source={require('../../../../assets/maps.png')}
+											source={require('../../../assets/maps.png')}
 											className="w-full h-full"
 											resizeMode="contain"
 										/>

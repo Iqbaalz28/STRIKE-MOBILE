@@ -33,11 +33,10 @@ const LocationMapCard = ({
 			<View className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
 				{/* Placeholder Map Image */}
 				<Image
-					source={{
-						uri: "https://placehold.co/600x300/png?text=Map+Preview",
-					}}
+					source={require('../../../../assets/maps.png')}
 					className="w-full h-40 bg-gray-200"
 					resizeMode="cover"
+					style={{ height: 160 }}
 				/>
 				<View className="p-4">
 					<View className="flex-row items-center mb-2">
