@@ -269,7 +269,7 @@ cd MobileApp
 
 2. **Jalankan Expo:**
    ```bash
-   npx expo start -c
+   npx expo start --go -c
    ```
    
    Flag `-c` untuk membersihkan cache.
